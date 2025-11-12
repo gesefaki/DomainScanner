@@ -1,0 +1,14 @@
+D:\projects\DomainScanner\DomainScanner.DataAccess.MSSQL\bin\Debug\net9.0\DomainScanner.DataAccess.MSSQL.deps.json
+D:\projects\DomainScanner\DomainScanner.DataAccess.MSSQL\bin\Debug\net9.0\DomainScanner.DataAccess.MSSQL.dll
+D:\projects\DomainScanner\DomainScanner.DataAccess.MSSQL\bin\Debug\net9.0\DomainScanner.DataAccess.MSSQL.pdb
+D:\projects\DomainScanner\DomainScanner.DataAccess.MSSQL\obj\Debug\net9.0\DomainScanner.DataAccess.MSSQL.GeneratedMSBuildEditorConfig.editorconfig
+D:\projects\DomainScanner\DomainScanner.DataAccess.MSSQL\obj\Debug\net9.0\DomainScanner.DataAccess.MSSQL.AssemblyInfoInputs.cache
+D:\projects\DomainScanner\DomainScanner.DataAccess.MSSQL\obj\Debug\net9.0\DomainScanner.DataAccess.MSSQL.AssemblyInfo.cs
+D:\projects\DomainScanner\DomainScanner.DataAccess.MSSQL\obj\Debug\net9.0\DomainScanner.DataAccess.MSSQL.csproj.CoreCompileInputs.cache
+D:\projects\DomainScanner\DomainScanner.DataAccess.MSSQL\obj\Debug\net9.0\DomainScanner.DataAccess.MSSQL.dll
+D:\projects\DomainScanner\DomainScanner.DataAccess.MSSQL\obj\Debug\net9.0\refint\DomainScanner.DataAccess.MSSQL.dll
+D:\projects\DomainScanner\DomainScanner.DataAccess.MSSQL\obj\Debug\net9.0\DomainScanner.DataAccess.MSSQL.pdb
+D:\projects\DomainScanner\DomainScanner.DataAccess.MSSQL\obj\Debug\net9.0\ref\DomainScanner.DataAccess.MSSQL.dll
+D:\projects\DomainScanner\DomainScanner.DataAccess.MSSQL\obj\Debug\net9.0\DomainScanner.DataAccess.MSSQL.csproj.AssemblyReference.cache
+D:\projects\DomainScanner\DomainScanner.DataAccess.MSSQL\bin\Debug\net9.0\DomainScanner.DataAccess.MSSQL.runtimeconfig.json
+D:\projects\DomainScanner\DomainScanner.DataAccess.MSSQL\obj\Debug\net9.0\DomainScanner.DataAccess.MSSQL.genruntimeconfig.cache

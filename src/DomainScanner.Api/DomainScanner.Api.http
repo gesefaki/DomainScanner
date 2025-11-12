@@ -1,0 +1,16 @@
+@DomainScanner_Api_HostAddress = http://localhost:5022
+
+GET {{DomainScanner_Api_HostAddress}}/api/domains/
+###
+
+GET {{DomainScanner_Api_HostAddress}}/api/domains/2
+###
+
+GET {{DomainScanner_Api_HostAddress}}/api/domains/2/health
+###
+
+GET {{DomainScanner_Api_HostAddress}}/api/domains/3/health
+###
+
+DELETE {{DomainScanner_Api_HostAddress}}/api/domains/3
+###
