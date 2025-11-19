@@ -3,8 +3,9 @@ using DomainScanner.Infrastructure.Repository;
 
 namespace DomainScanner.Api.Services;
 
-public class DomainService(IDomainRepository repo) : IDomainService
+public class DomainService(IDomainRepository repo, IHttpClientFactory clientFactory) : IDomainService
 {
+    private readonly IHttpClientFactory _httpClientFactory = clientFactory;
     private readonly IDomainRepository _repo = repo;
     public List<Domain> GetAll() => _repo.GetAll();
 
@@ -22,7 +23,7 @@ public class DomainService(IDomainRepository repo) : IDomainService
         if (domain is null)
             return false;
 
-        using var http = new HttpClient();
+        using var http = _httpClientFactory.CreateClient();
         try
         {
             using var response = http.GetAsync(domain.Name!).Result;
