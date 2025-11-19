@@ -33,8 +33,8 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "D:\\projects\\DomainScanner\\src\\DomainScanner.DataAccess.Postgre\\DomainScanner.DataAccess.Postgre.csproj": {
-                "projectPath": "D:\\projects\\DomainScanner\\src\\DomainScanner.DataAccess.Postgre\\DomainScanner.DataAccess.Postgre.csproj"
+              "D:\\projects\\DomainScanner\\src\\DomainScanner.Infrastructure\\DomainScanner.Infrastructure.csproj": {
+                "projectPath": "D:\\projects\\DomainScanner\\src\\DomainScanner.Infrastructure\\DomainScanner.Infrastructure.csproj"
               }
             }
           }
@@ -107,14 +107,14 @@
         }
       }
     },
-    "D:\\projects\\DomainScanner\\src\\DomainScanner.DataAccess.Postgre\\DomainScanner.DataAccess.Postgre.csproj": {
+    "D:\\projects\\DomainScanner\\src\\DomainScanner.Infrastructure\\DomainScanner.Infrastructure.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\projects\\DomainScanner\\src\\DomainScanner.DataAccess.Postgre\\DomainScanner.DataAccess.Postgre.csproj",
-        "projectName": "DomainScanner.DataAccess.Postgre",
-        "projectPath": "D:\\projects\\DomainScanner\\src\\DomainScanner.DataAccess.Postgre\\DomainScanner.DataAccess.Postgre.csproj",
+        "projectUniqueName": "D:\\projects\\DomainScanner\\src\\DomainScanner.Infrastructure\\DomainScanner.Infrastructure.csproj",
+        "projectName": "DomainScanner.Infrastructure",
+        "projectPath": "D:\\projects\\DomainScanner\\src\\DomainScanner.Infrastructure\\DomainScanner.Infrastructure.csproj",
         "packagesPath": "C:\\Users\\gesefaki\\.nuget\\packages\\",
-        "outputPath": "D:\\projects\\DomainScanner\\src\\DomainScanner.DataAccess.Postgre\\obj\\",
+        "outputPath": "D:\\projects\\DomainScanner\\src\\DomainScanner.Infrastructure\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

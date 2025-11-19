@@ -1,4 +1,4 @@
-using DomainScanner.DataAccess.Postgre.Models;
+using DomainScanner.Infrastructure.Models;
 
 namespace DomainScanner.Api.Services;
 

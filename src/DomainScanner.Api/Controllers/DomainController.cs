@@ -1,4 +1,4 @@
-using DomainScanner.DataAccess.Postgre.Models;
+using DomainScanner.Infrastructure.Models;
 using DomainScanner.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 

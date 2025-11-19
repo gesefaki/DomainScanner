@@ -1024,7 +1024,7 @@
           "buildTransitive/net6.0/_._": {}
         }
       },
-      "DomainScanner.DataAccess.Postgre/1.0.0": {
+      "DomainScanner.Infrastructure/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
         "dependencies": {
@@ -1032,10 +1032,10 @@
           "Npgsql.EntityFrameworkCore.PostgreSQL": "9.0.4"
         },
         "compile": {
-          "bin/placeholder/DomainScanner.DataAccess.Postgre.dll": {}
+          "bin/placeholder/DomainScanner.Infrastructure.dll": {}
         },
         "runtime": {
-          "bin/placeholder/DomainScanner.DataAccess.Postgre.dll": {}
+          "bin/placeholder/DomainScanner.Infrastructure.dll": {}
         }
       }
     }
@@ -3277,15 +3277,15 @@
         "useSharedDesignerContext.txt"
       ]
     },
-    "DomainScanner.DataAccess.Postgre/1.0.0": {
+    "DomainScanner.Infrastructure/1.0.0": {
       "type": "project",
-      "path": "../DomainScanner.DataAccess.Postgre/DomainScanner.DataAccess.Postgre.csproj",
-      "msbuildProject": "../DomainScanner.DataAccess.Postgre/DomainScanner.DataAccess.Postgre.csproj"
+      "path": "../DomainScanner.Infrastructure/DomainScanner.Infrastructure.csproj",
+      "msbuildProject": "../DomainScanner.Infrastructure/DomainScanner.Infrastructure.csproj"
     }
   },
   "projectFileDependencyGroups": {
     "net9.0": [
-      "DomainScanner.DataAccess.Postgre >= 1.0.0",
+      "DomainScanner.Infrastructure >= 1.0.0",
       "Microsoft.AspNetCore.OpenApi >= 9.0.10",
       "Microsoft.EntityFrameworkCore >= 9.0.10",
       "Microsoft.EntityFrameworkCore.Design >= 9.0.10",
@@ -3327,8 +3327,8 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
-            "D:\\projects\\DomainScanner\\src\\DomainScanner.DataAccess.Postgre\\DomainScanner.DataAccess.Postgre.csproj": {
-              "projectPath": "D:\\projects\\DomainScanner\\src\\DomainScanner.DataAccess.Postgre\\DomainScanner.DataAccess.Postgre.csproj"
+            "D:\\projects\\DomainScanner\\src\\DomainScanner.Infrastructure\\DomainScanner.Infrastructure.csproj": {
+              "projectPath": "D:\\projects\\DomainScanner\\src\\DomainScanner.Infrastructure\\DomainScanner.Infrastructure.csproj"
             }
           }
         }

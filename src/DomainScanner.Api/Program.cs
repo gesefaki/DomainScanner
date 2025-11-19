@@ -1,7 +1,7 @@
 using DomainScanner.Api.Services;
-using DomainScanner.DataAccess.Postgre.Data;
+using DomainScanner.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
-using DomainScanner.DataAccess.Postgre.Repository;
+using DomainScanner.Infrastructure.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
