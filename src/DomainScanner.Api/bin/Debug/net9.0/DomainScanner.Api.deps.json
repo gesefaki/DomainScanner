@@ -8,7 +8,7 @@
     ".NETCoreApp,Version=v9.0": {
       "DomainScanner.Api/1.0.0": {
         "dependencies": {
-          "DomainScanner.DataAccess.Postgre": "1.0.0",
+          "DomainScanner.Infrastructure": "1.0.0",
           "Microsoft.AspNetCore.OpenApi": "9.0.10",
           "Microsoft.EntityFrameworkCore": "9.0.10",
           "Microsoft.EntityFrameworkCore.Design": "9.0.10",
@@ -668,13 +668,13 @@
       "System.Runtime.CompilerServices.Unsafe/6.0.0": {},
       "System.Text.Json/9.0.10": {},
       "System.Threading.Channels/7.0.0": {},
-      "DomainScanner.DataAccess.Postgre/1.0.0": {
+      "DomainScanner.Infrastructure/1.0.0": {
         "dependencies": {
           "Microsoft.EntityFrameworkCore": "9.0.10",
           "Npgsql.EntityFrameworkCore.PostgreSQL": "9.0.4"
         },
         "runtime": {
-          "DomainScanner.DataAccess.Postgre.dll": {
+          "DomainScanner.Infrastructure.dll": {
             "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
@@ -1031,7 +1031,7 @@
       "path": "system.threading.channels/7.0.0",
       "hashPath": "system.threading.channels.7.0.0.nupkg.sha512"
     },
-    "DomainScanner.DataAccess.Postgre/1.0.0": {
+    "DomainScanner.Infrastructure/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

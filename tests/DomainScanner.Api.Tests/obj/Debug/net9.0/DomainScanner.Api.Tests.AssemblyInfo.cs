@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DomainScanner.Api.Tests")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8341b6d6bd75807514dd73beaaaef686586fb11a")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+04c05c254baec77cefc2e8bdfc6b00df300f2ed7")]
 [assembly: System.Reflection.AssemblyProductAttribute("DomainScanner.Api.Tests")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DomainScanner.Api.Tests")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

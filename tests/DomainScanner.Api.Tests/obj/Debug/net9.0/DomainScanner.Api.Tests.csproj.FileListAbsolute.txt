@@ -90,6 +90,7 @@ D:\projects\DomainScanner\tests\DomainScanner.Api.Tests\obj\Debug\net9.0\DomainS
 D:\projects\DomainScanner\tests\DomainScanner.Api.Tests\obj\Debug\net9.0\DomainScanner.Api.Tests.AssemblyInfoInputs.cache
 D:\projects\DomainScanner\tests\DomainScanner.Api.Tests\obj\Debug\net9.0\DomainScanner.Api.Tests.AssemblyInfo.cs
 D:\projects\DomainScanner\tests\DomainScanner.Api.Tests\obj\Debug\net9.0\DomainScanner.Api.Tests.csproj.CoreCompileInputs.cache
+D:\projects\DomainScanner\tests\DomainScanner.Api.Tests\obj\Debug\net9.0\DomainScanner.Api.Tests.sourcelink.json
 D:\projects\DomainScanner\tests\DomainScanner.Api.Tests\obj\Debug\net9.0\DomainSc.D9222018.Up2Date
 D:\projects\DomainScanner\tests\DomainScanner.Api.Tests\obj\Debug\net9.0\DomainScanner.Api.Tests.dll
 D:\projects\DomainScanner\tests\DomainScanner.Api.Tests\obj\Debug\net9.0\refint\DomainScanner.Api.Tests.dll
