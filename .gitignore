@@ -27,7 +27,7 @@ project.fragment.lock.json
 artifacts/
 
 ## Entity Framework junk
-Migrations/  # <-- Удаляй, если хочешь хранить миграции в репе, но на pet-проектах чаще не надо
+Migrations/ 
 
 ## Secrets / configs
 appsettings.Development.json
