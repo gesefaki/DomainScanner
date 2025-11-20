@@ -1,3 +1,4 @@
+using DomainScanner.Api.DTOs;
 using DomainScanner.Infrastructure.Models;
 using DomainScanner.Api.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -11,14 +12,14 @@ public class DomainController(IDomainService domainService) : ControllerBase
     [HttpGet("/api/domains")]
     public ActionResult<List<Domain>> GetAll()
     {
-        var domains = _domainService.GetAll();
+        var domains = _domainService.GetAllDto();
         return Ok(domains);
     }
 
     [HttpGet("/api/domains/{id}")]
     public ActionResult<Domain?> Get(int id)
     {
-        var domain = _domainService.Get(id);
+        var domain = _domainService.GetDto(id);
         if (domain == null)
             return NotFound();
             
@@ -26,16 +27,20 @@ public class DomainController(IDomainService domainService) : ControllerBase
     }
 
     [HttpPost("/api/domains")]
-    public ActionResult Add(Domain domain)
+    public ActionResult Add(CreateDomainDto dto)
     {
-        _domainService.Add(domain);
-        return CreatedAtAction(nameof(Get), new { id = domain.Id }, domain);
+        _domainService.Add(dto);
+        return CreatedAtAction(
+            nameof(Get),
+            new { id = dto.Id },
+            dto
+        );
     }
 
     [HttpDelete("/api/domains/{id}")]
     public ActionResult Remove(int id)
     {
-        var domain = _domainService.Get(id);
+        var domain = _domainService.GetDto(id);
         if (domain == null)
             return NotFound();
 
@@ -45,30 +50,29 @@ public class DomainController(IDomainService domainService) : ControllerBase
     }
 
     [HttpPut("/api/domains/{id}")]
-    public ActionResult Update(int id, Domain domain)
+    public ActionResult Update(int id, UpdateDomainDto dto)
     {
-        if (id != domain.Id)
+        if (id != dto.Id)
             return BadRequest();
 
-        var existingDomain = _domainService.Get(id);
+        var existingDomain = _domainService.GetDto(id);
         if (existingDomain == null)
             return NotFound();
 
-        _domainService.Update(domain);
+        _domainService.UpdateDto(dto);
 
         return NoContent();
     }
 
     [HttpGet("/api/domains/{id}/health")]
-    public ActionResult<bool> CheckHealth(int id)
+    public ActionResult CheckHealth(int id)
     {
 
-        var domain = _domainService.Get(id);
-        if (domain == null)
+        var dto = _domainService.GetDto(id);
+        if (dto == null)
             return NotFound();
 
-        var isAvailable = _domainService.CheckHealth(id);
-
-        return Ok(isAvailable);
+        _domainService.UpdateHealthStatus(dto.Id);
+        return Ok(dto.IsAvailable);
     }
 }

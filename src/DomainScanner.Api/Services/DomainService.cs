@@ -1,3 +1,4 @@
+using DomainScanner.Api.DTOs;
 using DomainScanner.Infrastructure.Models;
 using DomainScanner.Infrastructure.Repository;
 
@@ -7,22 +8,74 @@ public class DomainService(IDomainRepository repo, IHttpClientFactory clientFact
 {
     private readonly IHttpClientFactory _httpClientFactory = clientFactory;
     private readonly IDomainRepository _repo = repo;
-    public List<Domain> GetAll() => _repo.GetAll();
 
-    public Domain? Get(int id) => _repo.Get(id);
+    public IEnumerable<DomainDto> GetAllDto()
+    {
+        var domains = _repo.GetAll();
+        return domains.Select(d => new DomainDto
+        {
+            Id = d.Id,
+            Name = d.Name,
+            IsAvailable = d.IsAvailable,
+        });
+    }
 
-    public void Add(Domain domain) => _repo.Add(domain);
+    public DomainDto? GetDto(int id)
+    {
+        var domain = _repo.Get(id);
+        
+        if (domain == null)
+            return null;
+        
+        return new DomainDto
+        {
+            Id = domain.Id,
+            Name = domain.Name,
+            IsAvailable = domain.IsAvailable,
+        };
+    }
+
+    private Domain? Get(int id)
+    {
+        var domain = _repo.Get(id);
+        return domain ?? null;
+    }
+
+    public void Add(CreateDomainDto dto)
+    {
+        var domain = new Domain
+        {
+            Name = dto.Name,
+        };
+        
+        _repo.Add(domain);
+    }
 
     public void Remove(int id) => _repo.Remove(id);
 
-    public void Update(Domain domain) => _repo.Update(domain);
+    private void Update(Domain domain)
+    {
+        var existingDomain =  _repo.Get(domain.Id);
+        if  (existingDomain != null)
+            _repo.Update(existingDomain);
+    }
+    public void UpdateDto(UpdateDomainDto dto)
+    {
+        var domain = _repo.Get(dto.Id);
+        if (domain == null)
+            return;
+        
+        domain.Name = dto.Name;
+        domain.IsAvailable = dto.IsAvailable;
+        _repo.Update(domain);
+    }
 
-    public bool CheckHealth(int id)
+    public void UpdateHealthStatus(int id)
     {
         var domain = Get(id);
         if (domain is null)
-            return false;
-
+            return;
+        
         using var http = _httpClientFactory.CreateClient();
         try
         {
@@ -36,7 +89,6 @@ public class DomainService(IDomainRepository repo, IHttpClientFactory clientFact
         }
 
         Update(domain);
-        return domain.IsAvailable ?? false;
     }
 
 }
