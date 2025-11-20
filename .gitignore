@@ -27,7 +27,7 @@ project.fragment.lock.json
 artifacts/
 
 ## Entity Framework junk
-Migrations/
+Migrations/ 
 
 ## Secrets / configs
 appsettings.Development.json
