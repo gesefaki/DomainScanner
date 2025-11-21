@@ -1,4 +1,4 @@
-using DomainScanner.Infrastructure.Models;
+using DomainScanner.Core.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace DomainScanner.Infrastructure.Data;

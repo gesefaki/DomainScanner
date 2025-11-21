@@ -1,7 +1,8 @@
 using DomainScanner.Api.Services;
 using DomainScanner.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
 using DomainScanner.Infrastructure.Repository;
+using DomainScanner.Core.Services;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();

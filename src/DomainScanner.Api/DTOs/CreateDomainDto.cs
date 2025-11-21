@@ -2,10 +2,11 @@
 
 namespace DomainScanner.Api.DTOs;
 
-public class CreateDomainDto
+public sealed class CreateDomainDto
 {
-    public int Id { get; set; }
+    public int Id { get; init; }
     
     [Required, MaxLength(256)]
     public required string Name { get; init; }
+    
 }

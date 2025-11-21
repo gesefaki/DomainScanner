@@ -2,11 +2,12 @@
 
 namespace DomainScanner.Api.DTOs;
 
-public class UpdateDomainDto
+public sealed class UpdateDomainDto
 {
-    public int Id { get; set; }
+    public int Id { get; init; }
     [Required, MaxLength(256)]
-    public required string Name { get; set; }
+    public required string Name { get; init; }
     
-    public bool? IsAvailable { get; set; }
+    public bool? IsAvailable { get; init; }
+    
 }

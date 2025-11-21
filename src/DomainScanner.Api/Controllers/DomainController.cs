@@ -1,6 +1,6 @@
 using DomainScanner.Api.DTOs;
-using DomainScanner.Infrastructure.Models;
-using DomainScanner.Api.Services;
+using DomainScanner.Core.Interfaces;
+using DomainScanner.Core.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DomainScanner.Api.Controllers;
