@@ -8,5 +8,10 @@ public sealed class CreateDomainDto
     
     [Required, MaxLength(256)]
     public required string Name { get; init; }
-    
+
+    public CreateDomainDto(int id, string name)
+    {
+        Id = id;
+        Name = name;
+    }
 }

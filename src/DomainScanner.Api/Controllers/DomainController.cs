@@ -12,14 +12,14 @@ public class DomainController(IDomainService domainService) : ControllerBase
     [HttpGet("/api/domains")]
     public ActionResult<List<Domain>> GetAll()
     {
-        var domains = _domainService.GetAllDto();
+        var domains = _domainService.GetAll();
         return Ok(domains);
     }
 
     [HttpGet("/api/domains/{id}")]
-    public ActionResult<Domain?> Get(int id)
+    public ActionResult<Domain?> GetById(int id)
     {
-        var domain = _domainService.GetDto(id);
+        var domain = _domainService.GetById(id);
         if (domain == null)
             return NotFound();
             
@@ -29,7 +29,7 @@ public class DomainController(IDomainService domainService) : ControllerBase
     [HttpPost("/api/domains")]
     public ActionResult Add(CreateDomainDto dto)
     {
-        _domainService.Add(dto);
+        _domainService.Add(Domain);
         return CreatedAtAction(
             nameof(Get),
             new { id = dto.Id },

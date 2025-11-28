@@ -9,5 +9,11 @@ public sealed class UpdateDomainDto
     public required string Name { get; init; }
     
     public bool? IsAvailable { get; init; }
-    
+
+    public UpdateDomainDto(int id, string name, bool? isAvailable)
+    {
+        Id = id;
+        Name = name;
+        IsAvailable = isAvailable;
+    }
 }

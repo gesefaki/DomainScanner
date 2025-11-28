@@ -8,5 +8,5 @@ public interface IDomainService
     public Domain? GetById(int id);
     public void Add(Domain domain);
     public void Remove(int id);
-    public void Update(Domain domain);
+    public void Update(int id, Domain domain);
 }
