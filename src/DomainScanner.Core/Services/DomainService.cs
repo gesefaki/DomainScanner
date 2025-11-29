@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using DomainScanner.Core.Models;
 using DomainScanner.Core.Interfaces;
 
@@ -49,6 +50,7 @@ public class DomainService(IDomainRepository repo, IHttpClientFabric fabric) : I
         existingDomain.IsAvailable = status;
         await UpdateAsync(existingDomain.Id, existingDomain);
     }
+    
 
     public async Task<bool> CheckHealthAsync(int id)
     {
