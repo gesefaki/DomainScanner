@@ -1,6 +1,6 @@
-﻿namespace DomainScanner.Core.Models;
+﻿namespace DomainScanner.Core.DTO;
 
-public class DomainHealth
+public class DomainHealthDto
 {
     // Main
     public bool IsSuccess { get; set; }
@@ -30,4 +30,5 @@ public class DomainHealth
     
     // Meta
     public DateTime CheckedAt { get; private set; } = DateTime.UtcNow;
+    
 }

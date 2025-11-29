@@ -1,7 +1,9 @@
-﻿namespace DomainScanner.Core.Interfaces;
+﻿using DomainScanner.Core.Models;
+
+namespace DomainScanner.Core.Interfaces;
 
 public interface IHttpClientFabric
 {
     HttpClient CreateHttpClient();
-    HttpClient CreateHttpClientNoRedirect();
+    (HttpClient client, TlsCapture tls) CreateHttpClientNoRedirect();
 }

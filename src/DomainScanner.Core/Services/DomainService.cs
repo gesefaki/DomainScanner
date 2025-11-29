@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Net.Security;
 using DomainScanner.Core.Models;
 using DomainScanner.Core.Interfaces;
 
@@ -58,12 +59,13 @@ public class DomainService(IDomainRepository repo, IHttpClientFabric fabric) : I
         if (domain == null)
             return null;
         
-        var http = _fabric.CreateHttpClientNoRedirect();
+        var (http, tls) = _fabric.CreateHttpClientNoRedirect();
         
         try
         {
             var stopwatch = Stopwatch.StartNew(); // Starting timer for get response time
             var response = await http.GetAsync(domain.Name); // Get HTTP response
+            var scheme = response.RequestMessage!.RequestUri!.Scheme;
             stopwatch.Stop(); // Get response time
             
              
@@ -71,9 +73,9 @@ public class DomainService(IDomainRepository repo, IHttpClientFabric fabric) : I
             var redirectionsCount = 0;
             const int maxRedirections = 10;
             
-            var redirected = ((int)response.StatusCode >= 300 && (int)response.StatusCode < 400);
+            var isRedirected = ((int)response.StatusCode >= 300 && (int)response.StatusCode < 400);
 
-            while (redirected || redirectionsCount < maxRedirections)
+            while (isRedirected || redirectionsCount < maxRedirections)
             {
                 var location = response.Headers.Location;
                 if (location == null) break;
@@ -85,20 +87,33 @@ public class DomainService(IDomainRepository repo, IHttpClientFabric fabric) : I
             
             lock (_lock)
             {
+                // Sending the object
                 var result = new DomainHealth()
                 {
+                    // Main
                     IsSuccess = response.IsSuccessStatusCode,
                     StatusCode = (int)response.StatusCode,
                     ResponseTime = stopwatch.ElapsedMilliseconds,
+                    
+                    // Content
                     ContentType = response.Content.Headers.ContentType!.ToString(),
                     ContentLength = (long)response.Content.Headers.ContentLength!,
                     Server = response.Headers.Server?.ToString(),
                     Headers = response.Content.Headers?.ToDictionary
                         (x => x.Key,
                         x => string.Join(",", x.Value)),
-                    HasRedirects = redirected,
+                    
+                    // Redirects
+                    HasRedirects = isRedirected,
                     RedirectsCount = redirections.Count,
                     Redirects = redirections,
+                    
+                    // TLS (Only HTTPS)
+                    IsHttps = scheme == Uri.UriSchemeHttps,
+                    TlsValid = tls.SslPolicyErrors == SslPolicyErrors.None,
+                    TlsCertificate = tls.ServerCertificate?.Version.ToString(),
+                    TlsIssuer = tls.ServerCertificate?.Issuer,
+                    TlsThumbprint = tls.ServerCertificate?.Thumbprint,
                 };
                 return result;
             }

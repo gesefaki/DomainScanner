@@ -1,7 +1,6 @@
 using DomainScanner.Core.Interfaces;
 using DomainScanner.Core.DTO;
 using DomainScanner.Core.Mappers;
-using DomainScanner.Core.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DomainScanner.Api.Controllers;
@@ -45,7 +44,7 @@ public class DomainController(IDomainService domainService) : ControllerBase
     }
 
     [HttpGet("{id:int}/health/details")]
-    public async Task<ActionResult<DomainHealth?>> GetHealthAsync(int id)
+    public async Task<ActionResult<DomainHealthDto?>> GetHealthAsync(int id)
     {
         var domain = await _service.GetByIdAsync(id);
         if (domain == null)
@@ -69,8 +68,8 @@ public class DomainController(IDomainService domainService) : ControllerBase
     [HttpPut("{id:int}")]
     public async Task<ActionResult<ResponseDomainDto?>> UpdateAsync(int id, [FromBody] UpdateDomainDto dto)
     {
-        var existing = await _service.GetByIdAsync(id);
-        if (existing == null)
+        var isExists = await _service.IsExistsByIdAsync(id);
+        if (!isExists)
             return NotFound();
         
         var domain = dto.ToDomain(id);

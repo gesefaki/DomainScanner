@@ -9,9 +9,9 @@ public class CreateDomainDto
 
     public CreateDomainDto(string name)
     {
-        if (!name.StartsWith("http://"))
+        if (!name.StartsWith("http://") && !name.StartsWith("https://"))
         {
-            name = "http://" + name;
+            name = "https://" + name;
         }
         Name = name;
     }
