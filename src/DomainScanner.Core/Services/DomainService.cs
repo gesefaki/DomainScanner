@@ -8,49 +8,51 @@ public class DomainService(IDomainRepository repo, IHttpClientFabric fabric) : I
     private readonly IDomainRepository _repo = repo;
     private readonly IHttpClientFabric _fabric = fabric;
 
-    public IEnumerable<Domain> GetAll()
+    public async Task<IEnumerable<Domain>> GetAllAsync()
     {
-        var domains = _repo.GetAll();
+        var domains = await _repo.GetAllAsync();
         return domains;
     }
 
     // Include tracking
-    public Domain? GetById(int id)
+    public async Task<Domain?> GetByIdAsync(int id)
     {
-        var domain = _repo.GetById(id);
+        var domain = await _repo.GetByIdAsync(id);
         return domain ?? null;
     }
 
-    public bool IsExistsById(int id) => _repo.IsExistsById(id);
+    // Didn't include tracking
+    public async Task<bool> IsExistsByIdAsync(int id) => await _repo.IsExistsByIdAsync(id);
 
-    public void Add(Domain domain)
+    public async Task AddAsync(Domain domain)
     {
-        _repo.Add(domain);
+        await _repo.AddAsync(domain);
     }
 
-    public void Remove(int id) => _repo.Remove(id);
+    public async Task RemoveAsync(int id) => await _repo.RemoveAsync(id);
 
-    public void Update(int id, Domain domain)
+    public async Task UpdateAsync(int id, Domain domain)
     {
-        if (!IsExistsById(domain.Id))
+        var existing = await IsExistsByIdAsync(id);
+        if (!existing)
             return;
         
-        _repo.Update(domain);
+        await _repo.UpdateAsync(domain);
     }
 
-    private void UpdateDomainAvailability(Domain domain, bool status)
+    private async Task UpdateDomainAvailability(Domain domain, bool status)
     {
-        var existingDomain = GetById(domain.Id);
+        var existingDomain = await GetByIdAsync(domain.Id);
         if (existingDomain == null)
             return;
         
         existingDomain.IsAvailable = status;
-        Update(existingDomain.Id, existingDomain);
+        await UpdateAsync(existingDomain.Id, existingDomain);
     }
 
     public async Task<bool> CheckHealthAsync(int id)
     {
-        var domain = _repo.GetById(id);
+        var domain = await _repo.GetByIdAsync(id);
         if (domain == null)
             return false;
 
@@ -58,7 +60,7 @@ public class DomainService(IDomainRepository repo, IHttpClientFabric fabric) : I
         var status = false;
         try
         {
-            var response = await http.GetAsync(domain.Name);
+            var response = await http.GetAsync(domain.Name).ConfigureAwait(false);
             status = response.IsSuccessStatusCode;
             return status;
         }
@@ -69,7 +71,7 @@ public class DomainService(IDomainRepository repo, IHttpClientFabric fabric) : I
         }
         finally
         {
-            UpdateDomainAvailability(domain, status);
+            await UpdateDomainAvailability(domain, status);
         }
 
     }

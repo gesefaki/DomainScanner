@@ -12,18 +12,18 @@ public class DomainController(IDomainService domainService) : ControllerBase
     
     // Получение всех доменов
     [HttpGet("")]
-    public ActionResult<List<ResponseDomainDto>> GetAll()
+    public async Task<ActionResult<List<ResponseDomainDto>>> GetAllAsync()
     {
-        var domains = _service.GetAll();
+        var domains = await _service.GetAllAsync();
         var result = domains.Select(d => d.ToResponse()).ToList(); 
         return Ok(result);
     }
 
     // Получение домена по ID
     [HttpGet("{id:int}")]
-    public ActionResult<ResponseDomainDto?> GetById(int id)
+    public async Task<ActionResult<ResponseDomainDto?>> GetById(int id)
     {
-        var domain = _service.GetById(id);
+        var domain = await _service.GetByIdAsync(id);
         if (domain == null)
             return NotFound();
             
@@ -33,9 +33,9 @@ public class DomainController(IDomainService domainService) : ControllerBase
 
     // Проверка состояния домена
     [HttpGet("{id:int}/health")]
-    public async Task<ActionResult<bool>> CheckHealth(int id)
+    public async Task<ActionResult<bool>> CheckHealthAsync(int id)
     {
-        var domain = _service.GetById(id);
+        var domain = await _service.GetByIdAsync(id);
         if (domain == null)
             return NotFound();
         
@@ -45,19 +45,20 @@ public class DomainController(IDomainService domainService) : ControllerBase
 
     // Добавление домена
     [HttpPost("")]
-    public ActionResult<ResponseDomainDto> Add([FromBody] CreateDomainDto dto)
+    public async Task<ActionResult<ResponseDomainDto>> AddAsync([FromBody] CreateDomainDto dto)
     {
         var domain = dto.ToDomain();
-        _service.Add(domain);
+        await _service.AddAsync(domain);
 
         return CreatedAtAction(nameof(GetById), new { id = domain.Id }, dto);
     }
 
     // Обновление домена
     [HttpPut("{id:int}")]
-    public ActionResult<ResponseDomainDto?> Update(int id, [FromBody] UpdateDomainDto dto)
+    public async Task<ActionResult<ResponseDomainDto?>> UpdateAsync(int id, [FromBody] UpdateDomainDto dto)
     {
-        if(!_service.IsExistsById(id))
+        var existing = await _service.GetByIdAsync(id);
+        if (existing == null)
             return NotFound();
         
         var domain = dto.ToDomain(id);
@@ -65,15 +66,15 @@ public class DomainController(IDomainService domainService) : ControllerBase
         if(id != domain.Id)
             return BadRequest();
         
-        _service.Update(id, domain);
+        await _service.UpdateAsync(id, domain);
         return CreatedAtAction(nameof(GetById), new { id = domain.Id }, dto);
     }
 
     // Удаление домена
     [HttpDelete("{id:int}")]
-    public ActionResult Delete(int id)
+    public async Task<ActionResult> Delete(int id)
     {
-        _service.Remove(id);
+        await _service.RemoveAsync(id);
         return NoContent();
     }
 }

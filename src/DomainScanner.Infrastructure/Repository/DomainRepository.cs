@@ -9,37 +9,39 @@ public class DomainRepository(ScannerDbContext db) : IDomainRepository
 {
     private readonly ScannerDbContext _db = db;
 
-    public List<Domain> GetAll() => [.. _db.Domains.AsNoTracking()];
+    public async Task<List<Domain>> GetAllAsync() => await _db.Domains.AsNoTracking().ToListAsync();
 
-    public Domain? GetById(int id)
+    public async Task<Domain?> GetByIdAsync(int id)
     {
-        var domain = _db.Domains.FirstOrDefault(d => d.Id == id);
+        var domain = await _db.Domains.FirstOrDefaultAsync(d => d.Id == id);
         return domain ?? null;
     }
 
-    public bool IsExistsById(int id)
+    public async Task<bool> IsExistsByIdAsync(int id)
     {
-        var domain = _db.Domains.AsNoTracking().FirstOrDefault(d => d.Id == id);
+        var domain = await _db.Domains.AsNoTracking().FirstOrDefaultAsync(d => d.Id == id);
         return domain != null;
     }
 
-    public void Add(Domain domain)
+    public async Task AddAsync(Domain domain)
     {
-        _db.Domains.Add(domain);
-        _db.SaveChanges();
+        await _db.Domains.AddAsync(domain);
+        await _db.SaveChangesAsync();
     }
 
-    public void Update(Domain domain)
+    public async Task UpdateAsync(Domain domain)
     {
         _db.Domains.Update(domain);
-        _db.SaveChanges();
+        await _db.SaveChangesAsync();
     }
 
-    public void Remove(int id)
+    public async Task RemoveAsync(int id)
     {
-        var domain = GetById(id);
+        var domain = await GetByIdAsync(id);
+        
         if (domain is null) return;
         _db.Domains.Remove(domain);
-        _db.SaveChanges();
+        
+        await _db.SaveChangesAsync();
     }
 }
