@@ -8,6 +8,7 @@ public class DomainService(IDomainRepository repo, IHttpClientFabric fabric) : I
 {
     private readonly IDomainRepository _repo = repo;
     private readonly IHttpClientFabric _fabric = fabric;
+    private readonly Lock _lock = new Lock();
 
     public async Task<IEnumerable<Domain>> GetAllAsync()
     {
@@ -51,6 +52,63 @@ public class DomainService(IDomainRepository repo, IHttpClientFabric fabric) : I
         await UpdateAsync(existingDomain.Id, existingDomain);
     }
     
+    public async Task<DomainHealth?> GetHealthAsync(int id)
+    {
+        var domain = await _repo.GetByIdAsync(id);
+        if (domain == null)
+            return null;
+        
+        var http = _fabric.CreateHttpClientNoRedirect();
+        
+        try
+        {
+            var stopwatch = Stopwatch.StartNew(); // Starting timer for get response time
+            var response = await http.GetAsync(domain.Name); // Get HTTP response
+            stopwatch.Stop(); // Get response time
+            
+             
+            var redirections = new List<string> { domain.Name };
+            var redirectionsCount = 0;
+            const int maxRedirections = 10;
+            
+            var redirected = ((int)response.StatusCode >= 300 && (int)response.StatusCode < 400);
+
+            while (redirected || redirectionsCount < maxRedirections)
+            {
+                var location = response.Headers.Location;
+                if (location == null) break;
+                
+                redirections.Add(location.ToString());
+                response = await http.GetAsync(location);
+                redirectionsCount++;
+            }
+            
+            lock (_lock)
+            {
+                var result = new DomainHealth()
+                {
+                    IsSuccess = response.IsSuccessStatusCode,
+                    StatusCode = (int)response.StatusCode,
+                    ResponseTime = stopwatch.ElapsedMilliseconds,
+                    ContentType = response.Content.Headers.ContentType!.ToString(),
+                    ContentLength = (long)response.Content.Headers.ContentLength!,
+                    Server = response.Headers.Server?.ToString(),
+                    Headers = response.Content.Headers?.ToDictionary
+                        (x => x.Key,
+                        x => string.Join(",", x.Value)),
+                    HasRedirects = redirected,
+                    RedirectsCount = redirections.Count,
+                    Redirects = redirections,
+                };
+                return result;
+            }
+            
+        }
+        catch (Exception ex)
+        {
+            return null;
+        }
+    }
 
     public async Task<bool> CheckHealthAsync(int id)
     {

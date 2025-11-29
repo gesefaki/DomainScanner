@@ -11,4 +11,5 @@ public interface IDomainService
     public Task RemoveAsync(int id);
     public Task UpdateAsync(int id, Domain domain);
     public Task<bool> CheckHealthAsync(int id);
+    public Task<DomainHealth?> GetHealthAsync(int id);
 }

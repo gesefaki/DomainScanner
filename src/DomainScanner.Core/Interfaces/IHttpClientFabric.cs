@@ -3,4 +3,5 @@
 public interface IHttpClientFabric
 {
     HttpClient CreateHttpClient();
+    HttpClient CreateHttpClientNoRedirect();
 }

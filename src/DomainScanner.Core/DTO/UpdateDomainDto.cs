@@ -10,6 +10,11 @@ public class UpdateDomainDto
 
     public UpdateDomainDto(string name, bool? isAvailable)
     {
+        if (!name.StartsWith("http://"))
+        {
+            name = "http://" + name;
+        }
+        
         Name = name;
         IsAvailable = isAvailable;
     }

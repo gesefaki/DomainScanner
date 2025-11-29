@@ -20,6 +20,7 @@ public class HttpClientFabric : IHttpClientFabric
             AllowAutoRedirect = _options.AllowAutoRedirect,
             MaxConnectionsPerServer = _options.MaxConnectionsPerServer,
         };
+        
 
         var client = new HttpClient(handler)
         {
@@ -28,6 +29,24 @@ public class HttpClientFabric : IHttpClientFabric
         
         client.DefaultRequestHeaders.UserAgent.ParseAdd(_options.UserAgent);
 
+        return client;
+    }
+
+    public HttpClient CreateHttpClientNoRedirect()
+    {
+        var handler = new HttpClientHandler
+        {
+            AllowAutoRedirect = false,
+            MaxConnectionsPerServer = _options.MaxConnectionsPerServer,
+        };
+
+        var client = new HttpClient(handler)
+        {
+            Timeout = TimeSpan.FromSeconds(_options.TimeoutSeconds)
+        };
+        
+        client.DefaultRequestHeaders.UserAgent.ParseAdd(_options.UserAgent);
+        
         return client;
     }
 }

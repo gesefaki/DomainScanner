@@ -1,6 +1,7 @@
 using DomainScanner.Core.Interfaces;
 using DomainScanner.Core.DTO;
 using DomainScanner.Core.Mappers;
+using DomainScanner.Core.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DomainScanner.Api.Controllers;
@@ -41,6 +42,17 @@ public class DomainController(IDomainService domainService) : ControllerBase
         
         var result = await _service.CheckHealthAsync(id);
         return Ok(result);
+    }
+
+    [HttpGet("{id:int}/health/details")]
+    public async Task<ActionResult<DomainHealth?>> GetHealthAsync(int id)
+    {
+        var domain = await _service.GetByIdAsync(id);
+        if (domain == null)
+            return NotFound();
+        
+        var health = await _service.GetHealthAsync(id);
+        return Ok(health);
     }
 
     // Добавление домена
