@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DomainScanner.Api.Controllers;
 
-[Route("api/domains/v1")]
+[Route("api/v1/domains")]
 public class DomainController(IDomainService domainService) : ControllerBase
 {
     private readonly IDomainService _service = domainService;
