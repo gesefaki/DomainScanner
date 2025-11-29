@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using System.Net.Security;
 using DomainScanner.Core.Models;
 using DomainScanner.Core.Interfaces;
 
@@ -7,6 +9,7 @@ public class DomainService(IDomainRepository repo, IHttpClientFabric fabric) : I
 {
     private readonly IDomainRepository _repo = repo;
     private readonly IHttpClientFabric _fabric = fabric;
+    private readonly Lock _lock = new Lock();
 
     public async Task<IEnumerable<Domain>> GetAllAsync()
     {
@@ -48,6 +51,78 @@ public class DomainService(IDomainRepository repo, IHttpClientFabric fabric) : I
         
         existingDomain.IsAvailable = status;
         await UpdateAsync(existingDomain.Id, existingDomain);
+    }
+    
+    public async Task<DomainHealth?> GetHealthAsync(int id)
+    {
+        var domain = await _repo.GetByIdAsync(id);
+        if (domain == null)
+            return null;
+        
+        var (http, tls) = _fabric.CreateHttpClientNoRedirect();
+        
+        try
+        {
+            var stopwatch = Stopwatch.StartNew(); // Starting timer for get response time
+            var response = await http.GetAsync(domain.Name); // Get HTTP response
+            var scheme = response.RequestMessage!.RequestUri!.Scheme;
+            stopwatch.Stop(); // Get response time
+            
+             
+            var redirections = new List<string> { domain.Name };
+            var redirectionsCount = 0;
+            const int maxRedirections = 10;
+            
+            var isRedirected = ((int)response.StatusCode >= 300 && (int)response.StatusCode < 400);
+
+            while (isRedirected || redirectionsCount < maxRedirections)
+            {
+                var location = response.Headers.Location;
+                if (location == null) break;
+                
+                redirections.Add(location.ToString());
+                response = await http.GetAsync(location);
+                redirectionsCount++;
+            }
+            
+            lock (_lock)
+            {
+                // Sending the object
+                var result = new DomainHealth()
+                {
+                    // Main
+                    IsSuccess = response.IsSuccessStatusCode,
+                    StatusCode = (int)response.StatusCode,
+                    ResponseTime = stopwatch.ElapsedMilliseconds,
+                    
+                    // Content
+                    ContentType = response.Content.Headers.ContentType!.ToString(),
+                    ContentLength = (long)response.Content.Headers.ContentLength!,
+                    Server = response.Headers.Server?.ToString(),
+                    Headers = response.Content.Headers?.ToDictionary
+                        (x => x.Key,
+                        x => string.Join(",", x.Value)),
+                    
+                    // Redirects
+                    HasRedirects = isRedirected,
+                    RedirectsCount = redirections.Count,
+                    Redirects = redirections,
+                    
+                    // TLS (Only HTTPS)
+                    IsHttps = scheme == Uri.UriSchemeHttps,
+                    TlsValid = tls.SslPolicyErrors == SslPolicyErrors.None,
+                    TlsCertificate = tls.ServerCertificate?.Version.ToString(),
+                    TlsIssuer = tls.ServerCertificate?.Issuer,
+                    TlsThumbprint = tls.ServerCertificate?.Thumbprint,
+                };
+                return result;
+            }
+            
+        }
+        catch (Exception ex)
+        {
+            return null;
+        }
     }
 
     public async Task<bool> CheckHealthAsync(int id)

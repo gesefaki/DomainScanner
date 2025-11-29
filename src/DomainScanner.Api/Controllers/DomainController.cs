@@ -43,6 +43,17 @@ public class DomainController(IDomainService domainService) : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("{id:int}/health/details")]
+    public async Task<ActionResult<DomainHealthDto?>> GetHealthAsync(int id)
+    {
+        var domain = await _service.GetByIdAsync(id);
+        if (domain == null)
+            return NotFound();
+        
+        var health = await _service.GetHealthAsync(id);
+        return Ok(health);
+    }
+
     // Добавление домена
     [HttpPost("")]
     public async Task<ActionResult<ResponseDomainDto>> AddAsync([FromBody] CreateDomainDto dto)
@@ -57,8 +68,8 @@ public class DomainController(IDomainService domainService) : ControllerBase
     [HttpPut("{id:int}")]
     public async Task<ActionResult<ResponseDomainDto?>> UpdateAsync(int id, [FromBody] UpdateDomainDto dto)
     {
-        var existing = await _service.GetByIdAsync(id);
-        if (existing == null)
+        var isExists = await _service.IsExistsByIdAsync(id);
+        if (!isExists)
             return NotFound();
         
         var domain = dto.ToDomain(id);
