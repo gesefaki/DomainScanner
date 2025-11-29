@@ -21,7 +21,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\DomainScanner.Core\DomainScanner.Core.csproj" />
     <ProjectReference Include="..\DomainScanner.Core\DomainScanner.Core.csproj" />
   </ItemGroup>
 

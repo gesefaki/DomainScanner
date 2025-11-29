@@ -5,7 +5,8 @@ namespace DomainScanner.Core.Interfaces;
 public interface IDomainRepository
 {
     public List<Domain> GetAll();
-    public Domain? Get(int id);
+    public Domain? GetById(int id);
+    public bool IsExistsById(int id);
     public void Add(Domain domain);
     public void Update(Domain domain);
     public void Remove(int id);

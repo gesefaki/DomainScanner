@@ -1,16 +1,15 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace DomainScanner.Api.DTOs;
+namespace DomainScanner.Core.DTO;
 
-public sealed class UpdateDomainDto
+public class ResponseDomainDto
 {
     public int Id { get; init; }
     [Required, MaxLength(256)]
-    public required string Name { get; init; }
-    
+    public string Name { get; init; }
     public bool? IsAvailable { get; init; }
 
-    public UpdateDomainDto(int id, string name, bool? isAvailable)
+    public ResponseDomainDto(int id, string name, bool? isAvailable)
     {
         Id = id;
         Name = name;

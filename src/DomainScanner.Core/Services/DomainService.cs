@@ -14,11 +14,14 @@ public class DomainService(IDomainRepository repo, IHttpClientFabric fabric) : I
         return domains;
     }
 
+    // Include tracking
     public Domain? GetById(int id)
     {
-        var domain = _repo.Get(id);
+        var domain = _repo.GetById(id);
         return domain ?? null;
     }
+
+    public bool IsExistsById(int id) => _repo.IsExistsById(id);
 
     public void Add(Domain domain)
     {
@@ -29,9 +32,10 @@ public class DomainService(IDomainRepository repo, IHttpClientFabric fabric) : I
 
     public void Update(int id, Domain domain)
     {
-        var existingDomain = GetById(id);
-        if (existingDomain != null)
-            _repo.Update(existingDomain);
+        if (!IsExistsById(domain.Id))
+            return;
+        
+        _repo.Update(domain);
     }
 
     private void UpdateDomainAvailability(Domain domain, bool status)
@@ -41,12 +45,12 @@ public class DomainService(IDomainRepository repo, IHttpClientFabric fabric) : I
             return;
         
         existingDomain.IsAvailable = status;
-        Update(domain.Id, existingDomain);
+        Update(existingDomain.Id, existingDomain);
     }
 
     public async Task<bool> CheckHealthAsync(int id)
     {
-        var domain = _repo.Get(id);
+        var domain = _repo.GetById(id);
         if (domain == null)
             return false;
 
