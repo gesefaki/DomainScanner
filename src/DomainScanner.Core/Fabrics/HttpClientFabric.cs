@@ -19,6 +19,7 @@ public class HttpClientFabric : IHttpClientFabric
         {
             AllowAutoRedirect = _options.AllowAutoRedirect,
             MaxConnectionsPerServer = _options.MaxConnectionsPerServer,
+            
         };
 
         var client = new HttpClient(handler)

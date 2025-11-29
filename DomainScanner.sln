@@ -9,13 +9,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomainScanner.Api", "src\Do
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomainScanner.Infrastructure", "src\DomainScanner.Infrastructure\DomainScanner.Infrastructure.csproj", "{75DD84DB-279A-4927-BCDE-90AC0665BE6C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomainScanner.Core", "src\DomainScanner.Core\DomainScanner.Core.csproj", "{A81269B1-0ACE-4044-BDF2-936E932F251E}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{0AB3BF05-4346-4AA6-1389-037BE0695223}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomainScanner.Api.Tests", "tests\DomainScanner.Api.Tests\DomainScanner.Api.Tests.csproj", "{3AFE9CA3-1655-4478-9F19-C1FE0293E562}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomainScanner.Infrastructure.Tests", "tests\DomainScanner.Infrastructure.Tests\DomainScanner.Infrastructure.Tests.csproj", "{995FA062-8DDD-45C0-8152-B2C945477BE0}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomainScanner.Core", "src\DomainScanner.Core\DomainScanner.Core.csproj", "{A81269B1-0ACE-4044-BDF2-936E932F251E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
