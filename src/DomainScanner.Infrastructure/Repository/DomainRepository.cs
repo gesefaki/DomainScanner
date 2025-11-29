@@ -1,4 +1,5 @@
-using DomainScanner.Infrastructure.Models;
+using DomainScanner.Core.Models;
+using DomainScanner.Core.Interfaces;
 using DomainScanner.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,13 +11,16 @@ public class DomainRepository(ScannerDbContext db) : IDomainRepository
 
     public List<Domain> GetAll() => [.. _db.Domains.AsNoTracking()];
 
-    public Domain? Get(int id)
+    public Domain? GetById(int id)
     {
         var domain = _db.Domains.FirstOrDefault(d => d.Id == id);
-        if (domain is not null)
-            return domain;
+        return domain ?? null;
+    }
 
-        return null;
+    public bool IsExistsById(int id)
+    {
+        var domain = _db.Domains.AsNoTracking().FirstOrDefault(d => d.Id == id);
+        return domain != null;
     }
 
     public void Add(Domain domain)
@@ -33,11 +37,9 @@ public class DomainRepository(ScannerDbContext db) : IDomainRepository
 
     public void Remove(int id)
     {
-        var domain = Get(id);
-        if (domain is not null)
-        {
-            _db.Domains.Remove(domain);
-            _db.SaveChanges();
-        }
+        var domain = GetById(id);
+        if (domain is null) return;
+        _db.Domains.Remove(domain);
+        _db.SaveChanges();
     }
 }
