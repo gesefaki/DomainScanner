@@ -77,7 +77,7 @@ public class DomainService(IDomainRepository repo, IHttpClientFabric fabric) : I
 
             while (isRedirected || redirectionsCount < maxRedirections)
             {
-                //TODO #6: Fix the error with non-absolute path
+                //TODO #6: Fix the error with non-absolute uri
                 var location = response.Headers.Location;
                 if (location == null) break;
                 
