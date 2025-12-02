@@ -121,6 +121,7 @@ public class DomainService(IDomainRepository repo, IHttpClientFabric fabric) : I
 
             return result;
         }
+        //TODO: Can we return DTO only with error messages?
         catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException)
         {
             return new DomainHealth
