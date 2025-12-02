@@ -60,22 +60,22 @@ public class DomainService(IDomainRepository repo, IHttpClientFabric fabric) : I
             return null;
         
         var (http, tls) = _fabric.CreateHttpClientNoRedirect();
-        
+
         try
         {
             var stopwatch = Stopwatch.StartNew(); // Starting timer for get response time
             var response = await http.GetAsync(domain.Name); // Get HTTP response
             stopwatch.Stop(); // Get response time
             var scheme = response.RequestMessage!.RequestUri!.Scheme;
-            
-             
+
+
             var redirections = new List<string> { domain.Name };
             var redirectionsCount = 0;
             const int maxRedirections = 10;
             var isRedirected = ((int)response.StatusCode >= 300 && (int)response.StatusCode < 400);
 
             while (isRedirected || redirectionsCount < maxRedirections)
-            { 
+            {
                 var location = response.Headers.Location;
                 if (location is null) break;
 
@@ -84,7 +84,7 @@ public class DomainService(IDomainRepository repo, IHttpClientFabric fabric) : I
                     var baseAddress = new Uri(location.AbsoluteUri);
                     location = baseAddress;
                 }
-                
+
                 redirections.Add(location.ToString());
                 response = await http.GetAsync(location);
                 redirectionsCount++;
@@ -118,12 +118,28 @@ public class DomainService(IDomainRepository repo, IHttpClientFabric fabric) : I
                 TlsIssuer = tls.ServerCertificate?.Issuer,
                 TlsThumbprint = tls.ServerCertificate?.Thumbprint
             };
-                
+
             return result;
         }
-        catch (Exception ex)
+        catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException)
         {
-            return null;
+            return new DomainHealth
+            {
+                IsSuccess = false,
+                StatusCode = 504
+            };
+        }
+        catch (TaskCanceledException ex) when (ex.CancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (HttpRequestException ex)
+        {
+            return new DomainHealth()
+            {
+                IsSuccess = false,
+                StatusCode = 500
+            };
         }
     }
 
@@ -141,10 +157,14 @@ public class DomainService(IDomainRepository repo, IHttpClientFabric fabric) : I
             status = response.IsSuccessStatusCode;
             return status;
         }
-        catch
+        catch (Exception ex) when (ex is TaskCanceledException or HttpRequestException)
         {
             status = false;
             return false;
+        }
+        catch (TaskCanceledException ex) when (ex.CancellationToken.IsCancellationRequested)
+        {
+            throw;
         }
         finally
         {
