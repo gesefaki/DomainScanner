@@ -46,7 +46,7 @@ public class DomainService(IDomainRepository repo, IHttpClientFabric fabric) : I
     private async Task UpdateDomainAvailability(Domain domain, bool status)
     {
         var existingDomain = await GetByIdAsync(domain.Id);
-        if (existingDomain == null)
+        if (existingDomain is null)
             return;
         
         existingDomain.IsAvailable = status;
@@ -56,7 +56,7 @@ public class DomainService(IDomainRepository repo, IHttpClientFabric fabric) : I
     public async Task<DomainHealth?> GetHealthAsync(int id)
     {
         var domain = await _repo.GetByIdAsync(id);
-        if (domain == null)
+        if (domain is null)
             return null;
         
         var (http, tls) = _fabric.CreateHttpClientNoRedirect();
@@ -65,60 +65,61 @@ public class DomainService(IDomainRepository repo, IHttpClientFabric fabric) : I
         {
             var stopwatch = Stopwatch.StartNew(); // Starting timer for get response time
             var response = await http.GetAsync(domain.Name); // Get HTTP response
-            var scheme = response.RequestMessage!.RequestUri!.Scheme;
             stopwatch.Stop(); // Get response time
+            var scheme = response.RequestMessage!.RequestUri!.Scheme;
             
              
             var redirections = new List<string> { domain.Name };
             var redirectionsCount = 0;
             const int maxRedirections = 10;
-            
             var isRedirected = ((int)response.StatusCode >= 300 && (int)response.StatusCode < 400);
 
             while (isRedirected || redirectionsCount < maxRedirections)
-            {
-                //TODO #6: Fix the error with non absolute uri
+            { 
                 var location = response.Headers.Location;
-                if (location == null) break;
+                if (location is null) break;
+
+                if (!location.IsAbsoluteUri)
+                {
+                    var baseAddress = new Uri(location.AbsoluteUri);
+                    location = baseAddress;
+                }
                 
                 redirections.Add(location.ToString());
                 response = await http.GetAsync(location);
                 redirectionsCount++;
             }
-            
-            lock (_lock)
+
+            // Sending the object
+            var result = new DomainHealth
             {
-                // Sending the object
-                var result = new DomainHealth()
-                {
-                    // Main
-                    IsSuccess = response.IsSuccessStatusCode,
-                    StatusCode = (int)response.StatusCode,
-                    ResponseTime = stopwatch.ElapsedMilliseconds,
-                    
-                    // Content
-                    ContentType = response.Content.Headers.ContentType!.ToString(),
-                    ContentLength = (long)response.Content.Headers.ContentLength!,
-                    Server = response.Headers.Server?.ToString(),
-                    Headers = response.Content.Headers?.ToDictionary
-                        (x => x.Key,
-                        x => string.Join(",", x.Value)),
-                    
-                    // Redirects
-                    HasRedirects = isRedirected,
-                    RedirectsCount = redirections.Count,
-                    Redirects = redirections,
-                    
-                    // TLS (Only HTTPS)
-                    IsHttps = scheme == Uri.UriSchemeHttps,
-                    TlsValid = tls.SslPolicyErrors == SslPolicyErrors.None,
-                    TlsCertificate = tls.ServerCertificate?.Version.ToString(),
-                    TlsIssuer = tls.ServerCertificate?.Issuer,
-                    TlsThumbprint = tls.ServerCertificate?.Thumbprint,
-                };
-                return result;
-            }
-            
+                // Main
+                IsSuccess = response.IsSuccessStatusCode,
+                StatusCode = (int)response.StatusCode,
+                ResponseTime = stopwatch.ElapsedMilliseconds,
+
+                // Content
+                ContentType = response.Content.Headers.ContentType!.ToString(),
+                ContentLength = (long)response.Content.Headers.ContentLength!,
+                Server = response.Headers.Server?.ToString(),
+                Headers = response.Content.Headers?.ToDictionary
+                (x => x.Key,
+                    x => string.Join(",", x.Value)),
+
+                // Redirects
+                HasRedirects = isRedirected,
+                RedirectsCount = redirections.Count,
+                Redirects = redirections,
+
+                // TLS (Only HTTPS)
+                IsHttps = scheme == Uri.UriSchemeHttps,
+                TlsValid = tls.SslPolicyErrors == SslPolicyErrors.None,
+                TlsCertificate = tls.ServerCertificate?.Version.ToString(),
+                TlsIssuer = tls.ServerCertificate?.Issuer,
+                TlsThumbprint = tls.ServerCertificate?.Thumbprint
+            };
+                
+            return result;
         }
         catch (Exception ex)
         {
@@ -136,7 +137,7 @@ public class DomainService(IDomainRepository repo, IHttpClientFabric fabric) : I
         var status = false;
         try
         {
-            var response = await http.GetAsync(domain.Name).ConfigureAwait(false);
+            var response = await http.GetAsync(domain.Name);
             status = response.IsSuccessStatusCode;
             return status;
         }
