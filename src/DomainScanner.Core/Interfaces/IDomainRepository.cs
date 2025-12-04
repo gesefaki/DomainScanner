@@ -4,7 +4,7 @@ namespace DomainScanner.Core.Interfaces;
 
 public interface IDomainRepository
 {
-    public Task<List<Domain>> GetAllAsync();
+    public Task<IEnumerable<Domain>> GetAllAsync();
     public Task<Domain?> GetByIdAsync(int id);
     public Task<bool> IsExistsByIdAsync(int id);
     public Task AddAsync(Domain domain);

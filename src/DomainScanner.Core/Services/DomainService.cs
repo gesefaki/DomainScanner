@@ -9,7 +9,6 @@ public class DomainService(IDomainRepository repo, IHttpClientFabric fabric) : I
 {
     private readonly IDomainRepository _repo = repo;
     private readonly IHttpClientFabric _fabric = fabric;
-    private readonly Lock _lock = new Lock();
 
     public async Task<IEnumerable<Domain>> GetAllAsync()
     {
@@ -42,18 +41,9 @@ public class DomainService(IDomainRepository repo, IHttpClientFabric fabric) : I
         
         await _repo.UpdateAsync(domain);
     }
-
-    private async Task UpdateDomainAvailability(Domain domain, bool status)
-    {
-        var existingDomain = await GetByIdAsync(domain.Id);
-        if (existingDomain is null)
-            return;
-        
-        existingDomain.IsAvailable = status;
-        await UpdateAsync(existingDomain.Id, existingDomain);
-    }
     
-    public async Task<DomainHealth?> GetHealthAsync(int id)
+    
+    public async Task<DomainHealth?> GetHealthAsync(int id, CancellationTokenRegistration ctr = default)
     {
         var domain = await _repo.GetByIdAsync(id);
         if (domain is null)
@@ -74,7 +64,7 @@ public class DomainService(IDomainRepository repo, IHttpClientFabric fabric) : I
             const int maxRedirections = 10;
             var isRedirected = ((int)response.StatusCode >= 300 && (int)response.StatusCode < 400);
 
-            while (isRedirected || redirectionsCount < maxRedirections)
+            while (isRedirected && redirectionsCount < maxRedirections)
             {
                 var location = response.Headers.Location;
                 if (location is null) break;
@@ -144,24 +134,33 @@ public class DomainService(IDomainRepository repo, IHttpClientFabric fabric) : I
         }
     }
 
-    public async Task<bool> CheckHealthAsync(int id)
+    public async Task<Domain?> UpdateHealthAsync(int id, CancellationTokenRegistration ctr = default)
     {
         var domain = await _repo.GetByIdAsync(id);
-        if (domain == null)
-            return false;
+        if (domain == null) return null;
 
         var http = _fabric.CreateHttpClient();
-        var status = false;
+        bool status;
         try
         {
             var response = await http.GetAsync(domain.Name);
             status = response.IsSuccessStatusCode;
-            return status;
+            return new Domain()
+            {
+                Id = domain.Id,
+                Name = domain.Name,
+                IsAvailable = status
+            };
         }
         catch (Exception ex) when (ex is TaskCanceledException or HttpRequestException)
         {
             status = false;
-            return false;
+            return new Domain()
+            {
+                Id = domain.Id,
+                Name = domain.Name,
+                IsAvailable = status
+            };
         }
         catch (TaskCanceledException ex) when (ex.CancellationToken.IsCancellationRequested)
         {
@@ -169,7 +168,7 @@ public class DomainService(IDomainRepository repo, IHttpClientFabric fabric) : I
         }
         finally
         {
-            await UpdateDomainAvailability(domain, status);
+            await UpdateAsync(id, domain);
         }
 
     }

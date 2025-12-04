@@ -10,6 +10,6 @@ public interface IDomainService
     public Task AddAsync(Domain domain);
     public Task RemoveAsync(int id);
     public Task UpdateAsync(int id, Domain domain);
-    public Task<bool> CheckHealthAsync(int id);
-    public Task<DomainHealth?> GetHealthAsync(int id);
+    public Task<Domain?> UpdateHealthAsync(int id, CancellationTokenRegistration ctr = default);
+    public Task<DomainHealth?> GetHealthAsync(int id, CancellationTokenRegistration ctr = default);
 }
