@@ -33,13 +33,15 @@ public class DomainController(IDomainService domainService) : ControllerBase
 
     // Проверка состояния домена
     [HttpGet("{id:int}/health")]
-    public async Task<ActionResult<bool>> CheckHealthAsync(int id)
+    public async Task<ActionResult<ResponseDomainDto?>> CheckHealthAsync(int id)
     {
         var domain = await _service.GetByIdAsync(id);
         if (domain == null)
             return NotFound();
+
+        var result = await _service.UpdateHealthAsync(id);
+        result!.ToResponse();
         
-        var result = await _service.CheckHealthAsync(id);
         return Ok(result);
     }
 
