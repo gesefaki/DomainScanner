@@ -17,7 +17,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomainScanner.Infrastructur
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomainScanner.Core", "src\DomainScanner.Core\DomainScanner.Core.csproj", "{A81269B1-0ACE-4044-BDF2-936E932F251E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomainScanner.Core.UnitTests", "DomainScanner.Core.UnitTests\DomainScanner.Core.UnitTests.csproj", "{BF9847E8-A284-4C3D-A79E-5FCD76D9B003}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomainScanner.Core.UnitTests", "tests\DomainScanner.Core.UnitTests\DomainScanner.Core.UnitTests.csproj", "{BF9847E8-A284-4C3D-A79E-5FCD76D9B003}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
