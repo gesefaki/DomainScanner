@@ -43,7 +43,7 @@ public class DomainService(IDomainRepository repo, IHttpClientFabric fabric) : I
     }
     
     
-    public async Task<DomainHealth?> GetHealthAsync(int id, CancellationTokenRegistration ctr = default)
+    public async Task<DomainHealth?> GetHealthAsync(int id, CancellationToken ct = default)
     {
         var domain = await _repo.GetByIdAsync(id);
         if (domain is null)
@@ -54,9 +54,9 @@ public class DomainService(IDomainRepository repo, IHttpClientFabric fabric) : I
         try
         {
             var stopwatch = Stopwatch.StartNew(); // Starting timer for get response time
-            var response = await http.GetAsync(domain.Name); // Get HTTP response
+            var response = await http.GetAsync(domain.Name, ct); // Get HTTP response
             stopwatch.Stop(); // Get response time
-            var scheme = response.RequestMessage!.RequestUri!.Scheme;
+            var scheme = response.RequestMessage?.RequestUri?.Scheme;
 
 
             var redirections = new List<string> { domain.Name };
@@ -76,7 +76,7 @@ public class DomainService(IDomainRepository repo, IHttpClientFabric fabric) : I
                 }
 
                 redirections.Add(location.ToString());
-                response = await http.GetAsync(location);
+                response = await http.GetAsync(location, ct);
                 redirectionsCount++;
             }
 
@@ -134,7 +134,7 @@ public class DomainService(IDomainRepository repo, IHttpClientFabric fabric) : I
         }
     }
 
-    public async Task<Domain?> UpdateHealthAsync(int id, CancellationTokenRegistration ctr = default)
+    public async Task<Domain?> UpdateHealthAsync(int id, CancellationToken ct = default)
     {
         var domain = await _repo.GetByIdAsync(id);
         if (domain == null) return null;
@@ -143,33 +143,26 @@ public class DomainService(IDomainRepository repo, IHttpClientFabric fabric) : I
         bool status;
         try
         {
-            var response = await http.GetAsync(domain.Name);
+            var response = await http.GetAsync(domain.Name, ct);
             status = response.IsSuccessStatusCode;
-            return new Domain()
-            {
-                Id = domain.Id,
-                Name = domain.Name,
-                IsAvailable = status
-            };
         }
         catch (Exception ex) when (ex is TaskCanceledException or HttpRequestException)
         {
             status = false;
-            return new Domain()
-            {
-                Id = domain.Id,
-                Name = domain.Name,
-                IsAvailable = status
-            };
         }
         catch (TaskCanceledException ex) when (ex.CancellationToken.IsCancellationRequested)
         {
             throw;
         }
-        finally
-        {
-            await UpdateAsync(id, domain);
-        }
+        
+        domain.IsAvailable = status;
+        await _repo.UpdateAsync(domain);
 
+        return new Domain()
+        {
+            Id = domain.Id,
+            Name = domain.Name,
+            IsAvailable = status,
+        };
     }
 }

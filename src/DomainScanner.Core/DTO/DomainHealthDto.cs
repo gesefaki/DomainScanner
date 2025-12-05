@@ -1,4 +1,6 @@
-﻿namespace DomainScanner.Core.DTO;
+﻿using DomainScanner.Core.Models;
+
+namespace DomainScanner.Core.DTO;
 
 public class DomainHealthDto
 {

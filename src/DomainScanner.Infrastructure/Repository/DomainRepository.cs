@@ -9,7 +9,12 @@ public class DomainRepository(ScannerDbContext db) : IDomainRepository
 {
     private readonly ScannerDbContext _db = db;
 
-    public async Task<IEnumerable<Domain>> GetAllAsync() => await _db.Domains.AsNoTracking().ToListAsync();
+    public async Task<IEnumerable<Domain>> GetAllAsync()
+    {
+        var domains = await _db.Domains.AsNoTracking().ToListAsync();
+        return domains
+            .OrderBy(d => d.Id);
+    }
 
     public async Task<Domain?> GetByIdAsync(int id)
     {
