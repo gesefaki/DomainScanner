@@ -1,11 +1,9 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
 using DomainScanner.Core.Models;
 using DomainScanner.Core.Interfaces;
 using DomainScanner.Core.Services;
-using Xunit;
 using FluentAssertions;
 using Moq;
 using Moq.Protected;
