@@ -22,7 +22,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\src\DomainScanner.Core\DomainScanner.Core.csproj" />
-      <ProjectReference Include="..\src\DomainScanner.Core\DomainScanner.Core.csproj" />
     </ItemGroup>
 
 </Project>
