@@ -11,7 +11,7 @@ public class CreateUserCommandHandler(IUsersRepository usersRepository, IUnitOfW
     
     public async Task<Guid> Handle(CreateUserCommand request, CancellationToken cancellationToken)
     {
-        await _usersRepository.CreateUserAsync(request.User, cancellationToken);
+        await _usersRepository.CreateAsync(request.User, cancellationToken);
         await  _uof.SaveChangesAsync(cancellationToken);
         return request.User.Id;
     }

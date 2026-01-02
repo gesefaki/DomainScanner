@@ -21,7 +21,7 @@ public class ActivateUserCommandHandler(IUsersRepository usersRepository, IUnitO
             throw new UnableToExecuteException(nameof(user), request.Id, user.IsActive);
 
         user.IsActive = true;
-        _usersRepository.UpdateUser(user);
+        _usersRepository.Update(user);
         await _uof.SaveChangesAsync(cancellationToken);
         
         return user.Id;

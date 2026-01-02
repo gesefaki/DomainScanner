@@ -11,14 +11,40 @@
           "DomainScanner.Application": "1.0.0",
           "DomainScanner.Domain": "1.0.0",
           "DomainScanner.Infrastructure": "1.0.0",
+          "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "9.0.11",
           "Microsoft.AspNetCore.OpenApi": "9.0.10",
           "Microsoft.EntityFrameworkCore": "9.0.11",
           "Microsoft.EntityFrameworkCore.Relational": "9.0.11",
+          "Newtonsoft.Json": "13.0.4",
           "Swashbuckle.AspNetCore.SwaggerGen": "9.0.6",
           "Swashbuckle.AspNetCore.SwaggerUI": "9.0.6"
         },
         "runtime": {
           "DomainScanner.Api.dll": {}
+        }
+      },
+      "Microsoft.AspNetCore.JsonPatch/9.0.11": {
+        "dependencies": {
+          "Newtonsoft.Json": "13.0.4"
+        },
+        "runtime": {
+          "lib/net9.0/Microsoft.AspNetCore.JsonPatch.dll": {
+            "assemblyVersion": "9.0.11.0",
+            "fileVersion": "9.0.1125.52006"
+          }
+        }
+      },
+      "Microsoft.AspNetCore.Mvc.NewtonsoftJson/9.0.11": {
+        "dependencies": {
+          "Microsoft.AspNetCore.JsonPatch": "9.0.11",
+          "Newtonsoft.Json": "13.0.4",
+          "Newtonsoft.Json.Bson": "1.0.2"
+        },
+        "runtime": {
+          "lib/net9.0/Microsoft.AspNetCore.Mvc.NewtonsoftJson.dll": {
+            "assemblyVersion": "9.0.11.0",
+            "fileVersion": "9.0.1125.52006"
+          }
         }
       },
       "Microsoft.AspNetCore.OpenApi/9.0.10": {
@@ -35,7 +61,6 @@
       "Microsoft.EntityFrameworkCore/9.0.11": {
         "dependencies": {
           "Microsoft.EntityFrameworkCore.Abstractions": "9.0.11",
-          "Microsoft.EntityFrameworkCore.Analyzers": "9.0.11",
           "Microsoft.Extensions.Caching.Memory": "9.0.11",
           "Microsoft.Extensions.Logging": "9.0.11"
         },
@@ -54,7 +79,6 @@
           }
         }
       },
-      "Microsoft.EntityFrameworkCore.Analyzers/9.0.11": {},
       "Microsoft.EntityFrameworkCore.Relational/9.0.11": {
         "dependencies": {
           "Microsoft.EntityFrameworkCore": "9.0.11",
@@ -189,6 +213,25 @@
           }
         }
       },
+      "Newtonsoft.Json/13.0.4": {
+        "runtime": {
+          "lib/net6.0/Newtonsoft.Json.dll": {
+            "assemblyVersion": "13.0.0.0",
+            "fileVersion": "13.0.4.30916"
+          }
+        }
+      },
+      "Newtonsoft.Json.Bson/1.0.2": {
+        "dependencies": {
+          "Newtonsoft.Json": "13.0.4"
+        },
+        "runtime": {
+          "lib/netstandard2.0/Newtonsoft.Json.Bson.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.2.22727"
+          }
+        }
+      },
       "Npgsql/9.0.3": {
         "dependencies": {
           "Microsoft.Extensions.Logging.Abstractions": "9.0.11"
@@ -222,14 +265,6 @@
           "lib/net8.0/Scrutor.dll": {
             "assemblyVersion": "7.0.0.0",
             "fileVersion": "7.0.0.0"
-          }
-        }
-      },
-      "Serilog/4.3.0": {
-        "runtime": {
-          "lib/net9.0/Serilog.dll": {
-            "assemblyVersion": "4.3.0.0",
-            "fileVersion": "4.3.0.0"
           }
         }
       },
@@ -308,9 +343,8 @@
       "DomainScanner.Application/1.0.0": {
         "dependencies": {
           "DomainScanner.Domain": "1.0.0",
-          "Microsoft.Extensions.Logging.Abstractions": "9.0.11",
-          "Scrutor": "7.0.0",
-          "Serilog": "4.3.0"
+          "Microsoft.EntityFrameworkCore": "9.0.11",
+          "Scrutor": "7.0.0"
         },
         "runtime": {
           "DomainScanner.Application.dll": {
@@ -349,6 +383,20 @@
       "serviceable": false,
       "sha512": ""
     },
+    "Microsoft.AspNetCore.JsonPatch/9.0.11": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Q+A8LiyaUBurFMSdAzKTpT8jEa9Sc8EsNK0sJEA6glRP4vVl7OGXLV07bfDhcVlFU2hUkn+6Ofmw7HQ0cJ1n1g==",
+      "path": "microsoft.aspnetcore.jsonpatch/9.0.11",
+      "hashPath": "microsoft.aspnetcore.jsonpatch.9.0.11.nupkg.sha512"
+    },
+    "Microsoft.AspNetCore.Mvc.NewtonsoftJson/9.0.11": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-xbpMq5ptjbTivpGz76NQ80Z3Oy204ndTJGoUdQB+vF0DOoii/loz1gr/q2KdFdloAFXju0v4lTiWEhGcIKmtyQ==",
+      "path": "microsoft.aspnetcore.mvc.newtonsoftjson/9.0.11",
+      "hashPath": "microsoft.aspnetcore.mvc.newtonsoftjson.9.0.11.nupkg.sha512"
+    },
     "Microsoft.AspNetCore.OpenApi/9.0.10": {
       "type": "package",
       "serviceable": true,
@@ -369,13 +417,6 @@
       "sha512": "sha512-MHcdHm7vF71MfqYC68Jx9YfDAjxcuClGBZJk5zcJDRhVO4HgX+QFsOqcAisKWb20aBeF0IN1YkSktnEUf/tmLQ==",
       "path": "microsoft.entityframeworkcore.abstractions/9.0.11",
       "hashPath": "microsoft.entityframeworkcore.abstractions.9.0.11.nupkg.sha512"
-    },
-    "Microsoft.EntityFrameworkCore.Analyzers/9.0.11": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-ccEk88YkXXWV+s5ZS+27UoY5YUVzgx8mq7kl+e05+AgJPGLhtmpQL26LxqBV1StJZEl2KaL8BxzABvXTXBAkoQ==",
-      "path": "microsoft.entityframeworkcore.analyzers/9.0.11",
-      "hashPath": "microsoft.entityframeworkcore.analyzers.9.0.11.nupkg.sha512"
     },
     "Microsoft.EntityFrameworkCore.Relational/9.0.11": {
       "type": "package",
@@ -461,6 +502,20 @@
       "path": "microsoft.openapi/1.6.25",
       "hashPath": "microsoft.openapi.1.6.25.nupkg.sha512"
     },
+    "Newtonsoft.Json/13.0.4": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-pdgNNMai3zv51W5aq268sujXUyx7SNdE2bj1wZcWjAQrKMFZV260lbqYop1d2GM67JI1huLRwxo9ZqnfF/lC6A==",
+      "path": "newtonsoft.json/13.0.4",
+      "hashPath": "newtonsoft.json.13.0.4.nupkg.sha512"
+    },
+    "Newtonsoft.Json.Bson/1.0.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-QYFyxhaABwmq3p/21VrZNYvCg3DaEoN/wUuw5nmfAf0X3HLjgupwhkEWdgfb9nvGAUIv3osmZoD3kKl4jxEmYQ==",
+      "path": "newtonsoft.json.bson/1.0.2",
+      "hashPath": "newtonsoft.json.bson.1.0.2.nupkg.sha512"
+    },
     "Npgsql/9.0.3": {
       "type": "package",
       "serviceable": true,
@@ -481,13 +536,6 @@
       "sha512": "sha512-wHWaroody48jnlLoq/REwUltIFLxplXyHTP+sttrc8P7+jkiVqf38afDidJNv4qgD/6zz2NKOYg06xLZ1bG7wQ==",
       "path": "scrutor/7.0.0",
       "hashPath": "scrutor.7.0.0.nupkg.sha512"
-    },
-    "Serilog/4.3.0": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-+cDryFR0GRhsGOnZSKwaDzRRl4MupvJ42FhCE4zhQRVanX0Jpg6WuCBk59OVhVDPmab1bB+nRykAnykYELA9qQ==",
-      "path": "serilog/4.3.0",
-      "hashPath": "serilog.4.3.0.nupkg.sha512"
     },
     "Swashbuckle.AspNetCore.Swagger/9.0.6": {
       "type": "package",

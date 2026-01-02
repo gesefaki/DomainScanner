@@ -14,7 +14,7 @@ public class DeleteDomainCommandHandler(IDomainsRepository domainsRepository, IU
     public async Task<Guid> Handle(DeleteDomainCommand request, CancellationToken ct)
     {
         var domain = await _domainsRepository.GetByIdAsync(request.Id, ct);
-        if(domain == null)
+        if(domain is null)
             throw new DomainNotFoundException(nameof(DomainEntity), request.Id);
         
         _domainsRepository.Delete(domain);

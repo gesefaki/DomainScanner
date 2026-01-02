@@ -10,7 +10,8 @@ public static class DomainsMapper
         return new DomainResponseDto(
             domain.Id,
             domain.Address,
-            domain.IsAvailable
+            domain.IsAvailable,
+            domain.UserId
         );
     }
     public static DomainEntity CreateDomainDtoToUser(CreateDomainDto dto)

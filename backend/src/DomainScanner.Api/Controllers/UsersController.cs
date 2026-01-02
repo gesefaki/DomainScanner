@@ -24,7 +24,7 @@ public class UsersController : Controller
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<UserResponseDto>>> GetAllUsers(CancellationToken cancellationToken = default)
+    public async Task<ActionResult<IEnumerable<UserResponseDto>>> GetAll(CancellationToken cancellationToken = default)
     {
         var query = new GetAllUsersQuery();
         var users = await _mediator.Send(query, cancellationToken);
@@ -33,7 +33,7 @@ public class UsersController : Controller
     }
 
     [HttpGet("{id::guid}")]
-    public async Task<ActionResult<UserResponseDto>> GetUser(Guid id,
+    public async Task<ActionResult<UserResponseDto>> Get(Guid id,
         CancellationToken cancellationToken = default)
     {
         var query = new GetUserByIdQuery(id);
@@ -47,17 +47,17 @@ public class UsersController : Controller
     }
 
     [HttpPost("create")]
-    public async Task<ActionResult<User>> CreateUser([FromBody]CreateUserDto request,
+    public async Task<ActionResult<User>> Create([FromBody]CreateUserDto request,
         CancellationToken cancellationToken = default)
     {
        var user = UsersMapper.CreateUserDtoToUser(request);
        var cmd = new CreateUserCommand(user);
        await _mediator.Send(cmd, cancellationToken);
-       return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
+       return CreatedAtAction(nameof(Get), new { id = user.Id }, user);
     }
 
     [HttpPatch("activate/{id::guid}")]
-    public async Task<ActionResult> ActivateUser(Guid id, CancellationToken cancellationToken = default)
+    public async Task<ActionResult> Activate(Guid id, CancellationToken cancellationToken = default)
     {
         var user = await _mediator.Send(new GetUserByIdQuery(id), cancellationToken);
         if (user is null)
@@ -68,11 +68,11 @@ public class UsersController : Controller
 
         var cmd = new ActivateUserCommand(user.Id);
         await _mediator.Send(cmd, cancellationToken);
-        return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
+        return CreatedAtAction(nameof(Get), new { id = user.Id }, user);
     }
     
     [HttpPatch("deactivate/{id::guid}")]
-    public async Task<ActionResult> DeactivateUser(Guid id, CancellationToken cancellationToken = default)
+    public async Task<ActionResult> Deactivate(Guid id, CancellationToken cancellationToken = default)
     {
         var user = await _mediator.Send(new GetUserByIdQuery(id), cancellationToken);
         if (user is null)
@@ -83,11 +83,11 @@ public class UsersController : Controller
             
         var cmd = new DeactivateUserCommand(user.Id);
         await _mediator.Send(cmd, cancellationToken);
-        return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
+        return CreatedAtAction(nameof(Get), new { id = user.Id }, user);
     }
 
     [HttpDelete("delete/{id::guid}")]
-    public async Task<ActionResult> DeleteUser(Guid id, CancellationToken cancellationToken = default)
+    public async Task<ActionResult> Delete(Guid id, CancellationToken cancellationToken = default)
     {
         var user = await _mediator.Send(new GetUserByIdQuery(id), cancellationToken);
         if (user is null)

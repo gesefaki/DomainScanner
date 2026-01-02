@@ -17,7 +17,7 @@ public class DeleteUserCommandHandler(IUsersRepository usersRepository, IUnitOfW
         if (user is null)
             throw new UserNotFoundException(nameof(User), request.Id);
         
-        _usersRepository.DeleteUser(user);
+        _usersRepository.Delete(user);
         await _uof.SaveChangesAsync(cancellationToken);
 
         return user.Id;

@@ -6,7 +6,7 @@ public interface IUsersRepository
 {
     Task<List<User>> GetAllUsersAsync(CancellationToken ct);
     Task<User?> GetUserByIdAsync(Guid id,  CancellationToken ct);
-    Task CreateUserAsync(User user,  CancellationToken ct);
-    void DeleteUser(User user);
-    void UpdateUser(User user);
+    Task CreateAsync(User user,  CancellationToken ct);
+    void Delete(User user);
+    void Update(User user);
 }

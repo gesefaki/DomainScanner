@@ -708,22 +708,6 @@
           }
         }
       },
-      "Serilog/4.3.0": {
-        "type": "package",
-        "compile": {
-          "lib/net9.0/Serilog.dll": {
-            "related": ".xml"
-          }
-        },
-        "runtime": {
-          "lib/net9.0/Serilog.dll": {
-            "related": ".xml"
-          }
-        },
-        "build": {
-          "build/_._": {}
-        }
-      },
       "System.CodeDom/6.0.0": {
         "type": "package",
         "compile": {
@@ -984,9 +968,8 @@
         "framework": ".NETCoreApp,Version=v9.0",
         "dependencies": {
           "DomainScanner.Domain": "1.0.0",
-          "Microsoft.Extensions.Logging.Abstractions": "9.0.11",
-          "Scrutor": "7.0.0",
-          "Serilog": "4.3.0"
+          "Microsoft.EntityFrameworkCore": "9.0.11",
+          "Scrutor": "7.0.0"
         },
         "compile": {
           "bin/placeholder/DomainScanner.Application.dll": {}
@@ -2505,32 +2488,6 @@
         "scrutor.nuspec"
       ]
     },
-    "Serilog/4.3.0": {
-      "sha512": "+cDryFR0GRhsGOnZSKwaDzRRl4MupvJ42FhCE4zhQRVanX0Jpg6WuCBk59OVhVDPmab1bB+nRykAnykYELA9qQ==",
-      "type": "package",
-      "path": "serilog/4.3.0",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "README.md",
-        "build/Serilog.targets",
-        "icon.png",
-        "lib/net462/Serilog.dll",
-        "lib/net462/Serilog.xml",
-        "lib/net471/Serilog.dll",
-        "lib/net471/Serilog.xml",
-        "lib/net6.0/Serilog.dll",
-        "lib/net6.0/Serilog.xml",
-        "lib/net8.0/Serilog.dll",
-        "lib/net8.0/Serilog.xml",
-        "lib/net9.0/Serilog.dll",
-        "lib/net9.0/Serilog.xml",
-        "lib/netstandard2.0/Serilog.dll",
-        "lib/netstandard2.0/Serilog.xml",
-        "serilog.4.3.0.nupkg.sha512",
-        "serilog.nuspec"
-      ]
-    },
     "System.CodeDom/6.0.0": {
       "sha512": "CPc6tWO1LAer3IzfZufDBRL+UZQcj5uS207NHALQzP84Vp/z6wF0Aa0YZImOQY8iStY0A2zI/e3ihKNPfUm8XA==",
       "type": "package",
@@ -2980,43 +2937,35 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\gesefaki\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "C:\\Users\\gesefaki\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\gesefaki\\Desktop\\CSharp\\DomainScanner\\backend\\src\\DomainScanner.Infrastructure\\DomainScanner.Infrastructure.csproj",
+      "projectUniqueName": "C:\\Users\\gesefaki\\RiderProjects\\DomainScanner\\backend\\src\\DomainScanner.Infrastructure\\DomainScanner.Infrastructure.csproj",
       "projectName": "DomainScanner.Infrastructure",
-      "projectPath": "C:\\Users\\gesefaki\\Desktop\\CSharp\\DomainScanner\\backend\\src\\DomainScanner.Infrastructure\\DomainScanner.Infrastructure.csproj",
+      "projectPath": "C:\\Users\\gesefaki\\RiderProjects\\DomainScanner\\backend\\src\\DomainScanner.Infrastructure\\DomainScanner.Infrastructure.csproj",
       "packagesPath": "C:\\Users\\gesefaki\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\gesefaki\\Desktop\\CSharp\\DomainScanner\\backend\\src\\DomainScanner.Infrastructure\\obj\\",
+      "outputPath": "C:\\Users\\gesefaki\\RiderProjects\\DomainScanner\\backend\\src\\DomainScanner.Infrastructure\\obj\\",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-      ],
       "configFilePaths": [
-        "C:\\Users\\gesefaki\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        "C:\\Users\\gesefaki\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net9.0"
       ],
       "sources": {
-        "C:\\NuGetPackages": {},
-        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
-            "C:\\Users\\gesefaki\\Desktop\\CSharp\\DomainScanner\\backend\\src\\DomainScanner.Application\\DomainScanner.Application.csproj": {
-              "projectPath": "C:\\Users\\gesefaki\\Desktop\\CSharp\\DomainScanner\\backend\\src\\DomainScanner.Application\\DomainScanner.Application.csproj"
+            "C:\\Users\\gesefaki\\RiderProjects\\DomainScanner\\backend\\src\\DomainScanner.Application\\DomainScanner.Application.csproj": {
+              "projectPath": "C:\\Users\\gesefaki\\RiderProjects\\DomainScanner\\backend\\src\\DomainScanner.Application\\DomainScanner.Application.csproj"
             },
-            "C:\\Users\\gesefaki\\Desktop\\CSharp\\DomainScanner\\backend\\src\\DomainScanner.Domain\\DomainScanner.Domain.csproj": {
-              "projectPath": "C:\\Users\\gesefaki\\Desktop\\CSharp\\DomainScanner\\backend\\src\\DomainScanner.Domain\\DomainScanner.Domain.csproj"
+            "C:\\Users\\gesefaki\\RiderProjects\\DomainScanner\\backend\\src\\DomainScanner.Domain\\DomainScanner.Domain.csproj": {
+              "projectPath": "C:\\Users\\gesefaki\\RiderProjects\\DomainScanner\\backend\\src\\DomainScanner.Domain\\DomainScanner.Domain.csproj"
             }
           }
         }
@@ -3031,7 +2980,7 @@
         "auditLevel": "low",
         "auditMode": "direct"
       },
-      "SdkAnalysisLevel": "9.0.300"
+      "SdkAnalysisLevel": "10.0.100"
     },
     "frameworks": {
       "net9.0": {
@@ -3068,7 +3017,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.306/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.101/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

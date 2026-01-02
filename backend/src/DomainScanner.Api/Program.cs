@@ -1,10 +1,6 @@
 using DomainScanner.Application.Abstractions.Mediator;
 using DomainScanner.Application.Abstractions.Persistence;
-using DomainScanner.Application.Domains.Commands.CreateDomain;
-using DomainScanner.Application.Domains.Queries.GetAllDomains;
-using DomainScanner.Application.Domains.Queries.GetDomainById;
 using DomainScanner.Application.Extensions;
-using DomainScanner.Domain.Entities;
 using DomainScanner.Infrastructure.Mediator;
 using DomainScanner.Infrastructure.Persistence.Context;
 using DomainScanner.Infrastructure.Persistence.Repositories;
@@ -13,6 +9,11 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+builder.Services.AddControllersWithViews()
+    .AddNewtonsoftJson(options =>
+        options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+    );
+
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<IMediator, Mediator>();

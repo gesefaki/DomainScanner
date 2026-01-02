@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "thwylxUfUFM=",
+  "dgSpecHash": "KAUpePC7qvo=",
   "success": true,
-  "projectFilePath": "C:\\Users\\gesefaki\\Desktop\\CSharp\\DomainScanner\\backend\\src\\DomainScanner.Domain\\DomainScanner.Domain.csproj",
+  "projectFilePath": "C:\\Users\\gesefaki\\RiderProjects\\DomainScanner\\backend\\src\\DomainScanner.Domain\\DomainScanner.Domain.csproj",
   "expectedPackageFiles": [],
   "logs": []
 }

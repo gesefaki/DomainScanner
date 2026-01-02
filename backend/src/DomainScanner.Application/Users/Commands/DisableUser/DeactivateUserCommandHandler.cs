@@ -21,7 +21,7 @@ public class DeactivateUserCommandHandler(IUsersRepository usersRepository, IUni
             throw new UnableToExecuteException(nameof(user), user.Id, user.IsActive);
 
         user.IsActive = false;
-        _usersRepository.UpdateUser(user);
+        _usersRepository.Update(user);
         await _uof.SaveChangesAsync(cancellationToken);
 
         return user.Id;
