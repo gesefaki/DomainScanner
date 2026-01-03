@@ -1,6 +1,6 @@
 ﻿using DomainScanner.Application.Abstractions.Mediator;
 using DomainScanner.Application.Abstractions.Persistence;
-using DomainScanner.Application.Users.Exceptions;
+using DomainScanner.Application.Exceptions;
 using DomainScanner.Domain.Entities;
 
 namespace DomainScanner.Application.Users.Commands.DeleteUser;

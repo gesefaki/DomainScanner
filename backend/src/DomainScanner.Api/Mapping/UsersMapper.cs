@@ -12,8 +12,7 @@ public static class UsersMapper
             user.Username,
             user.Email,
             user.IsActive,
-            user.Domains.ToList(),
-            user.CheckResults.ToList()
+            user.Domains.Select(DomainsMapper.DomainToDomainResponseDto).ToArray()
         );
     }
     
@@ -27,8 +26,7 @@ public static class UsersMapper
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = null,
             IsActive = true,
-            Domains = [],
-            CheckResults = []
+            Domains = []
         };
     }
 }

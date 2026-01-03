@@ -1,9 +1,14 @@
+using System.Net;
+using DomainScanner.Api.Middleware;
 using DomainScanner.Application.Abstractions.Mediator;
 using DomainScanner.Application.Abstractions.Persistence;
+using DomainScanner.Application.Abstractions.Scanners;
 using DomainScanner.Application.Extensions;
 using DomainScanner.Infrastructure.Mediator;
 using DomainScanner.Infrastructure.Persistence.Context;
 using DomainScanner.Infrastructure.Persistence.Repositories;
+using DomainScanner.Infrastructure.Protocols.HttpScanner;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,12 +26,35 @@ builder.Services.AddApplication(); // From Application/Extensions/ServiceCollect
 
 builder.Services.AddScoped<IDomainsRepository, DomainsRepository>();
 builder.Services.AddScoped<IUsersRepository, UsersRepository>();
+builder.Services.AddScoped<IDomainCheckRepository, DomainCheckRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<IHttpScanner, HttpScanner>();
 
 builder.Services.AddDbContext<ScannerDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app =  builder.Build();
+
+app.UseExceptionHandlerMiddleware();
+app.UseExceptionHandler(  
+    options =>  
+    {  
+        options.Run(  
+            async context =>  
+            {  
+                context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;  
+                context.Response.ContentType = "text/html";  
+                var exceptionObject = context.Features.Get<IExceptionHandlerFeature>();  
+                if (null != exceptionObject)  
+                {  
+                    var errorMessage = $"<b>Exception Error: {exceptionObject.Error.Message} </b> {exceptionObject.Error.StackTrace}";  
+                    await context.Response.WriteAsync(errorMessage).ConfigureAwait(false);  
+                }  
+            });  
+    }  
+);  
 
 app.MapControllers();
 app.UseSwagger();

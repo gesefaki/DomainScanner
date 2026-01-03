@@ -43,11 +43,7 @@ public class ScannerDbContext : DbContext
                 .WithOne(d => d.User)
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
-
-            user.HasMany(u => u.CheckResults)
-                .WithOne(c => c.User)
-                .HasForeignKey(c => c.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+            
         });
 
         modelBuilder.Entity<DomainEntity>(domain =>
@@ -93,10 +89,6 @@ public class ScannerDbContext : DbContext
             check.Property(c => c.CreatedAt)
                 .IsRequired();
             
-            check.HasOne(c => c.User)
-                .WithMany(u => u.CheckResults)
-                .HasForeignKey(c => c.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
             
             check.HasOne(c => c.DomainEntity)
                 .WithMany(d => d.CheckResults)

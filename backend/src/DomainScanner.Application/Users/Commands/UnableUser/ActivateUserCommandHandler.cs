@@ -1,6 +1,6 @@
 ﻿using DomainScanner.Application.Abstractions.Mediator;
 using DomainScanner.Application.Abstractions.Persistence;
-using DomainScanner.Application.Users.Exceptions;
+using DomainScanner.Application.Exceptions;
 using DomainScanner.Domain.Entities;
 
 namespace DomainScanner.Application.Users.Commands.UnableUser;
@@ -17,8 +17,8 @@ public class ActivateUserCommandHandler(IUsersRepository usersRepository, IUnitO
         if (user is null)
             throw new UserNotFoundException(nameof(User), request.Id);
 
-        if (user.IsActive is true)
-            throw new UnableToExecuteException(nameof(user), request.Id, user.IsActive);
+        if (user.IsActive)
+            throw new UnableToExecuteException(nameof(user), request.Id, nameof(user.IsActive));
 
         user.IsActive = true;
         _usersRepository.Update(user);

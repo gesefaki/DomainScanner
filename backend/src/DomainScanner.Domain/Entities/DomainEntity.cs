@@ -14,4 +14,21 @@ public class DomainEntity
     public User? User { get; set; } // Navigation Property
     
     public virtual ICollection<DomainCheckResult> CheckResults { get; set; } =  new List<DomainCheckResult>();
+
+    public Uri? AddressToUri()
+    {
+        try
+        {
+            Uri.TryCreate(this.Address, UriKind.Absolute, out var uri);
+            return uri;
+        }
+        catch (UriFormatException)
+        {
+            return null;
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message);
+        }
+    }
 }

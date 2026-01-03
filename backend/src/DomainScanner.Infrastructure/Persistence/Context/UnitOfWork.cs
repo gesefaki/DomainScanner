@@ -21,4 +21,9 @@ public class UnitOfWork : IUnitOfWork
     {
         return await _context.Database.BeginTransactionAsync(cancellationToken);
     }
+
+    public void Attach<T>(T entity) where T : class
+    {
+        _context.Attach(entity);
+    }
 }

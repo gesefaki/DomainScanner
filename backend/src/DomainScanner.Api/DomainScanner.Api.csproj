@@ -22,4 +22,8 @@
       <ProjectReference Include="..\DomainScanner.Infrastructure\DomainScanner.Infrastructure.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="DTOs\DomainCheckResults\" />
+    </ItemGroup>
+
 </Project>

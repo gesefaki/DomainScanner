@@ -1,4 +1,4 @@
-﻿namespace DomainScanner.Application.Users.Exceptions;
+﻿namespace DomainScanner.Application.Exceptions;
 
 public class UserNotFoundException : Exception
 {

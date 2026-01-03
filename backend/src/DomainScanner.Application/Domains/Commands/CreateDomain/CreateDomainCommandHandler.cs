@@ -1,6 +1,6 @@
 ﻿using DomainScanner.Application.Abstractions.Mediator;
 using DomainScanner.Application.Abstractions.Persistence;
-using DomainScanner.Application.Users.Exceptions;
+using DomainScanner.Application.Exceptions;
 
 namespace DomainScanner.Application.Domains.Commands.CreateDomain;
 
@@ -18,27 +18,27 @@ public class CreateDomainCommandHandler(IDomainsRepository domainsRepository, IU
 
         try
         {
-            // 1. Get domain from request
-            var domain = request.Domain;
+                // Get domain from request
+                var domain = request.Domain;
 
-            // 2. Trying to find user (if not - 400)
-            var user = await _usersRepository.GetUserByIdAsync(domain.UserId, ct);
-            if (user is null)
-                throw new BadRequestException(request.Domain.UserId);
+                // Trying to find user (if not - 400)
+                var user = await _usersRepository.GetUserByIdAsync(domain.UserId, ct);
+                if (user is null)
+                    throw new BadRequestException(request.Domain.UserId);
             
-            // 3. Creating domain
-            domain.User = user;
-            await _domainsRepository.CreateAsync(domain, ct);
+                // Creating domain
+                domain.User = user;
+                await _domainsRepository.CreateAsync(domain, ct);
             
-            // 4. Updating user
-            user.Domains.Add(domain);
-            _usersRepository.Update(user);
+                // Updating user
+                user.Domains.Add(domain);
+                _usersRepository.Update(user);
 
-            // 6. Commiting transaction
-            await _unitOfWork.SaveChangesAsync(ct);
-            await transaction.CommitAsync(ct);
+                // Commiting transaction
+                await _unitOfWork.SaveChangesAsync(ct);
+                await transaction.CommitAsync(ct);
             
-            return domain.Id;
+                return domain.Id;
         }
         catch (OperationCanceledException ex)
         {

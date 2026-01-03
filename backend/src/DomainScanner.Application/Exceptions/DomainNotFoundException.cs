@@ -1,4 +1,4 @@
-﻿namespace DomainScanner.Application.Domains.Exceptions;
+﻿namespace DomainScanner.Application.Exceptions;
 
 public sealed class DomainNotFoundException : Exception
 {

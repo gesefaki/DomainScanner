@@ -13,17 +13,24 @@ public class UsersRepository(ScannerDbContext context) : IUsersRepository
     {
         var users = _context.Users
             .Include(u => u.Domains)
-            .Include(u => u.CheckResults)
             .AsSplitQuery();
         
         return await users.ToListAsync(cancellationToken);
     }
-    
+
     public async Task<User?> GetUserByIdAsync(Guid id, CancellationToken cancellationToken)
-        => await _context.Users.FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
+    {
+        var user = await _context.Users
+            .Include(u => u.Domains)
+            .AsSplitQuery()
+            .FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
+
+        return user;
+    }
 
     public async Task CreateAsync(User user, CancellationToken cancellationToken)
         => await _context.Users.AddAsync(user, cancellationToken);
+    
     public void Delete(User user)
         => _context.Users.Remove(user);
 

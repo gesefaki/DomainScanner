@@ -1,6 +1,7 @@
 ﻿using DomainScanner.Api.DTOs.Users;
 using DomainScanner.Api.Mapping;
 using DomainScanner.Application.Abstractions.Mediator;
+using DomainScanner.Application.Exceptions;
 using DomainScanner.Application.Users.Commands.CreateUser;
 using DomainScanner.Application.Users.Commands.DeleteUser;
 using DomainScanner.Application.Users.Commands.DisableUser;
@@ -39,9 +40,9 @@ public class UsersController : Controller
         var query = new GetUserByIdQuery(id);
         
         var user = await _mediator.Send(query, cancellationToken);
-        
-        if(user is null)
-            return NotFound();
+
+        if (user is null)
+            throw new UserNotFoundException(nameof(User), id);
         
         return UsersMapper.UserToResponseUserDto(user);
     }
@@ -61,10 +62,10 @@ public class UsersController : Controller
     {
         var user = await _mediator.Send(new GetUserByIdQuery(id), cancellationToken);
         if (user is null)
-            return NotFound();
+            throw new UserNotFoundException(nameof(User), id);
 
-        if (user.IsActive is true)
-            return Conflict();
+        if (user.IsActive)
+            throw new UnableToExecuteException(nameof(user), user.Id, nameof(user.IsActive));
 
         var cmd = new ActivateUserCommand(user.Id);
         await _mediator.Send(cmd, cancellationToken);
@@ -76,10 +77,10 @@ public class UsersController : Controller
     {
         var user = await _mediator.Send(new GetUserByIdQuery(id), cancellationToken);
         if (user is null)
-            return NotFound();
+            throw new UserNotFoundException(nameof(User), id);
 
-        if (user.IsActive is false)
-            return Conflict();
+        if (!user.IsActive)
+            throw new UnableToExecuteException(nameof(User), user.Id, nameof(user.IsActive));
             
         var cmd = new DeactivateUserCommand(user.Id);
         await _mediator.Send(cmd, cancellationToken);
@@ -91,7 +92,7 @@ public class UsersController : Controller
     {
         var user = await _mediator.Send(new GetUserByIdQuery(id), cancellationToken);
         if (user is null)
-            return NotFound();
+            throw new UserNotFoundException(nameof(User), id);
 
         var cmd = new DeleteUserCommand(user.Id);
         await _mediator.Send(cmd, cancellationToken);

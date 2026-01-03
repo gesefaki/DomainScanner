@@ -1,4 +1,5 @@
-﻿using DomainScanner.Domain.Entities;
+﻿using DomainScanner.Api.DTOs.Domains;
+using DomainScanner.Domain.Entities;
 
 namespace DomainScanner.Api.DTOs.Users;
 
@@ -7,5 +8,4 @@ public record UserResponseDto(
     string Username,
     string Email,
     bool IsActive,
-    List<DomainEntity> Domains,
-    List<DomainCheckResult> CheckResults);
+    DomainResponseDto[] Domains);

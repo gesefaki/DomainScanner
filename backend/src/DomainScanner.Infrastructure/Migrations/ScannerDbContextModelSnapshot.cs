@@ -44,14 +44,9 @@ namespace DomainScanner.Infrastructure.Migrations
                     b.Property<int>("StatusCode")
                         .HasColumnType("integer");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
                     b.HasKey("Id");
 
                     b.HasIndex("DomainId");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("CheckResults");
                 });
@@ -131,15 +126,7 @@ namespace DomainScanner.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("DomainScanner.Domain.Entities.User", "User")
-                        .WithMany("CheckResults")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("DomainEntity");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("DomainScanner.Domain.Entities.DomainEntity", b =>
@@ -160,8 +147,6 @@ namespace DomainScanner.Infrastructure.Migrations
 
             modelBuilder.Entity("DomainScanner.Domain.Entities.User", b =>
                 {
-                    b.Navigation("CheckResults");
-
                     b.Navigation("Domains");
                 });
 #pragma warning restore 612, 618

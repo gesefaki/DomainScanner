@@ -1,6 +1,6 @@
 ﻿using DomainScanner.Application.Abstractions.Mediator;
 using DomainScanner.Application.Abstractions.Persistence;
-using DomainScanner.Application.Domains.Exceptions;
+using DomainScanner.Application.Exceptions;
 using DomainScanner.Domain.Entities;
 
 namespace DomainScanner.Application.Domains.Commands.UpdateDomain;

@@ -1,6 +1,6 @@
 ﻿using DomainScanner.Application.Abstractions.Mediator;
 using DomainScanner.Application.Abstractions.Persistence;
-using DomainScanner.Application.Users.Exceptions;
+using DomainScanner.Application.Exceptions;
 using DomainScanner.Domain.Entities;
 
 namespace DomainScanner.Application.Users.Commands.DisableUser;
@@ -17,8 +17,8 @@ public class DeactivateUserCommandHandler(IUsersRepository usersRepository, IUni
         if (user is null)
             throw new UserNotFoundException(nameof(User), request.Id);
 
-        if (user.IsActive is false)
-            throw new UnableToExecuteException(nameof(user), user.Id, user.IsActive);
+        if (!user.IsActive)
+            throw new UnableToExecuteException(nameof(user), user.Id, nameof(user.IsActive));
 
         user.IsActive = false;
         _usersRepository.Update(user);
