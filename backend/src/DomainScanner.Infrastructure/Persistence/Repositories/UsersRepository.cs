@@ -13,6 +13,7 @@ public class UsersRepository(ScannerDbContext context) : IUsersRepository
     {
         var users = _context.Users
             .Include(u => u.Domains)
+            .ThenInclude(d => d.CheckResults)
             .AsSplitQuery();
         
         return await users.ToListAsync(cancellationToken);
@@ -22,6 +23,7 @@ public class UsersRepository(ScannerDbContext context) : IUsersRepository
     {
         var user = await _context.Users
             .Include(u => u.Domains)
+            .ThenInclude(d => d.CheckResults)
             .AsSplitQuery()
             .FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
 

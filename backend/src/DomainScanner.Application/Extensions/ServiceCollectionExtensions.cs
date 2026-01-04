@@ -11,7 +11,7 @@ public static class ServiceCollectionExtensions
         // Get our assembly
         var assembly = Assembly.GetExecutingAssembly();
         
-        // Automatic handlers registration
+        // Automatic handlers registration from reflection.
         services.Scan(scan => scan
             .FromAssemblies(assembly)
             .AddClasses(classes => classes
@@ -25,6 +25,7 @@ public static class ServiceCollectionExtensions
 
     private static IServiceCollection AddRequestHandlersFromAssembly(this IServiceCollection services, Assembly assembly)
     {
+        // Getting types from assembly
         var handlerTypes = assembly.GetTypes()
             .Where(t => !t.IsAbstract && !t.IsInterface)
             .Where(t => t.GetInterfaces()
@@ -32,6 +33,7 @@ public static class ServiceCollectionExtensions
                           i.GetGenericTypeDefinition() == typeof(IRequestHandler<,>)))
             .ToList();
 
+        // Service registration (Scoped for Mediator)
         foreach (var handlerType in handlerTypes)
         {
             var handlerInterface = handlerType.GetInterfaces()
@@ -44,6 +46,7 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
+    // Interface for using in Program.cs
     public static IServiceCollection AddRequestHandlers(this IServiceCollection services)
     {
         return services.AddRequestHandlersFromAssembly(Assembly.GetExecutingAssembly());

@@ -3,10 +3,10 @@ using DomainScanner.Api.Mapping;
 using DomainScanner.Application.Abstractions.Mediator;
 using DomainScanner.Application.Domains.Commands.CreateDomain;
 using DomainScanner.Application.Domains.Commands.DeleteDomain;
-using DomainScanner.Application.Domains.Commands.HttpSendAndSave;
 using DomainScanner.Application.Domains.Commands.UpdateDomain;
 using DomainScanner.Application.Domains.Queries.GetAllDomains;
 using DomainScanner.Application.Domains.Queries.GetDomainById;
+using DomainScanner.Application.Domains.Queries.GetHttpDetails;
 using DomainScanner.Application.Domains.Queries.GetHttpResponse;
 using DomainScanner.Application.Exceptions;
 using DomainScanner.Domain.Entities;
@@ -49,13 +49,25 @@ public class DomainsController : Controller
     [HttpGet("http/check/{id:guid}")]
     public async Task<ActionResult<DomainResponseDto>> GetHttpCheck(Guid id, CancellationToken ct = default)
     {
-        var domain =  await _mediator.Send(new GetDomainByIdQuery(id), ct);
+        var domain = await _mediator.Send(new GetDomainByIdQuery(id), ct);
         if (domain is null)
-            throw new UserNotFoundException(nameof(User), id);
+            throw new DomainNotFoundException(nameof(User), id);
 
         var query = new GetHttpResponseQuery(domain);
         var response = await _mediator.Send(query, ct);
         return Ok(DomainsMapper.HttpResponseToHttpResponseDto(domain.Address, response));
+    }
+
+    [HttpGet("http/check-with-details/{id:guid}")]
+    public async Task<ActionResult<HttpResponseDetailsDto>> GetHttpCheckWithDetails(Guid id, CancellationToken ct = default)
+    {
+        var domain = await _mediator.Send(new GetDomainByIdQuery(id), ct);
+        if (domain is null)
+            throw new UserNotFoundException(nameof(User), id);
+
+        var query = new GetHttpDetailsQuery(id);
+        var result =  await _mediator.Send(query, ct);
+        return Ok(DomainsMapper.HttpDetailsToDto(result));
     }
 
     [HttpPut("put/{id::guid}")]
@@ -86,18 +98,6 @@ public class DomainsController : Controller
         await _mediator.Send(cmd, ct);
         
         return CreatedAtAction(nameof(Get), new { id = cmd.Domain.Id }, cmd);
-    }
-
-    [HttpPost("http/check-and-save/{id:guid}")]
-    public async Task<ActionResult> SendAndSave(Guid id, CancellationToken ct = default)
-    {
-        var domain = await _mediator.Send(new GetDomainByIdQuery(id), ct);
-        if (domain is null)
-            throw new UserNotFoundException(nameof(User), id);
-
-        var cmd = new HttpSendAndSaveCommand(domain);
-        await _mediator.Send(cmd, ct);
-        return CreatedAtAction(nameof(Get), new { id = cmd.Domain.Id });
     }
 
     [HttpDelete("delete/{id:guid}")]

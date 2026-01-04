@@ -49,5 +49,22 @@ public static class DomainsMapper
             checkResult.IsAvailable,
             checkResult.CreatedAt);
     }
+
+    public static HttpResponseDetailsDto HttpDetailsToDto(HttpResponseDetails details)
+    {
+        return new HttpResponseDetailsDto()
+        {
+            Address = details.Address,
+            StatusCode = details.StatusCode,
+            IsSuccess = details.IsSuccess,
+            ReasonPhrase = details.ReasonPhrase,
+            ContentType = details.ContentType,
+            ContentLength = details.ContentLength,
+            Headers = details.Headers,
+            ErrorMessage = details.ErrorMessage,
+            Version = details.Version,
+            Tls = details.Tls
+        };
+    }
     
 }

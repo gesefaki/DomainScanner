@@ -13,7 +13,7 @@ public class GetHttpResponseQueryHandler(IHttpScanner httpScanner) : IRequestHan
     {
         var uri = request.Domain.AddressToUri();
         if(uri is null)
-            throw new UriValidationError(request.Domain.Address);
+            throw new UriValidationException(request.Domain.Address);
 
         return await _httpScanner.GetHttpResponseAsync(uri, cancellationToken);
     }

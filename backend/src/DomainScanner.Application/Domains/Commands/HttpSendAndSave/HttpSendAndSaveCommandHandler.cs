@@ -3,34 +3,57 @@ using DomainScanner.Application.Abstractions.Persistence;
 using DomainScanner.Application.Abstractions.Scanners;
 using DomainScanner.Application.Exceptions;
 using DomainScanner.Domain.Entities;
+using Microsoft.Extensions.Logging;
 
 namespace DomainScanner.Application.Domains.Commands.HttpSendAndSave;
 
-public class HttpSendAndSaveCommandHandler(IDomainsRepository domainsRepository,
-    IDomainCheckRepository checkRepository,
-    IUnitOfWork uof,
-    IHttpScanner http)
-    : IRequestHandler<HttpSendAndSaveCommand, Guid>
+public class HttpSendAndSaveCommandHandler : IRequestHandler<HttpSendAndSaveCommand, Guid>
 {
-    private readonly IDomainsRepository _domainsRepository = domainsRepository;
-    private readonly IDomainCheckRepository _checkRepository = checkRepository;
-    private readonly IUnitOfWork _uof = uof;
-    private readonly IHttpScanner _http  = http;
-    
-    public async Task<Guid> Handle(HttpSendAndSaveCommand request, CancellationToken cancellationToken)
+    private readonly IDomainsRepository _domainsRepository;
+    private readonly IDomainCheckRepository _checkRepository;
+    private readonly IUnitOfWork _uof;
+    private readonly IHttpScanner _http;
+    private readonly ILogger<HttpSendAndSaveCommandHandler> _logger;
+
+    public HttpSendAndSaveCommandHandler(IDomainsRepository domainsRepository,
+        IDomainCheckRepository checkRepository,
+        IUnitOfWork uof,
+        IHttpScanner http,
+        ILogger<HttpSendAndSaveCommandHandler> logger)
     {
+        _domainsRepository = domainsRepository;
+        _checkRepository = checkRepository;
+        _uof = uof;
+        _http = http;
+        _logger = logger;
+    }
+    
+    public async Task<Guid> Handle(HttpSendAndSaveCommand request, CancellationToken ct)
+    {
+        _logger.LogInformation($"Getting  domain with id {request.Id}...");
+        
         // Getting domain
-        var domain = request.Domain;
-        _uof.Attach(domain);
+        var domain = await _domainsRepository.GetByIdAsync(request.Id, ct);
+        if (domain is null)
+        {
+            _logger.LogWarning($"Domain with id {request.Id} not found");
+            throw new DomainNotFoundException(nameof(DomainEntity),  request.Id);
+        }
+        _logger.LogInformation($"Domain with id {request.Id} was found.");
         
         // Convert address to Uri
         var uri = domain!.AddressToUri();
         if (uri is null)
-            throw new UriValidationError(domain.Address);
-
+        {
+            _logger.LogError($"Address of domain with id {request.Id} is invalid.");
+            throw new UriValidationException(domain.Address);
+        }
+        
         // Getting http response
-        var response = await _http.GetHttpResponseAsync(uri, cancellationToken);
-
+        _logger.LogInformation("Waiting the HTTP response...");
+        var response = await _http.GetHttpResponseAsync(uri, ct);
+        _logger.LogInformation($"HTTP response status code: {response.StatusCode}.");
+        
         // Creating new DomainCheckResult
         var check = new DomainCheckResult()
         {
@@ -40,13 +63,19 @@ public class HttpSendAndSaveCommandHandler(IDomainsRepository domainsRepository,
             IsAvailable = response.IsSuccess,
             CreatedAt = DateTime.UtcNow
         };
+        _logger.LogInformation($"Domain check result created: {check.Id}.");
         
-        await _checkRepository.Create(check, cancellationToken);
+        _logger.LogInformation($"Adding the domain...");
+        await _checkRepository.Create(check, ct);
+        _logger.LogInformation($"Domain with id {request.Id} was created.");
         
         // Adding check result and save it
+        _logger.LogInformation($"Updating domain with id {request.Id}...");
         domain.CheckResults.Add(check);
         
-        await _uof.SaveChangesAsync(cancellationToken);
+        await _uof.SaveChangesAsync(ct);
+        
+        _logger.LogInformation("Operation is successful.");
         
         return check.Id;
     }

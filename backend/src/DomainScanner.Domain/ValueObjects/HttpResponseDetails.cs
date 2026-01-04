@@ -1,0 +1,17 @@
+﻿namespace DomainScanner.Domain.ValueObjects;
+
+public class HttpResponseDetails
+{
+    public string Address { get; set; } = string.Empty;
+    public ushort StatusCode { get; set; }
+    public bool IsSuccess { get; set; }
+    public string ReasonPhrase { get; set; } = string.Empty;
+    public string ContentType { get; set; } = string.Empty;
+    public uint ContentLength { get; set; }
+    public Dictionary<string, string> Headers { get; set;  } = new Dictionary<string, string>();
+    public string? ErrorMessage { get; set; }
+    public string Version { get; set; } = string.Empty;
+    
+    // ONLY HTTPS
+    public TlsFetch Tls { get; set; } = new TlsFetch();
+}

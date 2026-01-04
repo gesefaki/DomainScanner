@@ -2,23 +2,44 @@
 using DomainScanner.Application.Abstractions.Persistence;
 using DomainScanner.Application.Exceptions;
 using DomainScanner.Domain.Entities;
+using Microsoft.Extensions.Logging;
 
 namespace DomainScanner.Application.Users.Commands.DeleteUser;
 
-public class DeleteUserCommandHandler(IUsersRepository usersRepository, IUnitOfWork uof) 
-    : IRequestHandler<DeleteUserCommand, Guid>
+public class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand, Guid>
 {
-    private readonly IUsersRepository _usersRepository = usersRepository;
-    private readonly IUnitOfWork _uof = uof;
+    private readonly IUsersRepository _usersRepository;
+    private readonly IUnitOfWork _uof;
+    private readonly ILogger<DeleteUserCommandHandler> _logger;
 
-    public async Task<Guid> Handle(DeleteUserCommand request, CancellationToken cancellationToken)
+    public DeleteUserCommandHandler(IUsersRepository usersRepository,
+        IUnitOfWork uof,
+        ILogger<DeleteUserCommandHandler> logger)
     {
-        var user = await _usersRepository.GetUserByIdAsync(request.Id, cancellationToken);
+        _usersRepository = usersRepository;
+        _uof = uof;
+        _logger = logger;
+    }
+    
+    public async Task<Guid> Handle(DeleteUserCommand request, CancellationToken ct)
+    {
+        // Getting user
+        _logger.LogInformation($"Getting user with id {request.Id}...");
+        var user = await _usersRepository.GetUserByIdAsync(request.Id, ct);
         if (user is null)
+        {
+            _logger.LogWarning($"User with id {request.Id} not found.");
             throw new UserNotFoundException(nameof(User), request.Id);
-        
+        }
+
+        _logger.LogInformation($"User  with id {request.Id} was found.");
+
+        // Deleting and save
+        _logger.LogInformation($"Deleting user with id {request.Id}...");
         _usersRepository.Delete(user);
-        await _uof.SaveChangesAsync(cancellationToken);
+        await _uof.SaveChangesAsync(ct);
+        
+        _logger.LogInformation($"User with id {request.Id} was deleted.");
 
         return user.Id;
     }

@@ -33,7 +33,7 @@ public class ExceptionHandlerMiddleware
                 StatusCode = 400,
                 Message = exception.Message
             },
-            UriValidationError => new ErrorResponse
+            UriValidationException => new ErrorResponse
             {
                 StatusCode = 400,
                 Message = exception.Message

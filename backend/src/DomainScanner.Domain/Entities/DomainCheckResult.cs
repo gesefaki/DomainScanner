@@ -1,4 +1,6 @@
-﻿namespace DomainScanner.Domain.Entities;
+﻿using DomainScanner.Domain.ValueObjects;
+
+namespace DomainScanner.Domain.Entities;
 
 public class DomainCheckResult
 {
@@ -12,4 +14,5 @@ public class DomainCheckResult
     // Navigation properties
     public Guid DomainId { get; set; } // FK
     public DomainEntity? DomainEntity { get; set; } // Navigation
+    
 }

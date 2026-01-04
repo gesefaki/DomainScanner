@@ -37,7 +37,7 @@ public class DomainsRepository(ScannerDbContext context) : IDomainsRepository
     }
     
 
-    public Task<bool> ExistsAsync(Guid id, CancellationToken ct)
+    public Task<bool> IsExistsAsync(Guid id, CancellationToken ct)
     {
         return _context.Domains.AnyAsync(ct);
     }
