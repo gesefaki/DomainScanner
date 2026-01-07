@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DomainScanner.Infrastructure")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a606931f29af50cff9cccfcae9acc2076f61af63")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5a929be86a141f060d6c6b3310f7eb686f7150ee")]
 [assembly: System.Reflection.AssemblyProductAttribute("DomainScanner.Infrastructure")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DomainScanner.Infrastructure")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
