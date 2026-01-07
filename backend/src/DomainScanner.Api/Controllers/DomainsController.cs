@@ -51,8 +51,8 @@ public class DomainsController : Controller
     {
         var domain = await _mediator.Send(new GetDomainByIdQuery(id), ct);
         if (domain is null)
-            throw new DomainNotFoundException(nameof(User), id);
-
+            throw new DomainNotFoundException(id);
+        
         var query = new GetHttpResponseQuery(domain);
         var response = await _mediator.Send(query, ct);
         return Ok(DomainsMapper.HttpResponseToHttpResponseDto(domain.Address, response));

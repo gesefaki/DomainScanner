@@ -6,10 +6,13 @@ namespace DomainScanner.Api.Middleware;
 public class ExceptionHandlerMiddleware
 {
     private readonly RequestDelegate _next;
+    private readonly ILogger<ExceptionHandlerMiddleware> _logger;
 
-    public ExceptionHandlerMiddleware(RequestDelegate next)
+    public ExceptionHandlerMiddleware(RequestDelegate next, 
+        ILogger<ExceptionHandlerMiddleware> logger)
     {
         _next = next;
+        _logger = logger;
     }
 
     public async Task Invoke(HttpContext context)
@@ -20,7 +23,7 @@ public class ExceptionHandlerMiddleware
         }
         catch (Exception ex)
         {
-            await HandleExceptionAsync(context, ex).ConfigureAwait(false);
+            await HandleExceptionAsync(context, ex);
         }
     }
 
@@ -31,27 +34,27 @@ public class ExceptionHandlerMiddleware
             BadRequestException => new ErrorResponse
             {
                 StatusCode = 400,
-                Message = exception.Message
+                Message = "Bad Request"
             },
             UriValidationException => new ErrorResponse
             {
                 StatusCode = 400,
-                Message = exception.Message
+                Message = "Address is invalid."
             },
             DomainNotFoundException => new ErrorResponse
             {
                 StatusCode = 404,
-                Message = exception.Message
+                Message = "Domain not found."
             },
             UserNotFoundException => new ErrorResponse
             {
                 StatusCode = 404,
-                Message = exception.Message
+                Message = "User not found."
             },
             UnableToExecuteException => new ErrorResponse
             {
                 StatusCode = 409,
-                Message = exception.Message
+                Message = "Unable to execute."
             },
             _ => new ErrorResponse
             {
@@ -61,9 +64,8 @@ public class ExceptionHandlerMiddleware
         };
         
         context.Response.ContentType = "application/json";
-        context.Response.StatusCode = response.StatusCode;
-
         await context.Response.WriteAsJsonAsync(response);
+
     }
 
 }

@@ -31,7 +31,7 @@ public class GetHttpDetailsQueryHandler : IRequestHandler<GetHttpDetailsQuery, H
         if (domain is null)
         {
             _logger.LogWarning($"Domain with id {request.Id} not found.");
-            throw new DomainNotFoundException(nameof(DomainEntity), request.Id);
+            throw new DomainNotFoundException( request.Id);
         }
 
         _logger.LogInformation($"Domain with id {request.Id} was found.");

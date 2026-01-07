@@ -14,6 +14,7 @@ public class UsersRepository(ScannerDbContext context) : IUsersRepository
         var users = _context.Users
             .Include(u => u.Domains)
             .ThenInclude(d => d.CheckResults)
+            .OrderBy(u => u.Username)
             .AsSplitQuery();
         
         return await users.ToListAsync(cancellationToken);

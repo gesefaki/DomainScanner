@@ -30,7 +30,7 @@ public class HttpService(IHttpClientFactory httpFactory) : IHttpScanner
                 IsSuccess = false
             };
         }
-        catch (SocketException)
+        catch (Exception ex) when (ex is HttpRequestException or SocketException)
         {
             return new HttpResponseObject()
             {
@@ -94,7 +94,7 @@ public class HttpService(IHttpClientFactory httpFactory) : IHttpScanner
                 ErrorMessage = "Operation was canceled"
             };
         }
-        catch (SocketException)
+        catch (Exception ex) when (ex is HttpRequestException or SocketException)
         {
             return new HttpResponseDetails()
             {
@@ -102,7 +102,7 @@ public class HttpService(IHttpClientFactory httpFactory) : IHttpScanner
                 StatusCode = 504,
                 IsSuccess = false,
                 ReasonPhrase = string.Empty,
-                ErrorMessage = "Socket was closed"
+                ErrorMessage = "Timeout or not found."
             };
         }
         catch (Exception)

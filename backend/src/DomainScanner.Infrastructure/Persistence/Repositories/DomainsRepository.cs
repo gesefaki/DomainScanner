@@ -2,6 +2,7 @@
 using DomainScanner.Domain.Entities;
 using DomainScanner.Infrastructure.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 
 namespace DomainScanner.Infrastructure.Persistence.Repositories;
 
@@ -15,6 +16,7 @@ public class DomainsRepository(ScannerDbContext context) : IDomainsRepository
             .Include(d => d.User)
             .Include(d => d.CheckResults)
             .AsSplitQuery()
+            .OrderBy(d => d.UserId)
             .ToListAsync(ct);
     }
     
