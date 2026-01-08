@@ -8,6 +8,6 @@ public class DomainCheckRepository(ScannerDbContext context) : IDomainCheckRepos
 {
     private readonly ScannerDbContext _context = context;
     
-    public async Task Create(DomainCheckResult check, CancellationToken cancellationToken) =>
-        await _context.CheckResults.AddAsync(check, cancellationToken);
+    public async Task Create(DomainCheckResult check, CancellationToken ct) =>
+        await _context.CheckResults.AddAsync(check, ct);
 }

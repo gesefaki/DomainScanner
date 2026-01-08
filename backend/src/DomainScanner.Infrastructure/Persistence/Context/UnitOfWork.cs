@@ -12,14 +12,14 @@ public class UnitOfWork : IUnitOfWork
         _context = context;
     }
 
-    public Task<int> SaveChangesAsync(CancellationToken cancellationToken)
+    public Task<int> SaveChangesAsync(CancellationToken ct)
     {
-        return _context.SaveChangesAsync(cancellationToken);
+        return _context.SaveChangesAsync(ct);
     }
 
-    public async Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken)
+    public async Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken ct)
     {
-        return await _context.Database.BeginTransactionAsync(cancellationToken);
+        return await _context.Database.BeginTransactionAsync(ct);
     }
 
     public void Attach<T>(T entity) where T : class

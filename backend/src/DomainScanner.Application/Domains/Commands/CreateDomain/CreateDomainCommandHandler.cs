@@ -29,6 +29,8 @@ public class CreateDomainCommandHandler : IRequestHandler<CreateDomainCommand, G
         {
                 // Get domain from request
                 var domain = request.Domain;
+                if (!domain.Address.StartsWith("http") || !domain.Address.StartsWith("https"))
+                    throw new InvalidAddressFormatException(request.Domain.Address);
 
                 // Trying to find user (if not - 400)
                 _logger.LogInformation($"Getting user with id {domain.Id}");

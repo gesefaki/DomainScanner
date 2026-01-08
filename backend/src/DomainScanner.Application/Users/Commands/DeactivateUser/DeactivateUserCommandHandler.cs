@@ -4,7 +4,7 @@ using DomainScanner.Application.Exceptions;
 using DomainScanner.Domain.Entities;
 using Microsoft.Extensions.Logging;
 
-namespace DomainScanner.Application.Users.Commands.DisableUser;
+namespace DomainScanner.Application.Users.Commands.DeactivateUser;
 
 public class DeactivateUserCommandHandler : IRequestHandler<DeactivateUserCommand, Guid>
 {

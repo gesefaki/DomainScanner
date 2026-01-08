@@ -4,4 +4,4 @@ public record DomainResponseDto(Guid Id,
     string Address, 
     bool? IsAvailable, 
     Guid UserId,
-    List<HttpResponseDto> Checks);
+    HttpResponseDto[] Checks);

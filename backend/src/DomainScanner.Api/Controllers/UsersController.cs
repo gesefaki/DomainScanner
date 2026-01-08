@@ -2,10 +2,10 @@
 using DomainScanner.Api.Mapping;
 using DomainScanner.Application.Abstractions.Mediator;
 using DomainScanner.Application.Exceptions;
+using DomainScanner.Application.Users.Commands.ActivateUser;
 using DomainScanner.Application.Users.Commands.CreateUser;
+using DomainScanner.Application.Users.Commands.DeactivateUser;
 using DomainScanner.Application.Users.Commands.DeleteUser;
-using DomainScanner.Application.Users.Commands.DisableUser;
-using DomainScanner.Application.Users.Commands.UnableUser;
 using DomainScanner.Application.Users.Queries.GetAllUsers;
 using DomainScanner.Application.Users.Queries.GetUserById;
 using DomainScanner.Domain.Entities;

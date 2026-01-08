@@ -9,7 +9,7 @@ public class UsersRepository(ScannerDbContext context) : IUsersRepository
 {
     private readonly ScannerDbContext _context = context;
 
-    public async Task<List<User>> GetAllUsersAsync(CancellationToken cancellationToken)
+    public async Task<List<User>> GetAllUsersAsync(CancellationToken ct)
     {
         var users = _context.Users
             .Include(u => u.Domains)
@@ -17,22 +17,22 @@ public class UsersRepository(ScannerDbContext context) : IUsersRepository
             .OrderBy(u => u.Username)
             .AsSplitQuery();
         
-        return await users.ToListAsync(cancellationToken);
+        return await users.ToListAsync(ct);
     }
 
-    public async Task<User?> GetUserByIdAsync(Guid id, CancellationToken cancellationToken)
+    public async Task<User?> GetUserByIdAsync(Guid id, CancellationToken ct)
     {
         var user = await _context.Users
             .Include(u => u.Domains)
             .ThenInclude(d => d.CheckResults)
             .AsSplitQuery()
-            .FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
+            .FirstOrDefaultAsync(u => u.Id == id, ct);
 
         return user;
     }
 
-    public async Task CreateAsync(User user, CancellationToken cancellationToken)
-        => await _context.Users.AddAsync(user, cancellationToken);
+    public async Task CreateAsync(User user, CancellationToken ct)
+        => await _context.Users.AddAsync(user, ct);
     
     public void Delete(User user)
         => _context.Users.Remove(user);

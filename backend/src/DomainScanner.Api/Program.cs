@@ -7,7 +7,7 @@ using DomainScanner.Application.Extensions;
 using DomainScanner.Infrastructure.Mediator;
 using DomainScanner.Infrastructure.Persistence.Context;
 using DomainScanner.Infrastructure.Persistence.Repositories;
-using DomainScanner.Infrastructure.Protocols.HttpService;
+using DomainScanner.Infrastructure.Protocols.HTTP;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 

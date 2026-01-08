@@ -4,6 +4,7 @@ public class DomainEntity
 {
     // Main Properties
     public Guid Id { get; set; } = Guid.NewGuid();
+
     public string Address { get; set; } = string.Empty;
     public bool? IsAvailable { get; set; }
     public DateTime CreatedAt { get; }

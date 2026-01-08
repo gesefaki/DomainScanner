@@ -31,9 +31,14 @@ public class ExceptionHandlerMiddleware
             BadRequestException => new ErrorResponse
             {
                 StatusCode = 400,
-                Message = "Bad Request"
+                Message = "Bad Request."
             },
             UriValidationException => new ErrorResponse
+            {
+                StatusCode = 400,
+                Message = "Address is invalid."
+            },
+            InvalidAddressFormatException => new ErrorResponse()
             {
                 StatusCode = 400,
                 Message = "Address is invalid."

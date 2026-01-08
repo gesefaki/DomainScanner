@@ -13,7 +13,7 @@ public static class DomainsMapper
             domain.Address,
             domain.IsAvailable,
             domain.UserId,
-            domain.CheckResults.Select(CheckResultToHttpResponseDto).ToList());
+            domain.CheckResults.Select(CheckResultToHttpResponseDto).ToArray());
     }
 
     public static DomainEntity CreateDomainDtoToUser(CreateDomainDto dto)
@@ -57,10 +57,10 @@ public static class DomainsMapper
             Address = details.Address,
             StatusCode = details.StatusCode,
             IsSuccess = details.IsSuccess,
+            ResponseTime = details.ResponseTime,
             ReasonPhrase = details.ReasonPhrase,
             ContentType = details.ContentType,
             ContentLength = details.ContentLength,
-            Headers = details.Headers,
             ErrorMessage = details.ErrorMessage,
             Version = details.Version,
             Tls = details.Tls
