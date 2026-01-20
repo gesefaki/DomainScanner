@@ -16,7 +16,7 @@ public static class DomainsMapper
             domain.CheckResults.Select(CheckResultToHttpResponseDto).ToArray());
     }
 
-    public static DomainEntity CreateDomainDtoToUser(CreateDomainDto dto)
+    public static DomainEntity CreateDomainDtoToDomain(CreateDomainDto dto)
     {
         return new DomainEntity
         {
@@ -58,6 +58,8 @@ public static class DomainsMapper
             StatusCode = details.StatusCode,
             IsSuccess = details.IsSuccess,
             ResponseTime = details.ResponseTime,
+            Redirections = details.Redirections,
+            RedirectionsCount = details.RedirectionsCount,
             ReasonPhrase = details.ReasonPhrase,
             ContentType = details.ContentType,
             ContentLength = details.ContentLength,

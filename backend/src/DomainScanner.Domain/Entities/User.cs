@@ -12,4 +12,5 @@ public class User
     
     // Navigation Properties
     public virtual ICollection<DomainEntity> Domains { get; set; } = new List<DomainEntity>();
+    public virtual ICollection<Ip> Ips { get; set; } = new List<Ip>();
 }

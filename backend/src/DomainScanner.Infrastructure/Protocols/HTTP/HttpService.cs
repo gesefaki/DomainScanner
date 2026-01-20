@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Net.Security;
 using System.Net.Sockets;
-using System.Security.Cryptography.X509Certificates;
 using DomainScanner.Application.Abstractions.Scanners;
 using DomainScanner.Domain.ValueObjects;
 
@@ -20,7 +19,7 @@ public class HttpService(IHttpClientFactory httpFactory) : IHttpScanner
             using var response = await http.GetAsync(address, ct);
             return new HttpResponseObject()
             {
-                StatusCode = (int)response.StatusCode,
+                StatusCode = (ushort)response.StatusCode,
                 IsSuccess = response.IsSuccessStatusCode
             };
         }
@@ -49,11 +48,12 @@ public class HttpService(IHttpClientFactory httpFactory) : IHttpScanner
 
     public async Task<HttpResponseDetails> GetHttpWithDetailsAsync(Uri address, CancellationToken ct)
     {
-        var stopwatch = new Stopwatch();
         var tls = new TlsFetch();
 
         var handler = new HttpClientHandler
         {
+            AllowAutoRedirect = false,
+            
             ServerCertificateCustomValidationCallback = (message, cert, chain, error) =>
             {
                 tls.Message = message.ToString();
@@ -63,13 +63,11 @@ public class HttpService(IHttpClientFactory httpFactory) : IHttpScanner
                     var chainElements = new List<string>();
                     foreach (var element in chain.ChainElements)
                     {
-                        if (element.Certificate is not null)
-                        {
-                            chainElements.Add($"Subject: {element.Certificate.Subject}, " +
-                                              $"Issuer: {element.Certificate.Issuer}, " +
-                                              $"Thumbprint: {element.Certificate.Thumbprint}, " +
-                                              $"Valid: {element.Certificate.NotBefore} - {element.Certificate.NotAfter}");
-                        }
+                        chainElements
+                            .Add($"Subject: {element.Certificate.Subject}, " +
+                                 $"Issuer: {element.Certificate.Issuer}, " +
+                                 $"Thumbprint: {element.Certificate.Thumbprint}, " +
+                                 $"Valid: {element.Certificate.NotBefore} - {element.Certificate.NotAfter}");
                     }
                     tls.Chain = string.Join('\n', chainElements);
                 }
@@ -80,19 +78,37 @@ public class HttpService(IHttpClientFactory httpFactory) : IHttpScanner
         };
         
         var http = new HttpClient(handler);
+
+        const int maxRedirections = 5;
+        int currentRedirections = 0;
+        
+        var redirections = new List<string>();
         
         try
         {
+            var stopwatch = new Stopwatch();
             stopwatch.Start();
-            using var response = await http.GetAsync(address, ct);
+            var response = await http.GetAsync(address, ct);
             stopwatch.Stop();
             
+            if ((int)response.StatusCode >= 400 && (int)response.StatusCode < 500)
+            {
+                while (currentRedirections < maxRedirections)
+                {
+                    var currentResponse = await http.GetAsync(address, ct);
+                    redirections.Add(currentResponse.Headers.Location!.ToString());
+                    currentRedirections++;
+                }
+            }
+
             return new HttpResponseDetails()
             {
                 Address = address.ToString(),
                 StatusCode = (ushort)response.StatusCode,
                 IsSuccess = response.IsSuccessStatusCode,
                 ResponseTime = stopwatch.ElapsedMilliseconds,
+                Redirections = redirections,
+                RedirectionsCount = (ushort)currentRedirections,
                 ReasonPhrase = response.ReasonPhrase!,
                 ContentType = response.Content.Headers.ContentType!.ToString(),
                 ContentLength = (uint)response.Content.Headers.ContentLength!,

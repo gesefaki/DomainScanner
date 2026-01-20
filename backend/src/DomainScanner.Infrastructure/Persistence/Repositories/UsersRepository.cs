@@ -31,6 +31,11 @@ public class UsersRepository(ScannerDbContext context) : IUsersRepository
         return user;
     }
 
+    public async Task<bool> IsExistsByEmailAsync(string email, CancellationToken ct)
+    {
+        return await _context.Users.AnyAsync(u => u.Email == email, ct);
+    }
+
     public async Task CreateAsync(User user, CancellationToken ct)
         => await _context.Users.AddAsync(user, ct);
     

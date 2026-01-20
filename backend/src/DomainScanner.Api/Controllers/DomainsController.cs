@@ -3,6 +3,7 @@ using DomainScanner.Api.Mapping;
 using DomainScanner.Application.Abstractions.Mediator;
 using DomainScanner.Application.Domains.Commands.CreateDomain;
 using DomainScanner.Application.Domains.Commands.DeleteDomain;
+using DomainScanner.Application.Domains.Commands.HttpSendAndSave;
 using DomainScanner.Application.Domains.Commands.UpdateDomain;
 using DomainScanner.Application.Domains.Queries.GetAllDomains;
 using DomainScanner.Application.Domains.Queries.GetDomainById;
@@ -10,6 +11,8 @@ using DomainScanner.Application.Domains.Queries.GetHttpDetails;
 using DomainScanner.Application.Domains.Queries.GetHttpResponse;
 using DomainScanner.Application.Exceptions;
 using DomainScanner.Domain.Entities;
+using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DomainScanner.Api.Controllers;
@@ -19,10 +22,15 @@ namespace DomainScanner.Api.Controllers;
 public class DomainsController : Controller
 {
     private readonly IMediator _mediator;
+    private readonly IValidator<DomainEntity> _validator;
+    private readonly ILogger<DomainsController> _logger;
 
-    public DomainsController(IMediator mediator)
+    public DomainsController(IMediator mediator, IValidator<DomainEntity> validator,
+        ILogger<DomainsController> logger)
     {
         _mediator = mediator;
+        _validator = validator;
+        _logger = logger;
     }
     
     [HttpGet]
@@ -93,11 +101,33 @@ public class DomainsController : Controller
     [HttpPost("create")]
     public async Task<ActionResult> Create([FromBody] CreateDomainDto dto, CancellationToken ct = default)
     {
-        var domain = DomainsMapper.CreateDomainDtoToUser(dto);
+        ValidationResult validationResult = await _validator.ValidateAsync(
+            DomainsMapper.CreateDomainDtoToDomain(dto), ct);
+
+        if (!validationResult.IsValid)
+        {
+            _logger.LogWarning("Validation error.");
+            throw new BadRequestException(validationResult.Errors.ToString()!);
+        }
+
+        var domain = DomainsMapper.CreateDomainDtoToDomain(dto);
         var cmd = new CreateDomainCommand(domain);
         await _mediator.Send(cmd, ct);
         
         return CreatedAtAction(nameof(Get), new { id = cmd.Domain.Id }, cmd);
+    }
+
+    [HttpPost("send-and-save/{id::guid}")]
+    public async Task<ActionResult> SendAndSave(Guid id, CancellationToken ct = default)
+    {
+        var domain = await _mediator.Send(new GetDomainByIdQuery(id), ct);
+        if (domain is null)
+            throw new DomainNotFoundException(id);
+
+        var cmd = new HttpSendAndSaveCommand(id); 
+        await _mediator.Send(cmd, ct);
+
+        return CreatedAtAction(nameof(Get), new { id = cmd.Id }, cmd);
     }
 
     [HttpDelete("delete/{id:guid}")]

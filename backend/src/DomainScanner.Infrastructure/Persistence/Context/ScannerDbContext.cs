@@ -43,6 +43,11 @@ public class ScannerDbContext : DbContext
                 .WithOne(d => d.User)
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+            
+            user.HasMany(u => u.Ips)
+                .WithOne(i => i.User)
+                .HasForeignKey(i => i.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
 
         });
 
@@ -65,6 +70,11 @@ public class ScannerDbContext : DbContext
             domain.HasOne(d => d.User)
                 .WithMany(u => u.Domains)
                 .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            domain.HasMany(d => d.Ips)
+                .WithOne(i => i.Domain)
+                .HasForeignKey(i => i.DomainId)
                 .OnDelete(DeleteBehavior.Cascade);
             
             domain.HasMany(d => d.CheckResults)
@@ -94,5 +104,28 @@ public class ScannerDbContext : DbContext
                 .HasForeignKey(c => c.DomainId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
+
+        modelBuilder.Entity<Ip>(ip =>
+            {
+                ip.HasKey(i => i.Id);
+
+                ip.Property(i => i.Address)
+                    .IsRequired();
+
+                ip.Property(i => i.IsAvailable)
+                    .IsRequired(false);
+
+                ip.Property(i => i.CreatedAt)
+                    .IsRequired();
+
+                ip.Property(i => i.UpdatedAt)
+                    .IsRequired(false);
+
+                ip.HasOne(i => i.User)
+                    .WithMany(u => u.Ips)
+                    .HasForeignKey(i => i.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            }
+        );
     }
 }

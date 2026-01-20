@@ -9,6 +9,8 @@ using DomainScanner.Application.Users.Commands.DeleteUser;
 using DomainScanner.Application.Users.Queries.GetAllUsers;
 using DomainScanner.Application.Users.Queries.GetUserById;
 using DomainScanner.Domain.Entities;
+using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DomainScanner.Api.Controllers;
@@ -18,10 +20,15 @@ namespace DomainScanner.Api.Controllers;
 public class UsersController : Controller
 {
     private readonly IMediator _mediator;
+    private readonly IValidator<User> _validator;
+    private readonly ILogger<UsersController> _logger;
     
-    public UsersController(IMediator mediator)
+    public UsersController(IMediator mediator, IValidator<User> validator,
+        ILogger<UsersController> logger)
     {
         _mediator = mediator;
+        _validator = validator;
+        _logger = logger;
     }
 
     [HttpGet]
@@ -49,12 +56,21 @@ public class UsersController : Controller
 
     [HttpPost("create")]
     public async Task<ActionResult<User>> Create([FromBody]CreateUserDto request,
-        CancellationToken cancellationToken = default)
+        CancellationToken ct = default)
     {
-       var user = UsersMapper.CreateUserDtoToUser(request);
-       var cmd = new CreateUserCommand(user);
-       await _mediator.Send(cmd, cancellationToken);
-       return CreatedAtAction(nameof(Get), new { id = user.Id }, user);
+        ValidationResult validationResult = await _validator.ValidateAsync
+            (UsersMapper.CreateUserDtoToUser(request), ct);
+
+        if (!validationResult.IsValid)
+        {
+            _logger.LogWarning($"Validation error: {validationResult.Errors.First().ErrorMessage}");
+            throw new BadRequestException(validationResult.Errors.ToString()!);
+        }
+
+        var user = UsersMapper.CreateUserDtoToUser(request);
+        var cmd = new CreateUserCommand(user);
+        await _mediator.Send(cmd, ct);
+        return CreatedAtAction(nameof(Get), new { id = user.Id }, user);
     }
 
     [HttpPatch("activate/{id::guid}")]

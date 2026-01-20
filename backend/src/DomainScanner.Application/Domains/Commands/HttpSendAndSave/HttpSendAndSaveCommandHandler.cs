@@ -3,11 +3,13 @@ using DomainScanner.Application.Abstractions.Persistence;
 using DomainScanner.Application.Abstractions.Scanners;
 using DomainScanner.Application.Exceptions;
 using DomainScanner.Domain.Entities;
+using DomainScanner.Domain.ValueObjects;
 using Microsoft.Extensions.Logging;
 
 namespace DomainScanner.Application.Domains.Commands.HttpSendAndSave;
 
-public class HttpSendAndSaveCommandHandler : IRequestHandler<HttpSendAndSaveCommand, Guid>
+public class HttpSendAndSaveCommandHandler : IRequestHandler<HttpSendAndSaveCommand, 
+    DomainCheckResult>
 {
     private readonly IDomainsRepository _domainsRepository;
     private readonly IDomainCheckRepository _checkRepository;
@@ -28,7 +30,7 @@ public class HttpSendAndSaveCommandHandler : IRequestHandler<HttpSendAndSaveComm
         _logger = logger;
     }
     
-    public async Task<Guid> Handle(HttpSendAndSaveCommand request, CancellationToken ct)
+    public async Task<DomainCheckResult> Handle(HttpSendAndSaveCommand request, CancellationToken ct)
     {
         _logger.LogInformation($"Getting  domain with id {request.Id}...");
         
@@ -76,7 +78,7 @@ public class HttpSendAndSaveCommandHandler : IRequestHandler<HttpSendAndSaveComm
         await _uof.SaveChangesAsync(ct);
         
         _logger.LogInformation("Operation is successful.");
-        
-        return check.Id;
+
+        return check;
     }
 }

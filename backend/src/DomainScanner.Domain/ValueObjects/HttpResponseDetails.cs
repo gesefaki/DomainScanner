@@ -6,6 +6,8 @@ public class HttpResponseDetails
     public ushort StatusCode { get; set; }
     public bool IsSuccess { get; set; }
     public long ResponseTime { get; set; }
+    public List<string> Redirections { get; set; } = [];
+    public ushort RedirectionsCount { get; set; }
     public string ReasonPhrase { get; set; } = string.Empty;
     public string ContentType { get; set; } = string.Empty;
     public uint ContentLength { get; set; }
