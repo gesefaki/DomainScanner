@@ -1,0 +1,22 @@
+﻿services:
+  api:
+    image: api
+    build:
+      context: .
+      dockerfile: backend/src/DomainScanner.Api/Dockerfile
+    environment:
+      ConnectionsString__Default: Host=database;Port=5432;Database=scannerdb;Username=postgres;password=postgres
+    ports:
+      - "8080:8080"
+
+  database:
+    image: postgres:latest
+    container_name: database
+    environment:
+      - POSTGRES_DB=scannerdb
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - ./.containers/domains-db:/var/lib/postgresql
+    ports:
+      - "5432:5432"
