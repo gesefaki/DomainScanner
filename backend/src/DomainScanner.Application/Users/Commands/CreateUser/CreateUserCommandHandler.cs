@@ -21,11 +21,11 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Guid>
     
     public async Task<Guid> Handle(CreateUserCommand request, CancellationToken ct)
     {
-        _logger.LogInformation("Creating new user...");
+        _logger.LogInformation($"Creating new user with {request.User.Username} and {request.User.Email}...");
         
         await _usersRepository.CreateAsync(request.User, ct);
         
-        _logger.LogInformation("New user created.");
+        _logger.LogInformation($"New user with {request.User.Username} and {request.User.Email} created.");
         
         await  _uof.SaveChangesAsync(ct);
         return request.User.Id;

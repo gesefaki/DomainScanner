@@ -118,16 +118,16 @@ public class DomainsController : Controller
     }
 
     [HttpPost("send-and-save/{id::guid}")]
-    public async Task<ActionResult> SendAndSave(Guid id, CancellationToken ct = default)
+    public async Task<ActionResult<HttpResponseDto>> SendAndSave(Guid id, CancellationToken ct = default)
     {
         var domain = await _mediator.Send(new GetDomainByIdQuery(id), ct);
         if (domain is null)
             throw new DomainNotFoundException(id);
 
-        var cmd = new HttpSendAndSaveCommand(id); 
-        await _mediator.Send(cmd, ct);
+        var cmd = new HttpSendAndSaveCommand(id);
+        var check = await _mediator.Send(cmd, ct);
 
-        return CreatedAtAction(nameof(Get), new { id = cmd.Id }, cmd);
+        return Ok(DomainResultsMapper.CheckToResponseDto(check));
     }
 
     [HttpDelete("delete/{id:guid}")]

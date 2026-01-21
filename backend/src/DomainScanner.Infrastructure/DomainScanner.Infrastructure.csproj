@@ -5,6 +5,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <NoWarn>$(NoWarn);CS8981</NoWarn> <!-- Disabling EF Core warn -->
         <Nullable>enable</Nullable>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     </PropertyGroup>
 
     <ItemGroup>

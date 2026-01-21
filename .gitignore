@@ -1,6 +1,9 @@
 ﻿## Rider
 .idea/
 
+## VSCode
+.vscode/
+
 ## Build results
 bin/
 obj/

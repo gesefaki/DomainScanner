@@ -1,4 +1,3 @@
-using System.Reflection;
 using DomainScanner.Api.Middleware;
 using DomainScanner.Application.Abstractions.Mediator;
 using DomainScanner.Application.Abstractions.Persistence;
@@ -21,10 +20,10 @@ builder.Services.AddValidatorsFromAssemblyContaining<UsersValidator>();
 // CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("frontend", policy =>
+    options.AddPolicy("AllowAll", policy =>
     {
         policy
-            .WithOrigins("http://127.0.0.1:5501")
+            .AllowAnyOrigin()
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
@@ -57,20 +56,31 @@ builder.Services.AddScoped<IHttpScanner, HttpService>();
 
 // Database Access
 builder.Services.AddDbContext<ScannerDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
+        x => x.MigrationsAssembly("DomainScanner.Infrastructure")
+    )
+);
 
 // Application
 var app = builder.Build();
+
+// Migrations
+using var scope = app.Services.CreateScope();
+var context = scope.ServiceProvider.GetRequiredService<ScannerDbContext>();
+await context.Database.MigrateAsync();
 
 // Exceptions handling 
 app.UseExceptionHandlerMiddleware();
 
 // CORS
-app.UseCors("frontend");
+app.UseCors("AllowAll");
 
+// Controllers
 app.MapControllers();
 
+// Swagger
 app.UseSwagger();
 app.UseSwaggerUI();
 
+// Start
 app.Run();
