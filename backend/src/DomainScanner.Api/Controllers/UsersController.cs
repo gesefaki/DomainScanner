@@ -53,7 +53,7 @@ public class UsersController : Controller
 
         if (user is null)
             throw new UserNotFoundException(id);
-        
+
         return UsersMapper.UserToResponseUserDto(user);
     }
 

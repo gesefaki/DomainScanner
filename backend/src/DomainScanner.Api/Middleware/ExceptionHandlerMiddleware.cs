@@ -78,6 +78,7 @@ public class ExceptionHandlerMiddleware
         };
         _logger.LogError(exception.Message);
         context.Response.ContentType = "application/json";
+        context.Response.StatusCode = response.StatusCode;
         await context.Response.WriteAsJsonAsync(response);
 
     }
