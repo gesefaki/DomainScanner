@@ -73,7 +73,7 @@ public class UsersController : Controller
 
         var cmd = new RegisterUserCommand(request.Username, request.Email, request.Password);
         var user = await _mediator.Send(cmd, ct);
-        return CreatedAtAction(nameof(Get), new { id = user.Id }, user);
+        return CreatedAtAction(nameof(Get), new { id = user.Id }, UsersMapper.UserToResponseUserDto(user));
     }
 
     [AllowAnonymous]

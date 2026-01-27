@@ -8,6 +8,7 @@ public interface IUsersRepository
     Task<User?> GetUserByIdAsync(Guid id,  CancellationToken ct);
     Task<User?> GetUserByEmailAsync(string email, CancellationToken ct);
     Task<bool> IsExistsByEmailAsync(string email, CancellationToken ct);
+    Task<bool> IsExistsByUsernameAsync(string username, CancellationToken ct);
     Task CreateAsync(User user,  CancellationToken ct);
     void Delete(User user);
     void Update(User user);

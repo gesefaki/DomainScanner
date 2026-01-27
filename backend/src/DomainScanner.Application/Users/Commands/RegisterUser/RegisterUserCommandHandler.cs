@@ -1,6 +1,7 @@
 ﻿using DomainScanner.Application.Abstractions;
 using DomainScanner.Application.Abstractions.Mediator;
 using DomainScanner.Application.Abstractions.Persistence;
+using DomainScanner.Application.Exceptions;
 using DomainScanner.Domain.Entities;
 using Microsoft.Extensions.Logging;
 
@@ -25,6 +26,14 @@ public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, U
     public async Task<User> Handle(RegisterUserCommand request, CancellationToken ct)
     {
         _logger.LogInformation("Registering user with email {email}", request.Email);
+
+        if (await _repository.IsExistsByEmailAsync(request.Email, ct) ||
+            await _repository.IsExistsByUsernameAsync(request.Username, ct))
+        {
+            _logger.LogInformation("Failed to register user with email {email} and username {username}", request.Email, request.Username);
+            throw new ConflictCredsException();
+        }
+        
         var hashedPassword = _hasher.Generate(request.Password);
         
         _logger.LogInformation("Hashed password {hashedPassword}", hashedPassword);

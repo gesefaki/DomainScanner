@@ -65,6 +65,11 @@ public class ExceptionHandlerMiddleware
                 StatusCode = 409,
                 Message = "Unable to execute."
             },
+            ConflictCredsException => new ErrorResponse
+            {
+                StatusCode = 409,
+                Message = "Username or email already exists."
+            },
             _ => new ErrorResponse
             {
                 StatusCode = 500,
