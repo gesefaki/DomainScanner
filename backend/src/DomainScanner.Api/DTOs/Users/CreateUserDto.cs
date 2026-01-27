@@ -1,3 +1,3 @@
 ﻿namespace DomainScanner.Api.DTOs.Users;
 
-public record CreateUserDto(string Username, string Email);
+public record RegisterUserDto(string Username, string Email, string Password);

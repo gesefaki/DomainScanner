@@ -6,8 +6,9 @@ public interface IUsersRepository
 {
     Task<List<User>> GetAllUsersAsync(CancellationToken ct);
     Task<User?> GetUserByIdAsync(Guid id,  CancellationToken ct);
-    Task CreateAsync(User user,  CancellationToken ct);
+    Task<User?> GetUserByEmailAsync(string email, CancellationToken ct);
     Task<bool> IsExistsByEmailAsync(string email, CancellationToken ct);
+    Task CreateAsync(User user,  CancellationToken ct);
     void Delete(User user);
     void Update(User user);
 }

@@ -13,10 +13,12 @@ using DomainScanner.Application.Exceptions;
 using DomainScanner.Domain.Entities;
 using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DomainScanner.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/v1/[controller]")]
 public class DomainsController : Controller
@@ -71,7 +73,7 @@ public class DomainsController : Controller
     {
         var domain = await _mediator.Send(new GetDomainByIdQuery(id), ct);
         if (domain is null)
-            throw new UserNotFoundException(nameof(User), id);
+            throw new UserNotFoundException(id);
 
         var query = new GetHttpDetailsQuery(id);
         var result =  await _mediator.Send(query, ct);
@@ -97,7 +99,7 @@ public class DomainsController : Controller
         
         return CreatedAtAction(nameof(Get), new { id = cmd.Id }, cmd);
     }
-
+    
     [HttpPost("create")]
     public async Task<ActionResult> Create([FromBody] CreateDomainDto dto, CancellationToken ct = default)
     {

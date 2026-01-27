@@ -45,6 +45,11 @@ public class ExceptionHandlerMiddleware
                 StatusCode = 400,
                 Message = "Address is invalid."
             },
+            InvalidCredentialsException => new ErrorResponse()
+            {
+                StatusCode = 401,
+                Message = "Invalid email or password."
+            },
             DomainNotFoundException => new ErrorResponse
             {
                 StatusCode = 404,

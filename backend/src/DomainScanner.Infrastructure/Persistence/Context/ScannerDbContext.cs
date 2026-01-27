@@ -29,6 +29,8 @@ public class ScannerDbContext : DbContext
             user.Property(u => u.Email)
                 .IsRequired()
                 .HasMaxLength(100);
+
+            user.Property(u => u.PasswordHash);
             
             user.HasIndex(u => u.Email)
                 .IsUnique();

@@ -38,7 +38,7 @@ public class CreateDomainCommandHandler : IRequestHandler<CreateDomainCommand, G
                 if (user is null)
                 {
                     _logger.LogWarning($"User with id {domain.Id} not found");
-                    throw new UserNotFoundException("no user found", domain.Id);
+                    throw new UserNotFoundException($"{domain.UserId}");
                 }
                 _logger.LogInformation($"User with id {user.Id}: {user.Username} was find");
 

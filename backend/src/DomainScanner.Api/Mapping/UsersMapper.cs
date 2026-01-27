@@ -16,7 +16,7 @@ public static class UsersMapper
         );
     }
     
-    public static User CreateUserDtoToUser(CreateUserDto dto)
+    public static User RegisterUserDtoToUser(RegisterUserDto dto)
     {
         return new User
         {

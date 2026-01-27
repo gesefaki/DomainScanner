@@ -3,18 +3,21 @@ using DomainScanner.Api.Mapping;
 using DomainScanner.Application.Abstractions.Mediator;
 using DomainScanner.Application.Exceptions;
 using DomainScanner.Application.Users.Commands.ActivateUser;
-using DomainScanner.Application.Users.Commands.CreateUser;
 using DomainScanner.Application.Users.Commands.DeactivateUser;
 using DomainScanner.Application.Users.Commands.DeleteUser;
+using DomainScanner.Application.Users.Commands.RegisterUser;
 using DomainScanner.Application.Users.Queries.GetAllUsers;
 using DomainScanner.Application.Users.Queries.GetUserById;
+using DomainScanner.Application.Users.Queries.LoginUser;
 using DomainScanner.Domain.Entities;
 using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DomainScanner.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/v1/[controller]")]
 public class UsersController : Controller
@@ -49,17 +52,18 @@ public class UsersController : Controller
         var user = await _mediator.Send(query, cancellationToken);
 
         if (user is null)
-            throw new UserNotFoundException(nameof(User), id);
+            throw new UserNotFoundException(id);
         
         return UsersMapper.UserToResponseUserDto(user);
     }
 
-    [HttpPost("create")]
-    public async Task<ActionResult<User>> Create([FromBody]CreateUserDto request,
+    [AllowAnonymous]
+    [HttpPost("register")]
+    public async Task<ActionResult<User>> Register([FromBody]RegisterUserDto request,
         CancellationToken ct = default)
     {
         ValidationResult validationResult = await _validator.ValidateAsync
-            (UsersMapper.CreateUserDtoToUser(request), ct);
+            (UsersMapper.RegisterUserDtoToUser(request), ct);
 
         if (!validationResult.IsValid)
         {
@@ -67,10 +71,24 @@ public class UsersController : Controller
             throw new BadRequestException(validationResult.Errors.ToString()!);
         }
 
-        var user = UsersMapper.CreateUserDtoToUser(request);
-        var cmd = new CreateUserCommand(user);
-        await _mediator.Send(cmd, ct);
+        var cmd = new RegisterUserCommand(request.Username, request.Email, request.Password);
+        var user = await _mediator.Send(cmd, ct);
         return CreatedAtAction(nameof(Get), new { id = user.Id }, user);
+    }
+
+    [AllowAnonymous]
+    [HttpPost("login")]
+    public async Task<ActionResult<string>> Login([FromBody]LoginUserDto request, CancellationToken ct = default)
+    {
+        var context = HttpContext;
+        
+        var query = new LoginUserQuery(request.Email, request.Password);
+        
+        var token = await _mediator.Send(query, ct);
+        
+        context.Response.Cookies.Append("tasty_cookies", token);
+            
+        return Ok(token);
     }
 
     [HttpPatch("activate/{id::guid}")]
@@ -78,7 +96,7 @@ public class UsersController : Controller
     {
         var user = await _mediator.Send(new GetUserByIdQuery(id), cancellationToken);
         if (user is null)
-            throw new UserNotFoundException(nameof(User), id);
+            throw new UserNotFoundException(id);
 
         if (user.IsActive)
             throw new UnableToExecuteException(nameof(user), user.Id, nameof(user.IsActive));
@@ -93,7 +111,7 @@ public class UsersController : Controller
     {
         var user = await _mediator.Send(new GetUserByIdQuery(id), cancellationToken);
         if (user is null)
-            throw new UserNotFoundException(nameof(User), id);
+            throw new UserNotFoundException(id);
 
         if (!user.IsActive)
             throw new UnableToExecuteException(nameof(User), user.Id, nameof(user.IsActive));
@@ -108,7 +126,7 @@ public class UsersController : Controller
     {
         var user = await _mediator.Send(new GetUserByIdQuery(id), cancellationToken);
         if (user is null)
-            throw new UserNotFoundException(nameof(User), id);
+            throw new UserNotFoundException(id);
 
         var cmd = new DeleteUserCommand(user.Id);
         await _mediator.Send(cmd, cancellationToken);

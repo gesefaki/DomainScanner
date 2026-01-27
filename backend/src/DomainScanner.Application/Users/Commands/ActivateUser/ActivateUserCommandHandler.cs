@@ -29,7 +29,7 @@ public class ActivateUserCommandHandler : IRequestHandler<ActivateUserCommand, G
         if (user is null)
         {
             _logger.LogWarning($"User with id {request.Id} not found.");
-            throw new UserNotFoundException(nameof(User), request.Id);
+            throw new UserNotFoundException(request.Id);
         }
         _logger.LogInformation($"User with id {request.Id} was found.");
         

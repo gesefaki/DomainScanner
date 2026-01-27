@@ -28,7 +28,7 @@
       email: form.email.value,
     };
 
-    const response = await fetch("http://localhost:5090/api/v1/Users/create", {
+    const response = await fetch("http://localhost:8080/api/v1/Users/create", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
