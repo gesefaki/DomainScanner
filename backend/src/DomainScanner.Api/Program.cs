@@ -25,12 +25,17 @@ builder.Services.AddValidatorsFromAssemblyContaining<UsersValidator>();
 // CORS (Test configuration)
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
+    options.AddPolicy("Frontend", policy =>
     {
         policy
-            .AllowAnyOrigin()
+            .WithOrigins(
+                "http://localhost:5173",
+                "http://127.0.0.1:5173",
+                "http://frontend:3000"
+                )
             .AllowAnyHeader()
-            .AllowAnyMethod();
+            .AllowAnyMethod()
+            .AllowCredentials();
     });
 });
 
@@ -88,7 +93,7 @@ await context.Database.MigrateAsync();
 app.UseExceptionHandlerMiddleware();
 
 // CORS
-app.UseCors("AllowAll");
+app.UseCors("Frontend");
 
 // Auth middleware
 app.UseAuthentication();
@@ -98,11 +103,8 @@ app.UseAuthorization();
 app.MapControllers();
 
 // Swagger
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 // Cookie
 app.UseCookiePolicy(new CookiePolicyOptions

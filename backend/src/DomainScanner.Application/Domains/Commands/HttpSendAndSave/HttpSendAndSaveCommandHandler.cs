@@ -56,6 +56,9 @@ public class HttpSendAndSaveCommandHandler : IRequestHandler<HttpSendAndSaveComm
         var response = await _http.GetHttpResponseAsync(uri, ct);
         _logger.LogInformation($"HTTP response status code: {response.StatusCode}.");
         
+        // Change the domain status
+        domain.IsAvailable = response.IsSuccess;
+        
         // Creating new DomainCheckResult
         var check = new DomainCheckResult()
         {
