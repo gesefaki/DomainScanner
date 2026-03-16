@@ -6,6 +6,7 @@ using DomainScanner.Application.Domains.Commands.DeleteDomain;
 using DomainScanner.Application.Domains.Commands.HttpSendAndSave;
 using DomainScanner.Application.Domains.Commands.UpdateDomain;
 using DomainScanner.Application.Domains.Queries.GetAllDomains;
+using DomainScanner.Application.Domains.Queries.GetAllDomainsByUser;
 using DomainScanner.Application.Domains.Queries.GetDomainById;
 using DomainScanner.Application.Domains.Queries.GetHttpDetails;
 using DomainScanner.Application.Domains.Queries.GetHttpResponse;
@@ -53,6 +54,16 @@ public class DomainsController : Controller
             return NotFound();
         
         var response = DomainsMapper.DomainToDomainResponseDto(domain);
+        return Ok(response);
+    }
+
+    [HttpGet("u/{id:guid}")]
+    public async Task<ActionResult<IEnumerable<DomainResponseDto>>> GetUserDomains(Guid id,
+        CancellationToken ct = default)
+    {
+        var query = new GetAllDomainsByUserQuery(id);
+        var domains = await _mediator.Send(query, ct);
+        var response = domains.Select(DomainsMapper.DomainToDomainResponseDto);
         return Ok(response);
     }
 

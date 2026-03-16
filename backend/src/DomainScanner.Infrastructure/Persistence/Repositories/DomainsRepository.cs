@@ -19,6 +19,17 @@ public class DomainsRepository(ScannerDbContext context) : IDomainsRepository
             .OrderBy(d => d.UserId)
             .ToListAsync(ct);
     }
+
+    public async Task<List<DomainEntity>> GetAllByUserIdAsync(Guid userId, CancellationToken ct)
+    {
+        return await _context.Domains
+            .Include(d => d.User)
+            .Include(d => d.CheckResults)
+            .AsSplitQuery()
+            .OrderBy(d => d.CreatedAt)
+            .Where(d => d.UserId == userId)
+            .ToListAsync(ct);
+    }
     
 
     public async Task<List<DomainEntity>> GetAllWithResultsAsync(CancellationToken ct)

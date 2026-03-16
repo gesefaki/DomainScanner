@@ -57,6 +57,15 @@ public class UsersController : Controller
         return UsersMapper.UserToResponseUserDto(user);
     }
 
+    [HttpGet("/me")]
+    public IActionResult Me()
+    {
+        return Ok(new
+        {
+            username = User.Identity!.Name
+        });
+    }
+
     [AllowAnonymous]
     [HttpPost("register")]
     public async Task<ActionResult<User>> Register([FromBody]RegisterUserDto request,
