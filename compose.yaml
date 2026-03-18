@@ -30,3 +30,15 @@
     ports:
       - "8080:8080"
     
+  worker:
+    image: worker
+    build:
+      context: .
+      dockerfile: backend/src/DomainScanner.Worker/Dockerfile
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      ConnectionStrings__DefaultConnection: Host=database;Port=5432;Database=scannerdb;Username=postgres;password=postgres
+      DomainChecksWorker__IntervalSeconds: 300
+      DomainChecksWorker__BatchSize: 20
