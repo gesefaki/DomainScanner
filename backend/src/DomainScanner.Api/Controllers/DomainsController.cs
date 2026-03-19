@@ -14,6 +14,8 @@ using DomainScanner.Application.Exceptions;
 using DomainScanner.Domain.Entities;
 using FluentValidation;
 using FluentValidation.Results;
+using Hangfire;
+using Hangfire.Storage;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -150,5 +152,23 @@ public class DomainsController : Controller
         await _mediator.Send(cmd, ct);
         
         return NoContent();
+    }
+    
+    [AllowAnonymous]
+    [HttpPost("hangfire/cleanup")]
+    public IActionResult CleanupHangfireJobs()
+    {
+        using var connection = JobStorage.Current.GetConnection();
+    
+        // Удалить все recurring jobs
+        var recurringJobs = connection.GetRecurringJobs();
+        foreach (var job in recurringJobs)
+        {
+            RecurringJob.RemoveIfExists(job.Id);
+            _logger.LogInformation("Removed job: {JobId}", job.Id);
+        }
+    
+        // Перезапустить Worker, чтобы он создал задачи заново
+        return Ok($"Removed {recurringJobs.Count()} jobs. Restart worker to recreate them.");
     }
 }

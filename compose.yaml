@@ -40,5 +40,6 @@
         condition: service_healthy
     environment:
       ConnectionStrings__DefaultConnection: Host=database;Port=5432;Database=scannerdb;Username=postgres;password=postgres
-      DomainChecksWorker__IntervalSeconds: 300
-      DomainChecksWorker__BatchSize: 20
+      DomainChecksWorker__CronExpression: "*/5 * * * *"
+      DomainChecksWorker__QueueName: domain-checks
+      DomainChecksWorker__BatchSize: 30

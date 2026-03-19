@@ -1,9 +1,11 @@
-﻿namespace DomainScanner.Worker.Options;
+﻿namespace DomainScanner.Infrastructure.Hangfire.Options;
 
 public sealed class DomainChecksWorkerOptions
 {
     public const string SectionName = "DomainsChecksWorker";
 
-    public int IntervalSeconds { get; set; } = 300;
-    public int BatchSize { get; set; } = 20;
+    public string RecurringJobId { get; set; } = "domain-checks-recurring";
+    public string CronExpression { get; set; } = "*/5 * * * *";
+    public string QueueName { get; set; } = "domain-checks";
+    public int BatchSize { get; set; } = 30;
 }
