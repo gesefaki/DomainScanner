@@ -20,6 +20,14 @@ public class DomainsRepository(ScannerDbContext context) : IDomainsRepository
             .ToListAsync(ct);
     }
 
+    public async Task<List<DomainEntity>> GetBatchAsync(int batchSize, CancellationToken ct)
+    {
+        return await _context.Domains
+            .OrderBy(d => d.UpdatedAt ?? d.CreatedAt)
+            .Take(batchSize)
+            .ToListAsync(ct);
+    }
+
     public async Task<List<DomainEntity>> GetAllByUserIdAsync(Guid userId, CancellationToken ct)
     {
         return await _context.Domains

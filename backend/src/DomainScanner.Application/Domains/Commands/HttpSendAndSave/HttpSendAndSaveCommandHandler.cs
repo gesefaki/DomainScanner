@@ -58,6 +58,7 @@ public class HttpSendAndSaveCommandHandler : IRequestHandler<HttpSendAndSaveComm
         
         // Change the domain status
         domain.IsAvailable = response.IsSuccess;
+        domain.UpdatedAt = DateTime.UtcNow;
         
         // Creating new DomainCheckResult
         var check = new DomainCheckResult()

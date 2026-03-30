@@ -13,6 +13,8 @@ using DomainScanner.Infrastructure.Persistence.Context;
 using DomainScanner.Infrastructure.Persistence.Repositories;
 using DomainScanner.Infrastructure.Protocols.HTTP;
 using FluentValidation;
+using Hangfire;
+using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.EntityFrameworkCore;
 
@@ -81,6 +83,14 @@ builder.Services.AddDbContext<ScannerDbContext>(options =>
     )
 );
 
+// Hangfire
+builder.Services.AddHangfire(conf => conf
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UsePostgreSqlStorage(storageOptions =>
+        storageOptions.UseNpgsqlConnection(builder.Configuration.GetConnectionString("DefaultConnection"))));
+
+
 // Application
 var app = builder.Build();
 
@@ -112,6 +122,19 @@ app.UseCookiePolicy(new CookiePolicyOptions
     MinimumSameSitePolicy =  SameSiteMode.Strict,
     HttpOnly = HttpOnlyPolicy.Always,
     Secure = CookieSecurePolicy.Always
+});
+
+// Hangfire Dashboard
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    Authorization =
+    [
+        new HangfireAuthorizationFilter(app.Services.GetRequiredService<ILogger<HangfireAuthorizationFilter>>())
+    ],
+    DashboardTitle = "Domain Scanner Jobs",
+    StatsPollingInterval = 5000,
+    DisplayStorageConnectionString = false,
+    AppPath = "/"
 });
 
 // Start

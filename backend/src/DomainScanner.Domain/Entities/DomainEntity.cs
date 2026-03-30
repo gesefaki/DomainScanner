@@ -1,4 +1,6 @@
-﻿namespace DomainScanner.Domain.Entities;
+﻿using DomainScanner.Domain.Enums;
+
+namespace DomainScanner.Domain.Entities;
 
 public class DomainEntity
 {

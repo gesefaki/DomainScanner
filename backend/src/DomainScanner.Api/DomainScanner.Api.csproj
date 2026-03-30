@@ -9,6 +9,8 @@
 
     <ItemGroup>
         <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.1" />
+        <PackageReference Include="Hangfire.AspNetCore" Version="1.8.23" />
+        <PackageReference Include="Hangfire.PostgreSql" Version="1.21.1" />
         <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="9.0.11" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.10" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.11" />
@@ -22,6 +24,7 @@
       <ProjectReference Include="..\DomainScanner.Application\DomainScanner.Application.csproj" />
       <ProjectReference Include="..\DomainScanner.Domain\DomainScanner.Domain.csproj" />
       <ProjectReference Include="..\DomainScanner.Infrastructure\DomainScanner.Infrastructure.csproj" />
+      <ProjectReference Include="..\DomainScanner.Shared\DomainScanner.Shared.csproj" />
     </ItemGroup>
 
     <ItemGroup>

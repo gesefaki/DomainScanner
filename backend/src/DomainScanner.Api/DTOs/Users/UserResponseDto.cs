@@ -1,5 +1,4 @@
 ﻿using DomainScanner.Api.DTOs.Domains;
-using DomainScanner.Domain.Entities;
 
 namespace DomainScanner.Api.DTOs.Users;
 

@@ -19,7 +19,7 @@ public class UsersRepository(ScannerDbContext context) : IUsersRepository
         
         return await users.ToListAsync(ct);
     }
-
+    
     public async Task<User?> GetUserByIdAsync(Guid id, CancellationToken ct)
     {
         var user = await _context.Users
