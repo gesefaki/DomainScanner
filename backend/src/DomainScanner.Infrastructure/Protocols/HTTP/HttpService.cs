@@ -2,13 +2,18 @@
 using System.Net.Security;
 using System.Net.Sockets;
 using DomainScanner.Application.Abstractions.Scanners;
-using DomainScanner.Domain.ValueObjects;
+using DomainScanner.Domain.Models;
 
 namespace DomainScanner.Infrastructure.Protocols.HTTP;
 
-public class HttpService(IHttpClientFactory httpFactory) : IHttpScanner
+public class HttpService : IHttpScanner
 {
-    private readonly IHttpClientFactory _httpFactory = httpFactory;
+    private readonly IHttpClientFactory _httpFactory;
+
+    public HttpService(IHttpClientFactory httpFactory)
+    {
+        _httpFactory = httpFactory;
+    }
 
     public async Task<HttpResponseObject> GetHttpResponseAsync(Uri address, CancellationToken ct)
     {

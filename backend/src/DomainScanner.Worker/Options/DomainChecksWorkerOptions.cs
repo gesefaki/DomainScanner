@@ -1,4 +1,4 @@
-﻿namespace DomainScanner.Infrastructure.Hangfire.Options;
+﻿namespace DomainScanner.Worker.Options;
 
 public sealed class DomainChecksWorkerOptions
 {

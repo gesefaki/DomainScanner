@@ -25,4 +25,9 @@
         <ProjectReference Include="..\DomainScanner.Application\DomainScanner.Application.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Auth\" />
+      <Folder Include="DataAccess\" />
+    </ItemGroup>
+
 </Project>

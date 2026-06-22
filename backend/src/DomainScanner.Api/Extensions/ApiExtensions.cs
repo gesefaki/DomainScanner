@@ -1,5 +1,5 @@
 ﻿using System.Text;
-using DomainScanner.Infrastructure.Authentication;
+using DomainScanner.Infrastructure.Auth.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 

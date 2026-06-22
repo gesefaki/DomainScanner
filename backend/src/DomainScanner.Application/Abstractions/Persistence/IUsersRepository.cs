@@ -1,15 +1,12 @@
-﻿using DomainScanner.Domain.Entities;
+﻿using DomainScanner.Application.Abstractions.Persistence.Common;
+using DomainScanner.Domain.Entities;
 
 namespace DomainScanner.Application.Abstractions.Persistence;
 
-public interface IUsersRepository
+public interface IUsersRepository : IReadRepository<User>, IWriteRepository<User>
 {
-    Task<List<User>> GetAllUsersAsync(CancellationToken ct);
     Task<User?> GetUserByIdAsync(Guid id,  CancellationToken ct);
-    Task<User?> GetUserByEmailAsync(string email, CancellationToken ct);
     Task<bool> IsExistsByEmailAsync(string email, CancellationToken ct);
     Task<bool> IsExistsByUsernameAsync(string username, CancellationToken ct);
-    Task CreateAsync(User user,  CancellationToken ct);
-    void Delete(User user);
-    void Update(User user);
+
 }

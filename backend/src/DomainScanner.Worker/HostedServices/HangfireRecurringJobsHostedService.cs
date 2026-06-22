@@ -1,6 +1,5 @@
-﻿using DomainScanner.Infrastructure.Hangfire.Options;
-using DomainScanner.Shared.Hangfire.Interfaces;
-using DomainScanner.Worker.Jobs;
+﻿using DomainScanner.Shared.Hangfire.Interfaces;
+using DomainScanner.Worker.Options;
 using Hangfire;
 using Hangfire.Common;
 using Microsoft.Extensions.Options;

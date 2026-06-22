@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <UserSecretsId>dotnet-DomainScanner.Worker-34085ca4-55ae-4e56-a0a2-49576da57cfc</UserSecretsId>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Hangfire.AspNetCore" Version="1.8.23" />
+        <PackageReference Include="Hangfire.PostgreSql" Version="1.21.1" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.11" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.11" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.14" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="..\..\..\.dockerignore">
+        <Link>.dockerignore</Link>
+      </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\DomainScanner.Application\DomainScanner.Application.csproj" />
+      <ProjectReference Include="..\DomainScanner.Infrastructure\DomainScanner.Infrastructure.csproj" />
+      <ProjectReference Include="..\DomainScanner.Shared\DomainScanner.Shared.csproj" />
+    </ItemGroup>
+</Project>

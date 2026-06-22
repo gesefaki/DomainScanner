@@ -1,8 +1,8 @@
-﻿using DomainScanner.Domain.Entities;
+﻿using DomainScanner.Application.Abstractions.Persistence.Common;
+using DomainScanner.Domain.Entities;
 
 namespace DomainScanner.Application.Abstractions.Persistence;
 
-public interface IDomainCheckRepository
+public interface IDomainCheckRepository : IReadRepository<DomainCheckResult>, IWriteRepository<DomainCheckResult>
 {
-    Task Create(DomainCheckResult check, CancellationToken ct);
 }
