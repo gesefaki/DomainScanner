@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 
-namespace DomainScanner.Infrastructure.Persistence.Context;
+namespace DomainScanner.Infrastructure.DataAccess.Persistence.Context;
 
 public class ScannerDbContextFactory : IDesignTimeDbContextFactory<ScannerDbContext>
 {

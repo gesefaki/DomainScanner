@@ -1,4 +1,4 @@
-﻿namespace DomainScanner.Application.Abstractions;
+﻿namespace DomainScanner.Application.Abstractions.Auth;
 
 public interface IPasswordHasher
 {

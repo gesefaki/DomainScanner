@@ -1,5 +1,7 @@
-﻿using DomainScanner.Application.Abstractions.Mediator;
+﻿using DomainScanner.Application.Pipelines.Interfaces;
+using DomainScanner.Contracts.DTOs.Users.Requests;
+using DomainScanner.Contracts.DTOs.Users.Responses;
 
-namespace DomainScanner.Application.Users.Commands.DeactivateUser;
+namespace DomainScanner.Application.Handlers.Users.Commands.DeactivateUser;
 
-public record DeactivateUserCommand(Guid Id) : IRequest<Guid>;
+public record DeactivateUserCommand(DeactivateUserRequest Request) : ICommand<UserResponse>;

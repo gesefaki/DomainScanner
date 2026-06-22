@@ -1,28 +1,25 @@
-﻿using DomainScanner.Application.Abstractions.Mediator;
-using DomainScanner.Application.Abstractions.Persistence;
+﻿using AutoMapper;
+using DomainScanner.Application.Abstractions.Persistence.Common;
+using DomainScanner.Contracts.DTOs.Users.Responses;
 using DomainScanner.Domain.Entities;
-using Microsoft.Extensions.Logging;
+using MediatR;
 
-namespace DomainScanner.Application.Users.Queries.GetAllUsers;
+namespace DomainScanner.Application.Handlers.Users.Queries.GetAllUsers;
 
-public class GetAllUsersQueryHandler: IRequestHandler<GetAllUsersQuery, List<User>>
+public class GetAllUsersQueryHandler : IRequestHandler<GetAllUsersQuery, IEnumerable<UserResponse>>
 {
-    private readonly IUsersRepository _usersRepository;
-    private readonly ILogger<GetAllUsersQueryHandler> _logger;
+    private readonly IReadRepository<User> _repository;
+    private readonly IMapper _mapper;
 
-    public GetAllUsersQueryHandler(IUsersRepository usersRepository,
-        ILogger<GetAllUsersQueryHandler> logger)
+    public GetAllUsersQueryHandler(IReadRepository<User> repository, IMapper mapper)
     {
-        _usersRepository = usersRepository;
-        _logger = logger;
+        _repository = repository;
+        _mapper = mapper;
     }
     
-    public async Task<List<User>> Handle(GetAllUsersQuery request, CancellationToken ct)
+    public async Task<IEnumerable<UserResponse>> Handle(GetAllUsersQuery request, CancellationToken ct)
     {
-        _logger.LogInformation("Getting all users...");
-        var users  = await _usersRepository.GetAllUsersAsync(ct);
-        
-        _logger.LogInformation($"Found {users.Count} users.");
-        return users;
+        var result = await _repository.GetAllAsync(ct);
+        return result.Select(_mapper.Map<UserResponse>);
     }
 }

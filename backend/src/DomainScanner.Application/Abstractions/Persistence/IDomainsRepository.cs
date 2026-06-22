@@ -1,16 +1,8 @@
-﻿using DomainScanner.Domain.Entities;
+﻿using DomainScanner.Application.Abstractions.Persistence.Common;
+using DomainScanner.Domain.Entities;
 
 namespace DomainScanner.Application.Abstractions.Persistence;
 
-public interface IDomainsRepository
+public interface IDomainsRepository : IReadRepository<DomainEntity>, IWriteRepository<DomainEntity>
 {
-    Task<List<DomainEntity>> GetAllAsync(CancellationToken ct);
-    Task<List<DomainEntity>> GetBatchAsync(int batchSize, CancellationToken ct);
-    Task<List<DomainEntity>> GetAllWithResultsAsync(CancellationToken ct);
-    Task<List<DomainEntity>> GetAllByUserIdAsync(Guid userId, CancellationToken ct);
-    Task<DomainEntity?> GetByIdAsync(Guid id, CancellationToken ct);
-    Task<bool> IsExistsAsync(Guid id, CancellationToken ct);
-    Task CreateAsync(DomainEntity domainEntity, CancellationToken ct);
-    void Delete(DomainEntity domainEntity);
-    void Update(DomainEntity domainEntity);
 }

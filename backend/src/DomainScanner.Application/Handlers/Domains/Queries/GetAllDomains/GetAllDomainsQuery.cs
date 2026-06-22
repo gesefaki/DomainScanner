@@ -1,6 +1,6 @@
-﻿using DomainScanner.Application.Abstractions.Mediator;
-using DomainScanner.Domain.Entities;
+﻿using DomainScanner.Contracts.DTOs.Domains.Responses;
+using MediatR;
 
-namespace DomainScanner.Application.Domains.Queries.GetAllDomains;
+namespace DomainScanner.Application.Handlers.Domains.Queries.GetAllDomains;
 
-public record GetAllDomainsQuery : IRequest<List<DomainEntity>>;
+public record GetAllDomainsQuery : IRequest<IEnumerable<DomainResponse>>;

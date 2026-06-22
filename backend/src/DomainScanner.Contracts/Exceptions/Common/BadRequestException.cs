@@ -1,4 +1,4 @@
-﻿namespace DomainScanner.Application.Exceptions;
+﻿namespace DomainScanner.Contracts.Exceptions.Common;
 
 public class BadRequestException : Exception
 {

@@ -1,8 +1,8 @@
-﻿namespace DomainScanner.Application.Exceptions;
+﻿namespace DomainScanner.Contracts.Exceptions.Domains;
 
-public class DomaimInvalidAddressFormatException : Exception
+public class DomainInvalidAddressFormatException : Exception
 {
-    public DomaimInvalidAddressFormatException(string name) : base($"Address {name} is invalid")
+    public DomainInvalidAddressFormatException(string name) : base($"Address {name} is invalid")
     {
     }
 }

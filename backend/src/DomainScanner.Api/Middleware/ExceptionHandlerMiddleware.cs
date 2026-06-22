@@ -1,5 +1,7 @@
-﻿using DomainScanner.Api.Models;
-using DomainScanner.Application.Exceptions;
+﻿using DomainScanner.Contracts.Exceptions.Common;
+using DomainScanner.Contracts.Exceptions.Domains;
+using DomainScanner.Contracts.Exceptions.Users;
+using DomainScanner.Contracts.Models;
 
 namespace DomainScanner.Api.Middleware;
 
@@ -35,17 +37,17 @@ public class ExceptionHandlerMiddleware
                 StatusCode = 400,
                 Message = "Bad Request."
             },
-            UriValidationException => new ErrorResponse
+            DomainUriValidationException => new ErrorResponse
             {
                 StatusCode = 400,
                 Message = "Address is invalid."
             },
-            InvalidAddressFormatException => new ErrorResponse()
+            DomainInvalidAddressFormatException => new ErrorResponse()
             {
                 StatusCode = 400,
                 Message = "Address is invalid."
             },
-            InvalidCredentialsException => new ErrorResponse()
+            UserInvalidCredentialsException => new ErrorResponse()
             {
                 StatusCode = 401,
                 Message = "Invalid email or password."
@@ -65,7 +67,7 @@ public class ExceptionHandlerMiddleware
                 StatusCode = 409,
                 Message = "Unable to execute."
             },
-            ConflictCredsException => new ErrorResponse
+            UserConflictCredsException => new ErrorResponse
             {
                 StatusCode = 409,
                 Message = "Username or email already exists."
@@ -76,7 +78,7 @@ public class ExceptionHandlerMiddleware
                 Message = "Internal Server Error. Please try again later."
             }
         };
-        _logger.LogError(exception.Message);
+        _logger.LogError(exception.Message, exception.StackTrace);
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = response.StatusCode;
         await context.Response.WriteAsJsonAsync(response);

@@ -1,3 +1,3 @@
 ﻿namespace DomainScanner.Contracts.DTOs.Users.Requests;
 
-public record GetUserByIdRequest();
+public record GetUserByIdRequest(Guid Id);

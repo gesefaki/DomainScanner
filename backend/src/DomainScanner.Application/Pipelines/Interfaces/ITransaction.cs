@@ -1,6 +1,3 @@
 ﻿namespace DomainScanner.Application.Pipelines.Interfaces;
 
-public interface ITransaction
-{
-    
-}
+public interface ITransaction<TResponse> : ICommand<TResponse>;

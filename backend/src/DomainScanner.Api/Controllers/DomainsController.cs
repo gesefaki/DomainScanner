@@ -1,21 +1,17 @@
-﻿using DomainScanner.Api.DTOs.Domains;
-using DomainScanner.Api.Mapping;
-using DomainScanner.Application.Abstractions.Mediator;
-using DomainScanner.Application.Domains.Commands.CreateDomain;
-using DomainScanner.Application.Domains.Commands.DeleteDomain;
-using DomainScanner.Application.Domains.Commands.HttpSendAndSave;
-using DomainScanner.Application.Domains.Commands.UpdateDomain;
-using DomainScanner.Application.Domains.Queries.GetAllDomains;
-using DomainScanner.Application.Domains.Queries.GetAllDomainsByUser;
-using DomainScanner.Application.Domains.Queries.GetDomainById;
-using DomainScanner.Application.Domains.Queries.GetHttpDetails;
-using DomainScanner.Application.Domains.Queries.GetHttpResponse;
-using DomainScanner.Application.Exceptions;
-using DomainScanner.Domain.Entities;
-using FluentValidation;
-using FluentValidation.Results;
+﻿using DomainScanner.Application.Handlers.Domains.Commands.CreateDomain;
+using DomainScanner.Application.Handlers.Domains.Commands.DeleteDomain;
+using DomainScanner.Application.Handlers.Domains.Commands.HttpSendAndSave;
+using DomainScanner.Application.Handlers.Domains.Commands.UpdateDomain;
+using DomainScanner.Application.Handlers.Domains.Queries.GetAllDomains;
+using DomainScanner.Application.Handlers.Domains.Queries.GetDomainById;
+using DomainScanner.Application.Handlers.Domains.Queries.GetHttpDetails;
+using DomainScanner.Application.Handlers.Domains.Queries.GetHttpResponse;
+using DomainScanner.Contracts.DTOs.Domains.Requests;
+using DomainScanner.Contracts.DTOs.Domains.Responses;
+using DomainScanner.Contracts.DTOs.HTTPs.Responses;
 using Hangfire;
 using Hangfire.Storage;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -27,130 +23,76 @@ namespace DomainScanner.Api.Controllers;
 public class DomainsController : Controller
 {
     private readonly IMediator _mediator;
-    private readonly IValidator<DomainEntity> _validator;
-    private readonly ILogger<DomainsController> _logger;
 
-    public DomainsController(IMediator mediator, IValidator<DomainEntity> validator,
-        ILogger<DomainsController> logger)
+    public DomainsController(IMediator mediator)
     {
         _mediator = mediator;
-        _validator = validator;
-        _logger = logger;
     }
     
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<DomainResponseDto>>> GetAll(CancellationToken ct = default)
+    public async Task<ActionResult<IEnumerable<DomainResponse>>> GetAll(CancellationToken ct)
     {
         var query = new GetAllDomainsQuery();
         var domains = await _mediator.Send(query, ct);
-        var response = domains.Select(DomainsMapper.DomainToDomainResponseDto);
-        return Ok(response);
+        return Ok(domains);
     }
 
     [HttpGet("{id:guid}")]
-    public async Task<ActionResult<DomainResponseDto>> Get(Guid id, CancellationToken ct = default)
+    public async Task<ActionResult<DomainResponse>> Get(Guid id, CancellationToken ct)
     {
         var query = new GetDomainByIdQuery(id);
         var domain = await _mediator.Send(query, ct);
-        if (domain is null)
-            return NotFound();
-        
-        var response = DomainsMapper.DomainToDomainResponseDto(domain);
-        return Ok(response);
-    }
-
-    [HttpGet("u/{id:guid}")]
-    public async Task<ActionResult<IEnumerable<DomainResponseDto>>> GetUserDomains(Guid id,
-        CancellationToken ct = default)
-    {
-        var query = new GetAllDomainsByUserQuery(id);
-        var domains = await _mediator.Send(query, ct);
-        var response = domains.Select(DomainsMapper.DomainToDomainResponseDto);
-        return Ok(response);
+        return Ok(domain);
     }
 
     [HttpGet("http/check/{id:guid}")]
-    public async Task<ActionResult<DomainResponseDto>> GetHttpCheck(Guid id, CancellationToken ct = default)
+    public async Task<ActionResult<DomainResponse>> GetHttpCheck(Guid id, CancellationToken ct)
     {
-        var domain = await _mediator.Send(new GetDomainByIdQuery(id), ct);
-        if (domain is null)
-            throw new DomainNotFoundException(id);
-        
-        var query = new GetHttpResponseQuery(domain);
+        var query = new GetHttpResponseQuery(id);
         var response = await _mediator.Send(query, ct);
-        return Ok(DomainsMapper.HttpResponseToHttpResponseDto(domain.Address, response));
+        return Ok(response);
     }
 
     [HttpGet("http/check-with-details/{id:guid}")]
-    public async Task<ActionResult<HttpResponseDetailsDto>> GetHttpCheckWithDetails(Guid id, CancellationToken ct = default)
+    public async Task<ActionResult<HttpResponseDetails>> GetHttpCheckWithDetails(Guid id, CancellationToken ct)
     {
-        var domain = await _mediator.Send(new GetDomainByIdQuery(id), ct);
-        if (domain is null)
-            throw new UserNotFoundException(id);
-
         var query = new GetHttpDetailsQuery(id);
         var result =  await _mediator.Send(query, ct);
-        return Ok(DomainsMapper.HttpDetailsToDto(result));
+        return Ok(result);
     }
 
-    [HttpPut("put/{id::guid}")]
-    public async Task<ActionResult> Update([FromBody] UpdateDomainDto dto, Guid id, CancellationToken ct = default)
+    [HttpPut("{id::guid}")]
+    public async Task<ActionResult> Update(Guid id, 
+        [FromBody] UpdateDomainRequest request, 
+        CancellationToken ct)
     {
-        var existingDomain = await _mediator.Send(new GetDomainByIdQuery(id), ct);
-        if (existingDomain is null)
-            return NotFound();
-
-        var updatedDomain = new DomainEntity()
-        {
-            Id = existingDomain.Id,
-            Address = dto.Address,
-            IsAvailable = dto.IsAvailable
-        };
-        
-        var cmd = new UpdateDomainCommand(id,  updatedDomain);
-        await _mediator.Send(cmd, ct);
-        
-        return CreatedAtAction(nameof(Get), new { id = cmd.Id }, cmd);
+        var cmd = new UpdateDomainCommand(id, request);
+        var result = await _mediator.Send(cmd, ct);
+        return Ok(result);
     }
     
-    [HttpPost("create")]
-    public async Task<ActionResult> Create([FromBody] CreateDomainDto dto, CancellationToken ct = default)
+    [HttpPost]
+    public async Task<ActionResult> Create([FromBody] CreateDomainRequest request, CancellationToken ct)
     {
-        ValidationResult validationResult = await _validator.ValidateAsync(
-            DomainsMapper.CreateDomainDtoToDomain(dto), ct);
-
-        if (!validationResult.IsValid)
-        {
-            _logger.LogWarning("Validation error.");
-            throw new BadRequestException(validationResult.Errors.ToString()!);
-        }
-
-        var domain = DomainsMapper.CreateDomainDtoToDomain(dto);
-        var cmd = new CreateDomainCommand(domain);
-        await _mediator.Send(cmd, ct);
-        
-        return CreatedAtAction(nameof(Get), new { id = cmd.Domain.Id }, cmd);
+        var cmd = new CreateDomainCommand(request);
+        var domain = await _mediator.Send(cmd, ct);
+        return CreatedAtAction(nameof(Get), new { id = domain.Id }, domain);
     }
 
     [HttpPost("send-and-save/{id::guid}")]
-    public async Task<ActionResult<HttpResponseDto>> SendAndSave(Guid id, CancellationToken ct = default)
+    public async Task<ActionResult<DomainResponse>> SendAndSave(Guid id, CancellationToken ct = default)
     {
-        var domain = await _mediator.Send(new GetDomainByIdQuery(id), ct);
-        if (domain is null)
-            throw new DomainNotFoundException(id);
-
         var cmd = new HttpSendAndSaveCommand(id);
         var check = await _mediator.Send(cmd, ct);
-
-        return Ok(DomainResultsMapper.CheckToResponseDto(check));
+        return Ok(check);
     }
-
-    [HttpDelete("delete/{id:guid}")]
-    public async Task<ActionResult> Delete(Guid id, CancellationToken ct = default)
+    
+    
+    [HttpDelete("{id:guid}")]
+    public async Task<ActionResult> Delete(DeleteDomainRequest request, CancellationToken ct)
     {
-        var cmd = new DeleteDomainCommand(id);
+        var cmd = new DeleteDomainCommand(request);
         await _mediator.Send(cmd, ct);
-        
         return NoContent();
     }
     
@@ -159,16 +101,13 @@ public class DomainsController : Controller
     public IActionResult CleanupHangfireJobs()
     {
         using var connection = JobStorage.Current.GetConnection();
-    
-        // Удалить все recurring jobs
+        
         var recurringJobs = connection.GetRecurringJobs();
         foreach (var job in recurringJobs)
         {
             RecurringJob.RemoveIfExists(job.Id);
-            _logger.LogInformation("Removed job: {JobId}", job.Id);
         }
-    
-        // Перезапустить Worker, чтобы он создал задачи заново
+        
         return Ok($"Removed {recurringJobs.Count()} jobs. Restart worker to recreate them.");
     }
 }

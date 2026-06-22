@@ -1,7 +1,6 @@
-﻿using DomainScanner.Application.Abstractions.Mediator;
-using DomainScanner.Domain.Entities;
-using DomainScanner.Domain.Models;
+﻿using DomainScanner.Domain.Models;
+using MediatR;
 
-namespace DomainScanner.Application.Domains.Queries.GetHttpResponse;
+namespace DomainScanner.Application.Handlers.Domains.Queries.GetHttpResponse;
 
-public record GetHttpResponseQuery(DomainEntity Domain) : IRequest<HttpResponseObject>;
+public record GetHttpResponseQuery(Guid Id) : IRequest<HttpResponseObject>;

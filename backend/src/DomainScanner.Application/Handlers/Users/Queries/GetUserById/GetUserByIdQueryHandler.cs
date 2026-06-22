@@ -1,29 +1,33 @@
-﻿using DomainScanner.Application.Abstractions.Mediator;
-using DomainScanner.Application.Abstractions.Persistence;
+﻿using AutoMapper;
+using DomainScanner.Application.Abstractions.Persistence.Common;
+using DomainScanner.Contracts.DTOs.Users.Responses;
+using DomainScanner.Contracts.Exceptions.Users;
 using DomainScanner.Domain.Entities;
-using Microsoft.Extensions.Logging;
+using MediatR;
 
-namespace DomainScanner.Application.Users.Queries.GetUserById;
+namespace DomainScanner.Application.Handlers.Users.Queries.GetUserById;
 
-public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, User?>
+public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, UserResponse>
 {
-    private readonly IUsersRepository _usersRepository;
-    private readonly ILogger<GetUserByIdQueryHandler> _logger;
-
-    public GetUserByIdQueryHandler(IUsersRepository usersRepository,
-        ILogger<GetUserByIdQueryHandler> logger)
+    private readonly IReadRepository<User> _repository;
+    private readonly IMapper _mapper;
+    
+    public GetUserByIdQueryHandler(IReadRepository<User> repository,
+        IMapper mapper)
     {
-        _usersRepository = usersRepository;
-        _logger = logger;
+        _repository = repository;
+        _mapper = mapper;
+
     }
     
-    public async Task<User?> Handle(GetUserByIdQuery request, CancellationToken ct)
+    public async Task<UserResponse> Handle(GetUserByIdQuery request, CancellationToken ct)
     {
-        _logger.LogInformation($"Getting user with id {request.Id}...");
-        var user =  await _usersRepository.GetUserByIdAsync(request.Id,  ct);
+        var result = await _repository.FindAsync(request.Request.Id, ct);
+        if (result is null)
+        {
+            throw new UserNotFoundException(request.Request.Id);
+        }
 
-        // null's because we can get null from GetUserByIdAsync()
-        _logger.LogInformation($"Founded: User with id {user?.Id ?? null}: {user?.Username ?? null}");
-        return user;
+        return _mapper.Map<UserResponse>(result);
     }
 }

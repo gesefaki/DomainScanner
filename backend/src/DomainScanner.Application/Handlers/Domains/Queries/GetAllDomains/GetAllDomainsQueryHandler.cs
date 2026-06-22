@@ -1,28 +1,25 @@
-﻿using DomainScanner.Application.Abstractions.Mediator;
-using DomainScanner.Application.Abstractions.Persistence;
+﻿using AutoMapper;
+using DomainScanner.Application.Abstractions.Persistence.Common;
+using DomainScanner.Contracts.DTOs.Domains.Responses;
 using DomainScanner.Domain.Entities;
-using Microsoft.Extensions.Logging;
+using MediatR;
 
-namespace DomainScanner.Application.Domains.Queries.GetAllDomains;
+namespace DomainScanner.Application.Handlers.Domains.Queries.GetAllDomains;
 
-public class GetAllDomainsQueryHandler : IRequestHandler<GetAllDomainsQuery, List<DomainEntity>>
+public class GetAllDomainsQueryHandler : IRequestHandler<GetAllDomainsQuery, IEnumerable<DomainResponse>>
 {
-    private readonly IDomainsRepository _domainsRepository;
-    private readonly ILogger<GetAllDomainsQueryHandler> _logger;
+    private readonly IReadRepository<DomainEntity> _repository;
+    private readonly IMapper _mapper;
 
-    public GetAllDomainsQueryHandler(IDomainsRepository domainsRepository, 
-        ILogger<GetAllDomainsQueryHandler> logger)
+    public GetAllDomainsQueryHandler(IReadRepository<DomainEntity> repository, IMapper mapper)
     {
-        _domainsRepository = domainsRepository;
-        _logger = logger;
+        _repository = repository;
+        _mapper = mapper;
     }
-    
-    public async Task<List<DomainEntity>> Handle(GetAllDomainsQuery request, CancellationToken ct)
+
+    public async Task<IEnumerable<DomainResponse>> Handle(GetAllDomainsQuery request, CancellationToken ct)
     {
-        _logger.LogInformation("Getting all of domains...");
-        var domains = await _domainsRepository.GetAllAsync(ct);
-        
-        _logger.LogInformation($"Domains found: {domains.Count}");
-        return domains;
+        var domains = await _repository.GetAllAsync(ct);
+        return domains.Select(_mapper.Map<DomainResponse>);
     }
 }

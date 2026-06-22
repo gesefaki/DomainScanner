@@ -1,5 +1,5 @@
-﻿using DomainScanner.Application.Abstractions.Mediator;
+﻿using MediatR;
 
-namespace DomainScanner.Application.Users.Queries.LoginUser;
+namespace DomainScanner.Application.Handlers.Users.Queries.LoginUser;
 
 public record LoginUserQuery(string Email, string Password) : IRequest<string>;

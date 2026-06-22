@@ -1,61 +1,57 @@
-﻿using DomainScanner.Application.Abstractions;
-using DomainScanner.Application.Abstractions.Mediator;
-using DomainScanner.Application.Abstractions.Persistence;
-using DomainScanner.Application.Exceptions;
-using DomainScanner.Application.Exceptions.Users;
+﻿using AutoMapper;
+using DomainScanner.Application.Abstractions.Auth;
+using DomainScanner.Application.Abstractions.Persistence.Common;
+using DomainScanner.Contracts.DTOs.Users.Responses;
+using DomainScanner.Contracts.Exceptions.Users;
 using DomainScanner.Domain.Entities;
-using Microsoft.Extensions.Logging;
+using MediatR;
 
-namespace DomainScanner.Application.Users.Commands.RegisterUser;
+namespace DomainScanner.Application.Handlers.Users.Commands.RegisterUser;
 
-public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, User>
+public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, UserResponse>
 {
-    private readonly ILogger<RegisterUserCommandHandler> _logger;
+    private readonly IReadRepository<User> _readRepository;
+    private readonly IWriteRepository<User> _writeRepository;
     private readonly IPasswordHasher _hasher;
-    private readonly IUsersRepository _repository;
-    private readonly IUnitOfWork _uof;
+    private readonly IMapper _mapper;
 
-    public RegisterUserCommandHandler(ILogger<RegisterUserCommandHandler> logger, IPasswordHasher hasher,
-        IUsersRepository repository, IUnitOfWork uof)
+    public RegisterUserCommandHandler(IReadRepository<User> readRepository,
+        IWriteRepository<User> writeRepository,
+        IPasswordHasher hasher,
+        IMapper mapper)
     {
-        _logger = logger;
+        _readRepository = readRepository;
+        _writeRepository = writeRepository;
         _hasher = hasher;
-        _repository = repository;
-        _uof = uof;
+        _mapper = mapper;
     }
 
-    public async Task<User> Handle(RegisterUserCommand request, CancellationToken ct)
+    public async Task<UserResponse> Handle(RegisterUserCommand request, CancellationToken ct)
     {
-        _logger.LogInformation("Registering user with email {email}", request.Email);
-
-        if (await _repository.IsExistsByEmailAsync(request.Email, ct) ||
-            await _repository.IsExistsByUsernameAsync(request.Username, ct))
+        // check the existence of a user by credits
+        if (await _readRepository.IsExistsByAttribute(u => u.Email == request.Request.Email, ct) &&
+            await _readRepository.IsExistsByAttribute(u => u.Username == request.Request.Username, ct))
         {
-            _logger.LogInformation("Failed to register user with email {email} and username {username}", request.Email, request.Username);
             throw new UserConflictCredsException();
         }
-        
-        var hashedPassword = _hasher.Generate(request.Password);
-        
-        _logger.LogInformation("Hashed password {hashedPassword}", hashedPassword);
-        
+
+        // hashing password
+        var hashedPassword = _hasher.Generate(request.Request.Password);
+
+        // creating new user entity
         var user = new User
         {
-            Username = request.Username,
+            Username = request.Request.Username,
             PasswordHash = hashedPassword,
-            Email = request.Email,
+            Email = request.Request.Email,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = null,
             IsActive = true
         };
 
-        _logger.LogInformation("Created new user with id {id}", user.Id);
-        
-        await _repository.CreateAsync(user, ct);
-        await _uof.SaveChangesAsync(ct);
-        
-        _logger.LogInformation("User with id {id} registered successfully", user.Id);
+        // adding user to db
+        await _writeRepository.CreateAsync(user, ct);
 
-        return user;
+        return _mapper.Map<UserResponse>(user);
     }
 }

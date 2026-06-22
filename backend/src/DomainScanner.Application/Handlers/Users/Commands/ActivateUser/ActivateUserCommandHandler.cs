@@ -1,54 +1,47 @@
-﻿using DomainScanner.Application.Abstractions.Mediator;
-using DomainScanner.Application.Abstractions.Persistence;
-using DomainScanner.Application.Exceptions;
+﻿using AutoMapper;
+using DomainScanner.Application.Abstractions.Persistence.Common;
+using DomainScanner.Contracts.DTOs.Users.Responses;
+using DomainScanner.Contracts.Exceptions.Common;
+using DomainScanner.Contracts.Exceptions.Users;
 using DomainScanner.Domain.Entities;
-using Microsoft.Extensions.Logging;
+using MediatR;
 
-namespace DomainScanner.Application.Users.Commands.ActivateUser;
+namespace DomainScanner.Application.Handlers.Users.Commands.ActivateUser;
 
-public class ActivateUserCommandHandler : IRequestHandler<ActivateUserCommand, Guid>
+public class ActivateUserCommandHandler : IRequestHandler<ActivateUserCommand, UserResponse>
 {
-    private readonly IUsersRepository _usersRepository;
-    private readonly IUnitOfWork _uof;
-    private readonly ILogger<ActivateUserCommandHandler> _logger;
-
-    public ActivateUserCommandHandler(IUsersRepository usersRepository,
-        IUnitOfWork uof,
-        ILogger<ActivateUserCommandHandler> logger)
+    private readonly IReadRepository<User> _readRepository;
+    private readonly IWriteRepository<User> _writeRepository;
+    private readonly IMapper _mapper;
+    
+    public ActivateUserCommandHandler(IWriteRepository<User> writeRepository, 
+        IReadRepository<User> readRepository, 
+        IMapper mapper)
     {
-        _usersRepository = usersRepository;
-        _uof = uof;
-        _logger = logger;
+        _writeRepository = writeRepository;
+        _readRepository = readRepository;
+        _mapper = mapper;
     }
 
-    public async Task<Guid> Handle(ActivateUserCommand request, CancellationToken ct)
+    public async Task<UserResponse> Handle(ActivateUserCommand request, CancellationToken ct)
     {
         // Getting user
-        _logger.LogInformation($"Getting user with id {request.Id}...");
-        var user = await _usersRepository.GetUserByIdAsync(request.Id, ct);
+        var user = await _readRepository.FindAsync(request.Request.Id, ct);
         if (user is null)
         {
-            _logger.LogWarning($"User with id {request.Id} not found.");
-            throw new UserNotFoundException(request.Id);
+            throw new UserNotFoundException(request.Request.Id);
         }
-        _logger.LogInformation($"User with id {request.Id} was found.");
         
         // Is user activated?
         if (user.IsActive)
         {
-            _logger.LogError($"User with id {request.Id} is already activated.");
-            throw new UnableToExecuteException(nameof(user), request.Id, nameof(user.IsActive));
+            throw new UnableToExecuteException(nameof(user), request.Request.Id, nameof(user.IsActive));
         }
 
         // Activation
-        _logger.LogInformation($"Activating user with id {request.Id}...");
-        
         user.IsActive = true;
-        _usersRepository.Update(user);
-        await _uof.SaveChangesAsync(ct);
-        
-        _logger.LogInformation($"User with id {request.Id} was activated.");
-        
-        return user.Id;
+        var updatedUser = _writeRepository.Update(user);
+
+        return _mapper.Map<UserResponse>(updatedUser);
     }
 }

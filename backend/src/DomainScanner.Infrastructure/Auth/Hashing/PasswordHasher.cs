@@ -1,6 +1,7 @@
 ﻿using DomainScanner.Application.Abstractions;
+using DomainScanner.Application.Abstractions.Auth;
 
-namespace DomainScanner.Infrastructure.Hashing;
+namespace DomainScanner.Infrastructure.Auth.Hashing;
 
 public class PasswordHasher : IPasswordHasher
 {

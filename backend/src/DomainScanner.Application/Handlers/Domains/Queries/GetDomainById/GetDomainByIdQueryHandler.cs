@@ -1,28 +1,31 @@
-﻿using DomainScanner.Application.Abstractions.Mediator;
-using DomainScanner.Application.Abstractions.Persistence;
+﻿using AutoMapper;
+using DomainScanner.Application.Abstractions.Persistence.Common;
+using DomainScanner.Contracts.DTOs.Domains.Responses;
+using DomainScanner.Contracts.Exceptions.Users;
 using DomainScanner.Domain.Entities;
-using Microsoft.Extensions.Logging;
+using MediatR;
 
-namespace DomainScanner.Application.Domains.Queries.GetDomainById;
+namespace DomainScanner.Application.Handlers.Domains.Queries.GetDomainById;
 
-public class GetDomainByIdQueryHandler : IRequestHandler<GetDomainByIdQuery, DomainEntity?>
+public class GetDomainByIdQueryHandler : IRequestHandler<GetDomainByIdQuery, DomainResponse>
 {
-    private readonly IDomainsRepository _domainsRepository;
-    private readonly ILogger<GetDomainByIdQueryHandler> _logger;
+    private readonly IReadRepository<DomainEntity> _repository;
+    private readonly IMapper _mapper;
 
-    public GetDomainByIdQueryHandler(IDomainsRepository domainsRepository,
-        ILogger<GetDomainByIdQueryHandler> logger)
+    public GetDomainByIdQueryHandler(IReadRepository<DomainEntity> repository, IMapper mapper)
     {
-        _domainsRepository = domainsRepository;
-        _logger = logger;
+        _repository = repository;
+        _mapper = mapper;
     }
-    
-    public async Task<DomainEntity?> Handle(GetDomainByIdQuery request, CancellationToken ct)
+
+    public async Task<DomainResponse> Handle(GetDomainByIdQuery request, CancellationToken ct)
     {
-        _logger.LogInformation($"Getting domain with  id {request.Id}...");
-        var domain = await _domainsRepository.GetByIdAsync(request.Id, ct);
-        
-        _logger.LogInformation($"Founded: {domain?.Id ?? null}");
-        return domain;
+        var domain = await _repository.FindAsync(request.Id, ct);
+        if (domain is null)
+        {
+            throw new UserNotFoundException(request.Id);
+        }
+
+        return _mapper.Map<DomainResponse>(domain);
     }
 }

@@ -1,28 +1,22 @@
 ﻿using DomainScanner.Application.Abstractions.Persistence;
-
 using FluentValidation;
 
-namespace DomainScanner.Application.Handlers.Users.Commands.RegisterUser;
+namespace DomainScanner.Application.Handlers.Users.Queries.LoginUser;
 
-public class RegisterUserCommandValidator : AbstractValidator<RegisterUserCommand>
+public class LoginUserQueryValidator : AbstractValidator<LoginUserQuery>
 {
     private readonly IUsersRepository _repository;
     
-    public RegisterUserCommandValidator(IUsersRepository repository)
+    public LoginUserQueryValidator(IUsersRepository repository)
     {
         _repository = repository;
 
-        RuleFor(r => r.Request.Username)
-            .NotEmpty()
-            .Length(3, 20)
-            .Matches("^[a-zA-Z0-9_-]+$");
-
-        RuleFor(r => r.Request.Email)
+        RuleFor(r => r.Email)
             .NotEmpty()
             .EmailAddress()
             .MustAsync(IsUniqueEmail).WithMessage("Email already registered.");
 
-        RuleFor(r => r.Request.Password)
+        RuleFor(r => r.Password)
             .NotEmpty()
             .MinimumLength(8)
             .Matches("[A-Z]").WithMessage("Password must contain at least one uppercase letter.")

@@ -1,4 +1,4 @@
-﻿namespace DomainScanner.Api.Models;
+﻿namespace DomainScanner.Contracts.Models;
 
 public class ErrorResponse
 {

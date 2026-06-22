@@ -1,4 +1,4 @@
-﻿namespace DomainScanner.Infrastructure.Authentication;
+﻿namespace DomainScanner.Infrastructure.Auth.Authentication;
 
 public class JwtOptions
 {

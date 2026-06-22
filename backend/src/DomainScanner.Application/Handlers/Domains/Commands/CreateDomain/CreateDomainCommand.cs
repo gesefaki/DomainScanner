@@ -1,8 +1,7 @@
-﻿using DomainScanner.Application.Abstractions.Mediator;
-using DomainScanner.Domain.Entities;
+﻿using DomainScanner.Application.Pipelines.Interfaces;
+using DomainScanner.Contracts.DTOs.Domains.Requests;
+using DomainScanner.Contracts.DTOs.Domains.Responses;
 
-namespace DomainScanner.Application.Domains.Commands.CreateDomain;
+namespace DomainScanner.Application.Handlers.Domains.Commands.CreateDomain;
 
-public record CreateDomainCommand(DomainEntity Domain) : IRequest<Guid>
-{
-}
+public record CreateDomainCommand(CreateDomainRequest Request) : ICommand<DomainResponse>;

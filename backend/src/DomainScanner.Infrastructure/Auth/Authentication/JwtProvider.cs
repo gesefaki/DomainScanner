@@ -2,11 +2,12 @@
 using System.Security.Claims;
 using System.Text;
 using DomainScanner.Application.Abstractions;
+using DomainScanner.Application.Abstractions.Auth;
 using DomainScanner.Domain.Entities;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
-namespace DomainScanner.Infrastructure.Authentication;
+namespace DomainScanner.Infrastructure.Auth.Authentication;
 
 public class JwtProvider(IOptions<JwtOptions> options) : IJwtProvider
 {

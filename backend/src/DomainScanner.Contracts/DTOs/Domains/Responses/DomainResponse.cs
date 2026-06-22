@@ -1,10 +1,9 @@
-﻿using DomainScanner.Contracts.DTOs.HTTPs;
-using DomainScanner.Contracts.DTOs.HTTPs.Responses;
+﻿using DomainScanner.Contracts.DTOs.HTTPs.Responses;
 
 namespace DomainScanner.Contracts.DTOs.Domains.Responses;
 
-public record HttpResponse(Guid Id, 
+public record DomainResponse(Guid Id, 
     string Address, 
     bool? IsAvailable, 
     Guid UserId,
-    HTTPs.Responses.HttpResponse[] Checks);
+    HttpResponse[] Checks);

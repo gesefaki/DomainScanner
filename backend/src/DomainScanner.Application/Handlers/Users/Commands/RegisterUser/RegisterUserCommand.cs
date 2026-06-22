@@ -1,6 +1,7 @@
-﻿using DomainScanner.Application.Abstractions.Mediator;
-using DomainScanner.Domain.Entities;
+﻿using DomainScanner.Application.Pipelines.Interfaces;
+using DomainScanner.Contracts.DTOs.Users.Requests;
+using DomainScanner.Contracts.DTOs.Users.Responses;
 
-namespace DomainScanner.Application.Users.Commands.RegisterUser;
+namespace DomainScanner.Application.Handlers.Users.Commands.RegisterUser;
 
-public record RegisterUserCommand(string Username, string Email, string Password) : IRequest<User>;
+public record RegisterUserCommand(RegisterUserRequest Request) : ICommand<UserResponse>;

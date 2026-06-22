@@ -1,5 +1,5 @@
 ﻿using MediatR;
 
-namespace DomainScanner.Application.Behaviors;
+namespace DomainScanner.Application.Pipelines.Interfaces;
 
 public interface ICommand<TResponse> : IRequest<TResponse>;

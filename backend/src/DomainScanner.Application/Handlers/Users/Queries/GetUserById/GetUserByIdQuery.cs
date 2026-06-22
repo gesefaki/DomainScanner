@@ -1,6 +1,7 @@
-﻿using DomainScanner.Application.Abstractions.Mediator;
-using DomainScanner.Domain.Entities;
+﻿using DomainScanner.Contracts.DTOs.Users.Requests;
+using DomainScanner.Contracts.DTOs.Users.Responses;
+using MediatR;
 
-namespace DomainScanner.Application.Users.Queries.GetUserById;
+namespace DomainScanner.Application.Handlers.Users.Queries.GetUserById;
 
-public record GetUserByIdQuery(Guid Id) : IRequest<User?>;
+public record GetUserByIdQuery(GetUserByIdRequest Request) : IRequest<UserResponse>;

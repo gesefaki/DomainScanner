@@ -1,40 +1,43 @@
-﻿using DomainScanner.Application.Abstractions;
-using DomainScanner.Application.Abstractions.Mediator;
-using DomainScanner.Application.Abstractions.Persistence;
-using DomainScanner.Application.Exceptions;
-using Microsoft.Extensions.Logging;
+﻿using System.Security.Authentication;
+using DomainScanner.Application.Abstractions.Auth;
+using DomainScanner.Application.Abstractions.Persistence.Common;
+using DomainScanner.Contracts.Exceptions.Users;
+using DomainScanner.Domain.Entities;
+using MediatR;
 
-namespace DomainScanner.Application.Users.Queries.LoginUser;
+namespace DomainScanner.Application.Handlers.Users.Queries.LoginUser;
 
 public class LoginUserQueryHandler : IRequestHandler<LoginUserQuery, string>
 {
-    private readonly ILogger <LoginUserQueryHandler> _logger;
-    private readonly IUsersRepository _repository;
+    private readonly IReadRepository<User> _readRepository;
     private readonly IPasswordHasher _hasher;
     private readonly IJwtProvider _jwtProvider;
 
-    public LoginUserQueryHandler(ILogger<LoginUserQueryHandler> logger, IUsersRepository repository, 
-        IPasswordHasher hasher, IJwtProvider jwtProvider)
+    public LoginUserQueryHandler(IReadRepository<User> readRepository,
+        IPasswordHasher hasher,
+        IJwtProvider jwtProvider)
     {
-        _logger = logger;
-        _repository = repository;
+        _readRepository = readRepository;
         _hasher = hasher;
         _jwtProvider = jwtProvider;
     }
-    
+
     public async Task<string> Handle(LoginUserQuery request, CancellationToken ct)
     {
-        _logger.LogInformation("Attempting to get user with email {email}", request.Email);
-        var user = await _repository.GetUserByEmailAsync(request.Email, ct);
+        var user = await _readRepository.GetAsync(u => u.Email == request.Email, ct);
 
-        if (user is null || !_hasher.Verify(request.Password, user.PasswordHash))
+        if (user is null)
         {
-            _logger.LogWarning("Invalid login attempt for email {email}",  request.Email);
-            throw new UserInvalidCredentialsException();    
+            throw new UserNotFoundException(request.Email);
+        }
+
+        if (!_hasher.Verify(request.Password, user.PasswordHash))
+        {
+            throw new InvalidCredentialException();
         }
 
         var token = _jwtProvider.GenerateToken(user);
         return token;
     }
-    
+
 }

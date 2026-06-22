@@ -1,7 +1,4 @@
-﻿using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
-
-namespace DomainScanner.Domain.ValueObjects;
+﻿namespace DomainScanner.Domain.Models;
 
 public class TlsFetch
 {

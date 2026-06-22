@@ -1,6 +1,13 @@
-﻿namespace DomainScanner.Infrastructure.DataAccess.Persistence.Context.Configuration;
+﻿using DomainScanner.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-public class IpConfiguration
+namespace DomainScanner.Infrastructure.DataAccess.Persistence.Context.Configuration;
+
+internal class IpConfiguration : BaseEntityConfiguration<Ip>
 {
-    
+    public override void Configure(EntityTypeBuilder<Ip> builder)
+    {
+        
+    }
 }

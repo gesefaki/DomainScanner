@@ -1,6 +1,7 @@
-﻿using DomainScanner.Application.Abstractions.Mediator;
-using DomainScanner.Domain.Entities;
+﻿using DomainScanner.Application.Pipelines.Interfaces;
+using DomainScanner.Contracts.DTOs.Domains.Requests;
+using DomainScanner.Contracts.DTOs.Domains.Responses;
 
-namespace DomainScanner.Application.Domains.Commands.UpdateDomain;
+namespace DomainScanner.Application.Handlers.Domains.Commands.UpdateDomain;
 
-public record UpdateDomainCommand(Guid Id, DomainEntity Domain) : IRequest<Guid>;
+public record UpdateDomainCommand(Guid Id, UpdateDomainRequest Request) : ICommand<DomainResponse>;

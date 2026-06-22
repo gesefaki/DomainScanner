@@ -1,3 +1,3 @@
-﻿namespace DomainScanner.Contracts.DTOs.HTTPs;
+﻿namespace DomainScanner.Contracts.DTOs.HTTPs.Responses;
 
-public record HttpResponse(string Address, int StatusCode, bool IsSuccess, DateTime CreateAt);
+public record HttpResponse(string Address, int StatusCode, bool IsSuccess, DateTime CreatedAt);

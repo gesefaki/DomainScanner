@@ -1,4 +1,4 @@
-﻿namespace DomainScanner.Application.Exceptions;
+﻿namespace DomainScanner.Contracts.Exceptions.Users;
 
 public class UserInvalidCredentialsException : Exception
 {

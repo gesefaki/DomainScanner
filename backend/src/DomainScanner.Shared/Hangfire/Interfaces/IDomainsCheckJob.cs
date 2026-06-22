@@ -2,5 +2,5 @@
 
 public interface IDomainsCheckJob
 {
-    Task RunAsync(CancellationToken ct = default);
+    Task RunAsync(CancellationToken ct);
 }

@@ -1,6 +1,6 @@
 ﻿using DomainScanner.Domain.Entities;
 
-namespace DomainScanner.Application.Abstractions;
+namespace DomainScanner.Application.Abstractions.Auth;
 
 public interface IJwtProvider
 {

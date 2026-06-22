@@ -1,6 +1,6 @@
-﻿namespace DomainScanner.Application.Exceptions;
+﻿namespace DomainScanner.Contracts.Exceptions.Domains;
 
-public class UriValidationException : Exception
+public class DomainUriValidationException : Exception
 {
-    public UriValidationException(string address) :  base($"Address {address} is invalid") { }
+    public DomainUriValidationException(string address) :  base($"Address {address} is invalid") { }
 }

@@ -1,10 +1,7 @@
-﻿namespace DomainScanner.Domain.ValueObjects;
+﻿namespace DomainScanner.Domain.Models;
 
-public class HttpResponseDetails
+public class HttpResponseDetails : HttpResponseObject
 {
-    public string Address { get; set; } = string.Empty;
-    public ushort StatusCode { get; set; }
-    public bool IsSuccess { get; set; }
     public long ResponseTime { get; set; }
     public List<string> Redirections { get; set; } = [];
     public ushort RedirectionsCount { get; set; }

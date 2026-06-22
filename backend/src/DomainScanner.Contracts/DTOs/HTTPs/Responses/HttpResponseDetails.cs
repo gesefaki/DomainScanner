@@ -1,6 +1,6 @@
 ﻿using DomainScanner.Domain.Models;
 
-namespace DomainScanner.Contracts.DTOs.HTTPs;
+namespace DomainScanner.Contracts.DTOs.HTTPs.Responses;
 
 public class HttpResponseDetails
 {

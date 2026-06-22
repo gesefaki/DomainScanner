@@ -1,5 +1,7 @@
-﻿using DomainScanner.Application.Abstractions.Mediator;
+﻿using DomainScanner.Application.Pipelines.Interfaces;
+using DomainScanner.Contracts.DTOs.Domains.Requests;
+using MediatR;
 
-namespace DomainScanner.Application.Domains.Commands.DeleteDomain;
+namespace DomainScanner.Application.Handlers.Domains.Commands.DeleteDomain;
 
-public record DeleteDomainCommand(Guid Id) : IRequest<Guid>;
+public record DeleteDomainCommand(DeleteDomainRequest Request) : ICommand<Unit>;

@@ -1,6 +1,6 @@
 ﻿using DomainScanner.Domain.Entities;
 
-namespace DomainScanner.Shared.Helpers;
+namespace DomainScanner.Application.Helpers;
 
 public static class DomainsHelper
 {

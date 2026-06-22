@@ -1,11 +1,10 @@
-﻿using DomainScanner.Application.Abstractions;
-using FluentValidation;
+﻿using FluentValidation;
 using MediatR;
 
-namespace DomainScanner.Application.Behaviors;
+namespace DomainScanner.Application.Pipelines.Behaviors;
 
 public class ValidationBehavior<TRequest, TResponse> 
-    : IPipelineBehavior<TRequest, TResponse> where TRequest : ICommand<TRequest>
+    : IPipelineBehavior<TRequest, TResponse> where TRequest : IRequest<TResponse>
 {
     private readonly IEnumerable<IValidator<TRequest>> _validators;
 

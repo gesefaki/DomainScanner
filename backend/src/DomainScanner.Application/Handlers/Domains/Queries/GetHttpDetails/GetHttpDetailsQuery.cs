@@ -1,6 +1,6 @@
-﻿using DomainScanner.Application.Abstractions.Mediator;
-using DomainScanner.Domain.Models;
+﻿using DomainScanner.Domain.Models;
+using MediatR;
 
-namespace DomainScanner.Application.Domains.Queries.GetHttpDetails;
+namespace DomainScanner.Application.Handlers.Domains.Queries.GetHttpDetails;
 
 public record GetHttpDetailsQuery(Guid Id) : IRequest<HttpResponseDetails>;

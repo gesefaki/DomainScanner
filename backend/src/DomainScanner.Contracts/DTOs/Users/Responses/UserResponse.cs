@@ -1,6 +1,6 @@
-﻿using DomainScanner.Contracts.DTOs.Domains;
+﻿using DomainScanner.Contracts.DTOs.Domains.Responses;
 
-namespace DomainScanner.Contracts.DTOs.Users;
+namespace DomainScanner.Contracts.DTOs.Users.Responses;
 
 public record UserResponse(
     Guid Id,

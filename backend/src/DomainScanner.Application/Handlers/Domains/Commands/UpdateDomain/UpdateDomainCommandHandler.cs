@@ -1,48 +1,42 @@
-﻿using DomainScanner.Application.Abstractions.Mediator;
-using DomainScanner.Application.Abstractions.Persistence;
-using DomainScanner.Application.Exceptions;
+﻿using AutoMapper;
+using DomainScanner.Application.Abstractions.Persistence.Common;
+using DomainScanner.Contracts.DTOs.Domains.Responses;
+using DomainScanner.Contracts.Exceptions.Domains;
 using DomainScanner.Domain.Entities;
-using Microsoft.Extensions.Logging;
+using MediatR;
 
-namespace DomainScanner.Application.Domains.Commands.UpdateDomain;
+namespace DomainScanner.Application.Handlers.Domains.Commands.UpdateDomain;
 
 
-public class UpdateDomainCommandHandler : IRequestHandler<UpdateDomainCommand, Guid>
+public class UpdateDomainCommandHandler : IRequestHandler<UpdateDomainCommand, DomainResponse>
 {
-    private readonly ILogger<UpdateDomainCommandHandler> _logger;
-    private readonly IUnitOfWork _uof;
-    private readonly IDomainsRepository _domainsRepository;
+    private readonly IReadRepository<DomainEntity> _readRepository;
+    private readonly IWriteRepository<DomainEntity> _writeRepository;
+    private readonly IMapper _mapper;
 
-    public UpdateDomainCommandHandler(ILogger<UpdateDomainCommandHandler> logger,
-        IUnitOfWork uof,
-        IDomainsRepository domainsRepository)
+    public UpdateDomainCommandHandler(IReadRepository<DomainEntity> readRepository, 
+        IWriteRepository<DomainEntity> writeRepository, 
+        IMapper mapper)
     {
-        _logger = logger;
-        _uof = uof;
-        _domainsRepository = domainsRepository;
+        _readRepository = readRepository;
+        _writeRepository = writeRepository;
+        _mapper = mapper;
     }
-    
-    public async Task<Guid> Handle(UpdateDomainCommand request, CancellationToken ct)
+
+    public async Task<DomainResponse> Handle(UpdateDomainCommand request, CancellationToken ct)
     {
-        _logger.LogInformation($"Getting domain with id {request.Id}...");
-        
         // Getting domain
-        var domain = await _domainsRepository.GetByIdAsync(request.Id, ct);
+        var domain = await _readRepository.FindAsync(request.Id, ct);
         if (domain is null)
         {
-            _logger.LogWarning($"Domain with id {request.Id} not found");
             throw new DomainNotFoundException(request.Id);
         }
 
-        _logger.LogInformation($"Domain  with id {request.Id} was found.");
+        domain.Address = request.Request.Address;
+        domain.IsActive = request.Request.IsActive;
 
-        _logger.LogInformation($"Updating domain with id {request.Id}...");
-        // Updating domain
-        _domainsRepository.Update(domain);
-        await _uof.SaveChangesAsync(ct);
-        
-        _logger.LogInformation($"Domain with id {request.Id} has been updated");
-        
-        return domain.Id;
+        var updatedDomain = _writeRepository.Update(domain);
+
+        return _mapper.Map<DomainResponse>(updatedDomain);
     }
 }

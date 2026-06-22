@@ -1,5 +1,7 @@
-﻿using DomainScanner.Application.Abstractions.Mediator;
+﻿using DomainScanner.Application.Pipelines.Interfaces;
+using DomainScanner.Contracts.DTOs.Users.Requests;
+using DomainScanner.Contracts.DTOs.Users.Responses;
 
-namespace DomainScanner.Application.Users.Commands.ActivateUser;
+namespace DomainScanner.Application.Handlers.Users.Commands.ActivateUser;
 
-public record ActivateUserCommand(Guid Id) : IRequest<Guid>;
+public record ActivateUserCommand(ActivateUserRequest Request) : ICommand<UserResponse>;

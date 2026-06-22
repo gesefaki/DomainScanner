@@ -1,78 +1,53 @@
-﻿using DomainScanner.Application.Abstractions.Mediator;
-using DomainScanner.Application.Abstractions.Persistence;
-using DomainScanner.Application.Exceptions;
-using DomainScanner.Application.Exceptions.Domains;
-using Microsoft.Extensions.Logging;
+﻿using AutoMapper;
+using DomainScanner.Application.Abstractions.Persistence.Common;
+using DomainScanner.Contracts.DTOs.Domains.Responses;
+using DomainScanner.Contracts.Exceptions.Users;
+using DomainScanner.Domain.Entities;
+using MediatR;
 
-namespace DomainScanner.Application.Domains.Commands.CreateDomain;
+namespace DomainScanner.Application.Handlers.Domains.Commands.CreateDomain;
 
-public class CreateDomainCommandHandler : IRequestHandler<CreateDomainCommand, Guid>
+public class CreateDomainCommandHandler : IRequestHandler<CreateDomainCommand, DomainResponse>
 {
-    private readonly IUnitOfWork _uof;
-    private readonly IUsersRepository _usersRepository;
-    private readonly IDomainsRepository _domainsRepository;
-    private readonly ILogger<CreateDomainCommandHandler> _logger;
+    private readonly IReadRepository<User> _userReadRepository;
+    private readonly IReadRepository<DomainEntity> _domainReadRepository;
+    private readonly IWriteRepository<DomainEntity> _domainWriteRepository;
+    private readonly IMapper _mapper;
 
-    public CreateDomainCommandHandler(IUnitOfWork uof, IUsersRepository usersRepository,
-        IDomainsRepository domainsRepository, ILogger<CreateDomainCommandHandler> logger)
+    public CreateDomainCommandHandler(IReadRepository<User> userReadRepository, 
+        IReadRepository<DomainEntity> domainReadRepository, 
+        IWriteRepository<DomainEntity> domainWriteRepository, 
+        IMapper mapper)
     {
-        _uof = uof;
-        _usersRepository = usersRepository;
-        _domainsRepository = domainsRepository;
-        _logger = logger;
+        _userReadRepository = userReadRepository;
+        _domainReadRepository = domainReadRepository;
+        _domainWriteRepository = domainWriteRepository;
+        _mapper = mapper;
     }
     
-    public async Task<Guid> Handle(CreateDomainCommand request, CancellationToken ct)
+    public async Task<DomainResponse> Handle(CreateDomainCommand request, CancellationToken ct)
     {
-        await using var transaction = await _uof.BeginTransactionAsync(ct);
+        // find user
+        var user = await _userReadRepository.FindAsync(request.Request.UserId, ct);
 
-        try
+        // throw if user is null
+        if (user is null)
         {
-                // Get domain from request
-                var domain = request.Domain;
-                if (!domain.Address.StartsWith("http") || !domain.Address.StartsWith("https"))
-                    throw new DomainInvalidAddressFormatException(request.Domain.Address);
-
-                // Trying to find user (if not - 400)
-                _logger.LogInformation($"Getting user with id {domain.Id}");
-                var user = await _usersRepository.GetUserByIdAsync(domain.UserId, ct);
-                if (user is null)
-                {
-                    _logger.LogWarning($"User with id {domain.Id} not found");
-                    throw new UserNotFoundException($"{domain.UserId}");
-                }
-                _logger.LogInformation($"User with id {user.Id}: {user.Username} was find");
-
-                // Creating domain
-                _logger.LogInformation($"Creating domain {domain.Id}");
-                await _domainsRepository.CreateAsync(domain, ct);
-                _logger.LogInformation($"Domain {domain.Id} created");
-            
-                // Updating user
-                _logger.LogInformation($"Updating user with id {domain.Id}");
-                
-                user.Domains.Add(domain);
-                _usersRepository.Update(user);
-                _logger.LogInformation($"User with id {user.Id} was created");
-
-                // Commiting transaction
-                await _uof.SaveChangesAsync(ct);
-                await transaction.CommitAsync(ct);
-                _logger.LogInformation("Operation is successful");
-            
-                return domain.Id;
+            throw new UserNotFoundException(request.Request.UserId);
         }
-        catch (OperationCanceledException ex)
+
+        // create new domainEntity
+        var domain = new DomainEntity
         {
-            _logger.LogWarning("Operation was canceled");
-            await transaction.RollbackAsync(ct);
-            throw new OperationCanceledException(ex.Message, ct);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError("ERROR: " +  ex.Message);
-            await transaction.RollbackAsync(ct);
-            throw;
-        }
+            Address = request.Request.Address
+        };
+
+        // add domain in db
+        var createdDomain = await _domainWriteRepository.CreateAsync(domain, ct);
+        
+        // link domain to user who created
+        user.Domains.Add(createdDomain);
+        
+        return _mapper.Map<DomainResponse>(domain);
     }
 }

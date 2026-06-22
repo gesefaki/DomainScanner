@@ -1,37 +1,39 @@
-﻿using DomainScanner.Application.Abstractions.Mediator;
-using DomainScanner.Application.Abstractions.Persistence;
-using DomainScanner.Application.Domains.Commands.HttpSendAndSave;
-using DomainScanner.Infrastructure.Hangfire.Options;
+﻿using DomainScanner.Application.Abstractions.Persistence;
+using DomainScanner.Application.Abstractions.Persistence.Common;
+using DomainScanner.Application.Handlers.Domains.Commands.HttpSendAndSave;
+using DomainScanner.Domain.Entities;
 using DomainScanner.Shared.Hangfire.Interfaces;
+using DomainScanner.Worker.Options;
+using MediatR;
 using Microsoft.Extensions.Options;
 
 namespace DomainScanner.Worker.Jobs;
 
 public class DomainChecksHangfireJob : IDomainsCheckJob
 {
-    private readonly IDomainsRepository _domainsRepository;
+    private readonly IReadRepository<DomainEntity> _readRepository;
     private readonly ILogger<DomainChecksHangfireJob> _logger;
     private readonly IMediator _mediator;
     private readonly DomainChecksWorkerOptions _options;
-    
+
     public DomainChecksHangfireJob(
-        IDomainsRepository domainsRepository,
+        IReadRepository<DomainEntity> readRepository,
         ILogger<DomainChecksHangfireJob> logger,
         IMediator mediator,
         IOptions<DomainChecksWorkerOptions> options)
     {
-        _options = options.Value;
-        _domainsRepository = domainsRepository;
+        _readRepository = readRepository;
         _logger = logger;
         _mediator = mediator;
+        _options = options.Value;
     }
 
     public async Task RunAsync(CancellationToken ct = default)
     {
-        var domainsBatch = await _domainsRepository.GetBatchAsync(_options.BatchSize, ct);
+        var domainsBatch = (List<DomainEntity>)await _readRepository.GetBatchAsync(_options.BatchSize, ct);
 
         _logger.LogInformation($"Worker started. Domains batch size: {domainsBatch.Count}");
-        
+
         foreach (var domain in domainsBatch)
         {
             try

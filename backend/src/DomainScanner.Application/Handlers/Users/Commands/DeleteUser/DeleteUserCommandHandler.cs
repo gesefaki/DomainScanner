@@ -1,46 +1,34 @@
-﻿using DomainScanner.Application.Abstractions.Mediator;
-using DomainScanner.Application.Abstractions.Persistence;
-using DomainScanner.Application.Exceptions;
+﻿using DomainScanner.Application.Abstractions.Persistence.Common;
+using DomainScanner.Contracts.Exceptions.Users;
 using DomainScanner.Domain.Entities;
-using Microsoft.Extensions.Logging;
+using MediatR;
 
-namespace DomainScanner.Application.Users.Commands.DeleteUser;
+namespace DomainScanner.Application.Handlers.Users.Commands.DeleteUser;
 
 public class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand, Guid>
 {
-    private readonly IUsersRepository _usersRepository;
-    private readonly IUnitOfWork _uof;
-    private readonly ILogger<DeleteUserCommandHandler> _logger;
+    private readonly IReadRepository<User> _readRepository;
+    private readonly IWriteRepository<User> _writeRepository;
 
-    public DeleteUserCommandHandler(IUsersRepository usersRepository,
-        IUnitOfWork uof,
-        ILogger<DeleteUserCommandHandler> logger)
+    public DeleteUserCommandHandler(IWriteRepository<User> writeRepository, 
+        IReadRepository<User> readRepository)
     {
-        _usersRepository = usersRepository;
-        _uof = uof;
-        _logger = logger;
+        _writeRepository = writeRepository;
+        _readRepository = readRepository;
     }
     
     public async Task<Guid> Handle(DeleteUserCommand request, CancellationToken ct)
     {
         // Getting user
-        _logger.LogInformation($"Getting user with id {request.Id}...");
-        var user = await _usersRepository.GetUserByIdAsync(request.Id, ct);
+        var user = await _readRepository.FindAsync(request.Request.Id, ct);
         if (user is null)
         {
-            _logger.LogWarning($"User with id {request.Id} not found.");
-            throw new UserNotFoundException(request.Id);
+            throw new UserNotFoundException(request.Request.Id);
         }
-
-        _logger.LogInformation($"User  with id {request.Id} was found.");
-
-        // Deleting and save
-        _logger.LogInformation($"Deleting user with id {request.Id}...");
-        _usersRepository.Delete(user);
-        await _uof.SaveChangesAsync(ct);
         
-        _logger.LogInformation($"User with id {request.Id} was deleted.");
-
+        // Deleting
+        _writeRepository.Delete(user);
+        
         return user.Id;
     }
 }

@@ -1,20 +1,38 @@
-﻿using DomainScanner.Application.Abstractions.Mediator;
+﻿using DomainScanner.Application.Abstractions.Persistence.Common;
 using DomainScanner.Application.Abstractions.Scanners;
-using DomainScanner.Application.Exceptions;
+using DomainScanner.Application.Helpers;
+using DomainScanner.Contracts.Exceptions.Domains;
+using DomainScanner.Domain.Entities;
 using DomainScanner.Domain.Models;
+using MediatR;
 
-namespace DomainScanner.Application.Domains.Queries.GetHttpResponse;
+namespace DomainScanner.Application.Handlers.Domains.Queries.GetHttpResponse;
 
-public class GetHttpResponseQueryHandler(IHttpScanner httpScanner) : IRequestHandler<GetHttpResponseQuery, HttpResponseObject>
+public class GetHttpResponseQueryHandler : IRequestHandler<GetHttpResponseQuery, HttpResponseObject>
 {
-    private readonly IHttpScanner _httpScanner =  httpScanner;
-    
-    public async Task<HttpResponseObject> Handle(GetHttpResponseQuery request, CancellationToken cancellationToken)
-    {
-        var uri = request.Domain.AddressToUri();
-        if(uri is null)
-            throw new DomainUriValidationException(request.Domain.Address);
+    private readonly IReadRepository<DomainEntity> _repository;
+    private readonly IHttpScanner _http;
 
-        return await _httpScanner.GetHttpResponseAsync(uri, cancellationToken);
+    public GetHttpResponseQueryHandler(IReadRepository<DomainEntity> repository, IHttpScanner http)
+    {
+        _http = http;
+        _repository = repository;
+    }
+    
+    public async Task<HttpResponseObject> Handle(GetHttpResponseQuery request, CancellationToken ct)
+    {
+        var domain = await _repository.FindAsync(request.Id, ct);
+        if (domain is null)
+        {
+            throw new DomainNotFoundException(request.Id);
+        }
+        
+        var uri = DomainsHelper.AddressToUri(domain);
+        if (uri is null)
+        {
+            throw new DomainUriValidationException(domain.Address);
+        }
+
+        return await _http.GetHttpResponseAsync(uri, ct);
     }
 }

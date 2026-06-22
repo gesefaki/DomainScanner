@@ -1,4 +1,4 @@
-﻿namespace DomainScanner.Domain.Enums;
+﻿namespace DomainScanner.Contracts.Enums;
 
 public enum ScheduleState
 {
