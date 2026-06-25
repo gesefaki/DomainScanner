@@ -1,0 +1,1 @@
+this project allows you to retrieve detailed information about HTTP responses from domains you specify via an API. it includes a worker that can be used to send requests on a regular basis, but following the refactoring, the project is still in active development, and i have to reimplement a lot of features. i plan to add a lot of different features to it in the future :)
