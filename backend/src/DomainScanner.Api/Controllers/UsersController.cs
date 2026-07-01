@@ -40,7 +40,7 @@ public class UsersController : Controller
     }
 
     [AllowAnonymous]
-    [HttpPost("/register")]
+    [HttpPost("register")]
     public async Task<ActionResult<User>> Register([FromBody] RegisterUserRequest request, CancellationToken ct)
     {
         var user = await _sender.Send(new RegisterUserCommand(request), ct);

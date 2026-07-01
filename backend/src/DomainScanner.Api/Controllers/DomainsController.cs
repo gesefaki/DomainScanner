@@ -39,7 +39,7 @@ public class DomainsController : Controller
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<DomainResponse>> Get(Guid id, CancellationToken ct)
     {
-        var domain = _sender.Send(new GetDomainByIdQuery(id), ct);
+        var domain = await _sender.Send(new GetDomainByIdQuery(id), ct);
         return Ok(domain);
     }
 
