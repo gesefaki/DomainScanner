@@ -22,77 +22,69 @@ namespace DomainScanner.Api.Controllers;
 [Route("api/v1/[controller]")]
 public class DomainsController : Controller
 {
-    private readonly IMediator _mediator;
+    private readonly ISender _sender;
 
-    public DomainsController(IMediator mediator)
+    public DomainsController(ISender sender)
     {
-        _mediator = mediator;
+        _sender = sender;
     }
     
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<DomainResponse>>> GetAll(CancellationToken ct)
+    public async Task<ActionResult<List<DomainResponse>>> GetAll(CancellationToken ct)
     {
-        var query = new GetAllDomainsQuery();
-        var domains = await _mediator.Send(query, ct);
+        var domains = await _sender.Send(new GetAllDomainsQuery(), ct);
         return Ok(domains);
     }
 
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<DomainResponse>> Get(Guid id, CancellationToken ct)
     {
-        var query = new GetDomainByIdQuery(id);
-        var domain = await _mediator.Send(query, ct);
+        var domain = _sender.Send(new GetDomainByIdQuery(id), ct);
         return Ok(domain);
     }
 
-    [HttpGet("http/check/{id:guid}")]
+    [HttpGet("{id:guid}/http/check")]
     public async Task<ActionResult<DomainResponse>> GetHttpCheck(Guid id, CancellationToken ct)
     {
-        var query = new GetHttpResponseQuery(id);
-        var response = await _mediator.Send(query, ct);
+        var response = await _sender.Send(new GetHttpResponseQuery(id), ct);
         return Ok(response);
     }
 
-    [HttpGet("http/check-with-details/{id:guid}")]
+    [HttpGet("{id:guid}/http/check-details")]
     public async Task<ActionResult<HttpResponseDetails>> GetHttpCheckWithDetails(Guid id, CancellationToken ct)
     {
-        var query = new GetHttpDetailsQuery(id);
-        var result =  await _mediator.Send(query, ct);
+        var result =  await _sender.Send(new GetHttpDetailsQuery(id), ct);
         return Ok(result);
     }
 
-    [HttpPut("{id::guid}")]
+    [HttpPut("{id:guid}")]
     public async Task<ActionResult> Update(Guid id, 
         [FromBody] UpdateDomainRequest request, 
         CancellationToken ct)
     {
-        var cmd = new UpdateDomainCommand(id, request);
-        var result = await _mediator.Send(cmd, ct);
+        var result = await _sender.Send(new UpdateDomainCommand(id, request), ct);
         return Ok(result);
     }
     
     [HttpPost]
     public async Task<ActionResult> Create([FromBody] CreateDomainRequest request, CancellationToken ct)
     {
-        var cmd = new CreateDomainCommand(request);
-        var domain = await _mediator.Send(cmd, ct);
+        var domain = await _sender.Send(new CreateDomainCommand(request), ct);
         return CreatedAtAction(nameof(Get), new { id = domain.Id }, domain);
     }
 
-    [HttpPost("send-and-save/{id::guid}")]
-    public async Task<ActionResult<DomainResponse>> SendAndSave(Guid id, CancellationToken ct = default)
+    [HttpPost("{id:guid}/send-save")]
+    public async Task<ActionResult<DomainResponse>> SendAndSave(Guid id, CancellationToken ct)
     {
-        var cmd = new HttpSendAndSaveCommand(id);
-        var check = await _mediator.Send(cmd, ct);
+        var check = await _sender.Send(new HttpSendAndSaveCommand(id), ct);
         return Ok(check);
     }
     
     
     [HttpDelete("{id:guid}")]
-    public async Task<ActionResult> Delete(DeleteDomainRequest request, CancellationToken ct)
+    public async Task<ActionResult> Delete(Guid id, CancellationToken ct)
     {
-        var cmd = new DeleteDomainCommand(request);
-        await _mediator.Send(cmd, ct);
+        await _sender.Send(new DeleteDomainCommand(id), ct);
         return NoContent();
     }
     

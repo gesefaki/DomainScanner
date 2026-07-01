@@ -1,22 +1,24 @@
 ﻿using DomainScanner.Application.Abstractions.Persistence;
+using DomainScanner.Application.Abstractions.Persistence.Common;
+using DomainScanner.Domain.Entities;
 using FluentValidation;
 
 namespace DomainScanner.Application.Handlers.Users.Queries.LoginUser;
 
 public class LoginUserQueryValidator : AbstractValidator<LoginUserQuery>
 {
-    private readonly IUsersRepository _repository;
+    private readonly IReadRepository<User, Guid> _repository;
     
-    public LoginUserQueryValidator(IUsersRepository repository)
+    public LoginUserQueryValidator(IReadRepository<User, Guid> repository)
     {
         _repository = repository;
 
-        RuleFor(r => r.Email)
+        RuleFor(r => r.Request.Email)
             .NotEmpty()
             .EmailAddress()
             .MustAsync(IsUniqueEmail).WithMessage("Email already registered.");
 
-        RuleFor(r => r.Password)
+        RuleFor(r => r.Request.Password)
             .NotEmpty()
             .MinimumLength(8)
             .Matches("[A-Z]").WithMessage("Password must contain at least one uppercase letter.")
@@ -26,6 +28,6 @@ public class LoginUserQueryValidator : AbstractValidator<LoginUserQuery>
 
     private async Task<bool> IsUniqueEmail(string email, CancellationToken ct)
     {
-        return !await _repository.IsExistsByEmailAsync(email, ct);
+        return !await _repository.IsExistsByAttribute(u => u.Email == email, ct);
     }
 }

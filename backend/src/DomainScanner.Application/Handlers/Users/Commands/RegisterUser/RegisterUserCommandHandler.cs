@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using DomainScanner.Application.Abstractions.Auth;
+using DomainScanner.Application.Abstractions.Persistence;
 using DomainScanner.Application.Abstractions.Persistence.Common;
 using DomainScanner.Contracts.DTOs.Users.Responses;
 using DomainScanner.Contracts.Exceptions.Users;
@@ -10,18 +11,15 @@ namespace DomainScanner.Application.Handlers.Users.Commands.RegisterUser;
 
 public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, UserResponse>
 {
-    private readonly IReadRepository<User> _readRepository;
-    private readonly IWriteRepository<User> _writeRepository;
+    private readonly IRepository<User, Guid> _repository;
     private readonly IPasswordHasher _hasher;
     private readonly IMapper _mapper;
 
-    public RegisterUserCommandHandler(IReadRepository<User> readRepository,
-        IWriteRepository<User> writeRepository,
+    public RegisterUserCommandHandler(IRepository<User, Guid> repository,
         IPasswordHasher hasher,
         IMapper mapper)
     {
-        _readRepository = readRepository;
-        _writeRepository = writeRepository;
+        _repository = repository;
         _hasher = hasher;
         _mapper = mapper;
     }
@@ -29,8 +27,8 @@ public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, U
     public async Task<UserResponse> Handle(RegisterUserCommand request, CancellationToken ct)
     {
         // check the existence of a user by credits
-        if (await _readRepository.IsExistsByAttribute(u => u.Email == request.Request.Email, ct) &&
-            await _readRepository.IsExistsByAttribute(u => u.Username == request.Request.Username, ct))
+        if (await _repository.IsExistsByAttribute(u => u.Email == request.Request.Email, ct) &&
+            await _repository.IsExistsByAttribute(u => u.Username == request.Request.Username, ct))
         {
             throw new UserConflictCredsException();
         }
@@ -50,7 +48,7 @@ public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, U
         };
 
         // adding user to db
-        await _writeRepository.CreateAsync(user, ct);
+        await _repository.CreateAsync(user, ct);
 
         return _mapper.Map<UserResponse>(user);
     }

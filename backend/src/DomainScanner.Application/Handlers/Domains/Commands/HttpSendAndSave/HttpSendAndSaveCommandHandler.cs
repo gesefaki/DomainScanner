@@ -1,7 +1,8 @@
-﻿using DomainScanner.Application.Abstractions.Persistence.Common;
+﻿using DomainScanner.Application.Abstractions.Persistence;
+using DomainScanner.Application.Abstractions.Persistence.Common;
 using DomainScanner.Application.Abstractions.Scanners;
-using DomainScanner.Application.Helpers;
 using DomainScanner.Contracts.Exceptions.Domains;
+using DomainScanner.Contracts.Helpers;
 using DomainScanner.Domain.Entities;
 using MediatR;
 
@@ -9,18 +10,15 @@ namespace DomainScanner.Application.Handlers.Domains.Commands.HttpSendAndSave;
 
 public class HttpSendAndSaveCommandHandler : IRequestHandler<HttpSendAndSaveCommand, DomainCheckResult>
 {
-    private readonly IReadRepository<DomainEntity> _domainsReadRepository;
-    private readonly IWriteRepository<DomainEntity> _domainsWriteRepository;
-    private readonly IWriteRepository<DomainCheckResult> _checksWriteRepository;
+    private readonly IRepository<DomainEntity, Guid> _domainsRepository;
+    private readonly IWriteRepository<DomainCheckResult, Guid> _checksWriteRepository;
     private readonly IHttpScanner _http;
 
-    public HttpSendAndSaveCommandHandler(IReadRepository<DomainEntity> domainsReadRepository, 
-        IWriteRepository<DomainEntity> domainsWriteRepository,
-        IWriteRepository<DomainCheckResult> checksWriteRepository, 
+    public HttpSendAndSaveCommandHandler(IRepository<DomainEntity, Guid> domainsRepository,
+        IWriteRepository<DomainCheckResult, Guid> checksWriteRepository, 
         IHttpScanner http)
     {
-        _domainsReadRepository = domainsReadRepository;
-        _domainsWriteRepository = domainsWriteRepository;
+        _domainsRepository = domainsRepository;
         _checksWriteRepository = checksWriteRepository;
         _http = http;
     }
@@ -28,7 +26,7 @@ public class HttpSendAndSaveCommandHandler : IRequestHandler<HttpSendAndSaveComm
     public async Task<DomainCheckResult> Handle(HttpSendAndSaveCommand request, CancellationToken ct)
     {
         // Getting domain
-        var domain = await _domainsReadRepository.FindAsync(request.Id, ct);
+        var domain = await _domainsRepository.FindAsync(request.Id, ct);
         if (domain is null)
         {
             throw new DomainNotFoundException(request.Id);
@@ -63,7 +61,7 @@ public class HttpSendAndSaveCommandHandler : IRequestHandler<HttpSendAndSaveComm
         // Adding check result and save it
         domain.CheckResults.Add(check);
 
-        _domainsWriteRepository.Update(domain);
+        _domainsRepository.Update(domain);
         
         return check;
     }

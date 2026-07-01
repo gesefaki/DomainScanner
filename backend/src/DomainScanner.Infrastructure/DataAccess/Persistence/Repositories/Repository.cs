@@ -1,14 +1,16 @@
 ﻿using System.Linq.Expressions;
-using DomainScanner.Application.Abstractions.Persistence.Common;
+using DomainScanner.Application.Abstractions.Persistence;
 using DomainScanner.Domain.Common;
 using DomainScanner.Infrastructure.DataAccess.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
 
 namespace DomainScanner.Infrastructure.DataAccess.Persistence.Repositories;
 
-public class Repository<TEntity> : IReadRepository<TEntity>, IWriteRepository<TEntity> where TEntity : BaseEntity
+public class Repository<TEntity, TId> : IRepository<TEntity, TId>
+    where TEntity : BaseEntity
+    where TId : struct
 {
-    private readonly ScannerDbContext _context;
+private readonly ScannerDbContext _context;
     protected readonly DbSet<TEntity> DbSet;
 
     public Repository(ScannerDbContext context)
@@ -46,7 +48,7 @@ public class Repository<TEntity> : IReadRepository<TEntity>, IWriteRepository<TE
         return await DbSet.Where(predicate).ToListAsync(ct);
     }
 
-    public virtual async Task<TEntity?> FindAsync(Guid id, CancellationToken ct)
+    public virtual async Task<TEntity?> FindAsync(TId id, CancellationToken ct)
     {
         return await DbSet.FindAsync([id], ct);
     }

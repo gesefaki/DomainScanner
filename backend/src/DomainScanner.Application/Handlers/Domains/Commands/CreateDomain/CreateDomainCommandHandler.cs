@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using DomainScanner.Application.Abstractions.Persistence;
 using DomainScanner.Application.Abstractions.Persistence.Common;
 using DomainScanner.Contracts.DTOs.Domains.Responses;
 using DomainScanner.Contracts.Exceptions.Users;
@@ -9,26 +10,23 @@ namespace DomainScanner.Application.Handlers.Domains.Commands.CreateDomain;
 
 public class CreateDomainCommandHandler : IRequestHandler<CreateDomainCommand, DomainResponse>
 {
-    private readonly IReadRepository<User> _userReadRepository;
-    private readonly IReadRepository<DomainEntity> _domainReadRepository;
-    private readonly IWriteRepository<DomainEntity> _domainWriteRepository;
+    private readonly IReadRepository<User, Guid> _usersReadRepository;
+    private readonly IRepository<DomainEntity, Guid> _domainsRepostory;
     private readonly IMapper _mapper;
 
-    public CreateDomainCommandHandler(IReadRepository<User> userReadRepository, 
-        IReadRepository<DomainEntity> domainReadRepository, 
-        IWriteRepository<DomainEntity> domainWriteRepository, 
+    public CreateDomainCommandHandler(IReadRepository<User, Guid> usersReadRepository, 
+        IRepository<DomainEntity, Guid> domainsRepository,
         IMapper mapper)
     {
-        _userReadRepository = userReadRepository;
-        _domainReadRepository = domainReadRepository;
-        _domainWriteRepository = domainWriteRepository;
+        _usersReadRepository = usersReadRepository;
+        _domainsRepostory = domainsRepository;
         _mapper = mapper;
     }
     
     public async Task<DomainResponse> Handle(CreateDomainCommand request, CancellationToken ct)
     {
         // find user
-        var user = await _userReadRepository.FindAsync(request.Request.UserId, ct);
+        var user = await _usersReadRepository.FindAsync(request.Request.UserId, ct);
 
         // throw if user is null
         if (user is null)
@@ -43,7 +41,7 @@ public class CreateDomainCommandHandler : IRequestHandler<CreateDomainCommand, D
         };
 
         // add domain in db
-        var createdDomain = await _domainWriteRepository.CreateAsync(domain, ct);
+        var createdDomain = await _domainsRepostory.CreateAsync(domain, ct);
         
         // link domain to user who created
         user.Domains.Add(createdDomain);

@@ -1,14 +1,14 @@
-﻿using DomainScanner.Application.Abstractions.Persistence;
-
+﻿using DomainScanner.Application.Abstractions.Persistence.Common;
+using DomainScanner.Domain.Entities;
 using FluentValidation;
 
 namespace DomainScanner.Application.Handlers.Users.Commands.RegisterUser;
 
 public class RegisterUserCommandValidator : AbstractValidator<RegisterUserCommand>
 {
-    private readonly IUsersRepository _repository;
+    private readonly IReadRepository<User, Guid> _repository;
     
-    public RegisterUserCommandValidator(IUsersRepository repository)
+    public RegisterUserCommandValidator(IReadRepository<User, Guid> repository)
     {
         _repository = repository;
 
@@ -32,6 +32,6 @@ public class RegisterUserCommandValidator : AbstractValidator<RegisterUserComman
 
     private async Task<bool> IsUniqueEmail(string email, CancellationToken ct)
     {
-        return !await _repository.IsExistsByEmailAsync(email, ct);
+        return !await _repository.IsExistsByAttribute(u => u.Email == email, ct);
     }
 }

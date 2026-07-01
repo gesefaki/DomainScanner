@@ -4,4 +4,4 @@ using DomainScanner.Contracts.DTOs.Users.Responses;
 
 namespace DomainScanner.Application.Handlers.Users.Commands.ActivateUser;
 
-public record ActivateUserCommand(ActivateUserRequest Request) : ICommand<UserResponse>;
+public record ActivateUserCommand(Guid Id) : ICommand<UserResponse>;

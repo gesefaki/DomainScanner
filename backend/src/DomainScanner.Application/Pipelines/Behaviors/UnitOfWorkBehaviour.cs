@@ -1,4 +1,4 @@
-﻿using DomainScanner.Application.Abstractions.Persistence.Common;
+﻿using DomainScanner.Application.Abstractions.Persistence;
 using DomainScanner.Application.Pipelines.Interfaces;
 using MediatR;
 

@@ -9,11 +9,11 @@ namespace DomainScanner.Application.Handlers.Users.Queries.LoginUser;
 
 public class LoginUserQueryHandler : IRequestHandler<LoginUserQuery, string>
 {
-    private readonly IReadRepository<User> _readRepository;
+    private readonly IReadRepository<User, Guid> _readRepository;
     private readonly IPasswordHasher _hasher;
     private readonly IJwtProvider _jwtProvider;
 
-    public LoginUserQueryHandler(IReadRepository<User> readRepository,
+    public LoginUserQueryHandler(IReadRepository<User, Guid> readRepository,
         IPasswordHasher hasher,
         IJwtProvider jwtProvider)
     {
@@ -24,14 +24,14 @@ public class LoginUserQueryHandler : IRequestHandler<LoginUserQuery, string>
 
     public async Task<string> Handle(LoginUserQuery request, CancellationToken ct)
     {
-        var user = await _readRepository.GetAsync(u => u.Email == request.Email, ct);
+        var user = await _readRepository.GetAsync(u => u.Email == request.Request.Email, ct);
 
         if (user is null)
         {
-            throw new UserNotFoundException(request.Email);
+            throw new UserNotFoundException(request.Request.Email);
         }
 
-        if (!_hasher.Verify(request.Password, user.PasswordHash))
+        if (!_hasher.Verify(request.Request.Password, user.PasswordHash))
         {
             throw new InvalidCredentialException();
         }

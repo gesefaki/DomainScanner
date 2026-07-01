@@ -9,10 +9,10 @@ namespace DomainScanner.Application.Handlers.Domains.Queries.GetDomainById;
 
 public class GetDomainByIdQueryHandler : IRequestHandler<GetDomainByIdQuery, DomainResponse>
 {
-    private readonly IReadRepository<DomainEntity> _repository;
+    private readonly IReadRepository<DomainEntity, Guid> _repository;
     private readonly IMapper _mapper;
 
-    public GetDomainByIdQueryHandler(IReadRepository<DomainEntity> repository, IMapper mapper)
+    public GetDomainByIdQueryHandler(IReadRepository<DomainEntity, Guid> repository, IMapper mapper)
     {
         _repository = repository;
         _mapper = mapper;

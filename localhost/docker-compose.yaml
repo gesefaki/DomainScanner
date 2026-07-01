@@ -1,7 +1,6 @@
 ﻿services:
-  database:
+  postgres-database:
     image: postgres:latest
-    container_name: database
     environment:
       - POSTGRES_DB=scannerdb
       - POSTGRES_USER=postgres
@@ -16,30 +15,40 @@
       timeout: 5s
       retries: 10
       start_period: 5s
+    networks:
+      - backend-domainscanner
       
-  api:
+  aspnet-api:
     image: api
     build:
-      context: .
+      context: ../.
       dockerfile: backend/src/DomainScanner.Api/Dockerfile
     depends_on:
-      database:
+      postgres-database:
         condition: service_healthy
     environment:
-      ConnectionString__Default: Host=database;Port=5432;Database=scannerdb;Username=postgres;password=postgres
+      ConnectionStrings__DefaultConnection: Host=postgres-database;Port=5432;Database=scannerdb;Username=postgres;password=postgres
     ports:
       - "8080:8080"
+    networks:
+      - backend-domainscanner
     
-  worker:
+  hangfire-worker:
     image: worker
     build:
-      context: .
+      context: ../.
       dockerfile: backend/src/DomainScanner.Worker/Dockerfile
     depends_on:
-      database:
+      postgres-database:
         condition: service_healthy
     environment:
-      ConnectionStrings__DefaultConnection: Host=database;Port=5432;Database=scannerdb;Username=postgres;password=postgres
+      ConnectionStrings__DefaultConnection: Host=postgres-database;Port=5432;Database=scannerdb;Username=postgres;password=postgres
       DomainChecksWorker__CronExpression: "*/5 * * * *"
       DomainChecksWorker__QueueName: domain-checks
       DomainChecksWorker__BatchSize: 30
+    networks:
+      - backend-domainscanner
+
+networks:
+  backend-domainscanner:
+    driver: bridge

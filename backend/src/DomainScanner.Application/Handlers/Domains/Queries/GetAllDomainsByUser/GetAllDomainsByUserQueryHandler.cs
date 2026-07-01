@@ -8,10 +8,10 @@ namespace DomainScanner.Application.Handlers.Domains.Queries.GetAllDomainsByUser
 
 public class GetAllDomainsByUserQueryHandler : IRequestHandler<GetAllDomainsByUserQuery, IEnumerable<DomainResponse>>
 {
-    private readonly IReadRepository<DomainEntity> _repository;
+    private readonly IReadRepository<DomainEntity, Guid> _repository;
     private readonly IMapper _mapper;
 
-    public GetAllDomainsByUserQueryHandler(IReadRepository<DomainEntity> repository, IMapper mapper)
+    public GetAllDomainsByUserQueryHandler(IReadRepository<DomainEntity, Guid> repository, IMapper mapper)
     {
         _repository = repository;
         _mapper = mapper;

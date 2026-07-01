@@ -4,4 +4,4 @@ using MediatR;
 
 namespace DomainScanner.Application.Handlers.Users.Queries.GetUserById;
 
-public record GetUserByIdQuery(GetUserByIdRequest Request) : IRequest<UserResponse>;
+public record GetUserByIdQuery(Guid Id) : IRequest<UserResponse>;

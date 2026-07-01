@@ -1,6 +1,6 @@
-﻿using FluentValidation;
+﻿using DomainScanner.Contracts.Exceptions.Domains;
 
-namespace DomainScanner.Application.Helpers;
+namespace DomainScanner.Contracts.Helpers;
 
 public static class HttpHelper
 {
@@ -12,7 +12,7 @@ public static class HttpHelper
         }
         catch (Exception ex)
         {
-            throw new ValidationException("Uri is not valid: " + ex);
+            throw new DomainUriValidationException("Uri is not valid: " + ex);
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using DomainScanner.Application.Abstractions.Persistence.Common;
+﻿using DomainScanner.Application.Abstractions.Persistence;
 using DomainScanner.Contracts.Exceptions.Domains;
 using DomainScanner.Domain.Entities;
 using MediatR;
@@ -7,27 +7,24 @@ namespace DomainScanner.Application.Handlers.Domains.Commands.DeleteDomain;
 
 public class DeleteDomainCommandHandler : IRequestHandler<DeleteDomainCommand, Unit>
 {
-    private readonly IReadRepository<DomainEntity> _readRepository;
-    private readonly IWriteRepository<DomainEntity> _writeRepository;
+    private readonly IRepository<DomainEntity, Guid> _repository;
 
-    public DeleteDomainCommandHandler(IReadRepository<DomainEntity> readRepository, 
-        IWriteRepository<DomainEntity> writeRepository)
+    public DeleteDomainCommandHandler(IRepository<DomainEntity, Guid> repository)
     {
-        _readRepository = readRepository;
-        _writeRepository = writeRepository;
+        _repository = repository;
     }
      
     public async Task<Unit> Handle(DeleteDomainCommand request, CancellationToken ct)
     {
         // Getting domain
-        var domain = await _readRepository.FindAsync(request.Request.Id, ct);
+        var domain = await _repository.FindAsync(request.Id, ct);
         if (domain is null)
         {
-            throw new DomainNotFoundException(request.Request.Id);
+            throw new DomainNotFoundException(request.Id);
         }
         
         // Deleting domain
-        _writeRepository.Delete(domain);
+        _repository.Delete(domain);
         
         return Unit.Value;
     }

@@ -18,53 +18,53 @@ namespace DomainScanner.Api.Controllers;
 [Route("api/v1/[controller]")]
 public class UsersController : Controller
 {
-    private readonly IMediator _mediator;
+    private readonly ISender _sender;
     
-    public UsersController(IMediator mediator)
+    public UsersController(ISender sender)
     {
-        _mediator = mediator;
+        _sender = sender;
     }
 
     [HttpGet]
     public async Task<ActionResult<List<UserResponse>>> GetAll(CancellationToken ct)
     {
-        var users = await _mediator.Send(new GetAllUsersQuery(), ct);
+        var users = await _sender.Send(new GetAllUsersQuery(), ct);
         return Ok(users);
     }
 
-    [HttpGet("{id::guid}")]
-    public async Task<ActionResult<UserResponse>> Get([FromBody] GetUserByIdRequest request, CancellationToken ct)
+    [HttpGet("{id:guid}")]
+    public async Task<ActionResult<UserResponse>> Get(Guid id, CancellationToken ct)
     {
-        var user = await _mediator.Send(new GetUserByIdQuery(request), ct);
+        var user = await _sender.Send(new GetUserByIdQuery(id), ct);
         return Ok(user);
     }
 
     [AllowAnonymous]
-    [HttpPost]
+    [HttpPost("/register")]
     public async Task<ActionResult<User>> Register([FromBody] RegisterUserRequest request, CancellationToken ct)
     {
-        var user = await _mediator.Send(new RegisterUserCommand(request), ct);
+        var user = await _sender.Send(new RegisterUserCommand(request), ct);
         return CreatedAtAction(nameof(Get), new { id = user.Id }, user);
     }
 
-    [HttpPut("activate/{id::guid}")]
-    public async Task<ActionResult> Activate(ActivateUserRequest request, CancellationToken ct)
+    [HttpPut("{id:guid}/activate")]
+    public async Task<ActionResult> Activate(Guid id, CancellationToken ct)
     {
-        var user = await _mediator.Send(new ActivateUserCommand(request), ct);
+        var user = await _sender.Send(new ActivateUserCommand(id), ct);
         return Ok(user);
     }
 
-    [HttpPut("deactivate/{id::guid}")]
-    public async Task<ActionResult> Deactivate(DeactivateUserRequest request, CancellationToken ct)
+    [HttpPut("{id:guid}/deactivate")]
+    public async Task<ActionResult> Deactivate(Guid id, CancellationToken ct)
     {
-        var user = await _mediator.Send(new DeactivateUserCommand(request), ct);
+        var user = await _sender.Send(new DeactivateUserCommand(id), ct);
         return Ok(user);
     }
 
-    [HttpDelete("{id::guid}")]
-    public async Task<ActionResult> Delete(DeleteUserRequest request, CancellationToken ct)
+    [HttpDelete("{id:guid}")]
+    public async Task<ActionResult> Delete(Guid id, CancellationToken ct)
     {
-        await _mediator.Send(new DeleteUserCommand(request), ct);
+        await _sender.Send(new DeleteUserCommand(id), ct);
         return NoContent();
     }
 

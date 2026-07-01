@@ -8,10 +8,10 @@ namespace DomainScanner.Application.Handlers.Users.Queries.GetAllUsers;
 
 public class GetAllUsersQueryHandler : IRequestHandler<GetAllUsersQuery, IEnumerable<UserResponse>>
 {
-    private readonly IReadRepository<User> _repository;
+    private readonly IReadRepository<User, Guid> _repository;
     private readonly IMapper _mapper;
 
-    public GetAllUsersQueryHandler(IReadRepository<User> repository, IMapper mapper)
+    public GetAllUsersQueryHandler(IReadRepository<User, Guid> repository, IMapper mapper)
     {
         _repository = repository;
         _mapper = mapper;

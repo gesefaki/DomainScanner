@@ -1,7 +1,7 @@
+using DomainScanner.Application.Abstractions.Persistence;
 using DomainScanner.Application.Abstractions.Persistence.Common;
 using DomainScanner.Application.Abstractions.Scanners;
 using DomainScanner.Application.Extensions;
-using DomainScanner.Domain.Entities;
 using DomainScanner.Infrastructure.DataAccess.Persistence.Context;
 using DomainScanner.Infrastructure.DataAccess.Persistence.Repositories;
 using DomainScanner.Infrastructure.Protocols.HTTP;
@@ -29,8 +29,9 @@ var workerOptions = builder.Configuration
 builder.Services.AddApplicationServices();
 
 
-builder.Services.AddScoped(typeof(IWriteRepository<>), typeof(Repository<>));
-builder.Services.AddScoped(typeof(IReadRepository<>), typeof(Repository<>));
+builder.Services.AddScoped(typeof(IWriteRepository<,>), typeof(Repository<,>));
+builder.Services.AddScoped(typeof(IReadRepository<,>), typeof(Repository<,>));
+builder.Services.AddScoped(typeof(IRepository<,>), typeof(Repository<,>));
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 

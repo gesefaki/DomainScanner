@@ -1,4 +1,4 @@
-﻿namespace DomainScanner.Application.Abstractions.Persistence.Common;
+﻿namespace DomainScanner.Application.Abstractions.Persistence;
 
 public interface IUnitOfWork
 {

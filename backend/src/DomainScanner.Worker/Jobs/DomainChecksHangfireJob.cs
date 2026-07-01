@@ -11,13 +11,13 @@ namespace DomainScanner.Worker.Jobs;
 
 public class DomainChecksHangfireJob : IDomainsCheckJob
 {
-    private readonly IReadRepository<DomainEntity> _readRepository;
+    private readonly IReadRepository<DomainEntity, Guid> _readRepository;
     private readonly ILogger<DomainChecksHangfireJob> _logger;
     private readonly IMediator _mediator;
     private readonly DomainChecksWorkerOptions _options;
 
     public DomainChecksHangfireJob(
-        IReadRepository<DomainEntity> readRepository,
+        IReadRepository<DomainEntity, Guid> readRepository,
         ILogger<DomainChecksHangfireJob> logger,
         IMediator mediator,
         IOptions<DomainChecksWorkerOptions> options)

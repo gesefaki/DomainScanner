@@ -1,6 +1,9 @@
-﻿namespace DomainScanner.Application.Abstractions.Persistence.Common;
+﻿using DomainScanner.Domain.Common;
 
-public interface IWriteRepository<TEntity>
+namespace DomainScanner.Application.Abstractions.Persistence.Common;
+
+public interface IWriteRepository<TEntity, TId>
+    where TEntity : BaseEntity
 {
     Task<TEntity> CreateAsync(TEntity entity, CancellationToken ct);
     TEntity Update(TEntity entity);

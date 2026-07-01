@@ -1,6 +1,7 @@
 using DomainScanner.Api.Extensions;
 using DomainScanner.Api.Middleware;
 using DomainScanner.Application.Abstractions.Auth;
+using DomainScanner.Application.Abstractions.Persistence;
 using DomainScanner.Application.Abstractions.Persistence.Common;
 using DomainScanner.Application.Abstractions.Scanners;
 using DomainScanner.Application.Extensions;
@@ -13,7 +14,9 @@ using DomainScanner.Infrastructure.Protocols.HTTP;
 using Hangfire;
 using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.CookiePolicy;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.EntityFrameworkCore;
+using  Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,22 +38,34 @@ builder.Services.AddCors(options =>
 });
 
 // Controllers
-builder.Services.AddControllers();
-builder.Services.AddControllersWithViews()
+builder.Services
+    .AddControllers(options =>
+    {
+        options.Conventions.Add(
+            new RouteTokenTransformerConvention(
+                new KebabCaseParameterTransformer()));
+    })
     .AddNewtonsoftJson(options =>
-        options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
-    );
+    {
+        options.SerializerSettings.ReferenceLoopHandling =
+            Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+    });
 
 // Swagger
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "API", Version = "v1" });
+    c.UseAllOfToExtendReferenceSchemas();
+});
 
 // Mediator
 builder.Services.AddApplicationServices();
 
 
 // Repositories
-builder.Services.AddScoped(typeof(IWriteRepository<>), typeof(Repository<>));
-builder.Services.AddScoped(typeof(IReadRepository<>), typeof(Repository<>));
+builder.Services.AddScoped(typeof(IRepository<,>), typeof(Repository<,>));
+builder.Services.AddScoped(typeof(IReadRepository<,>), typeof(Repository<,>));
+builder.Services.AddScoped(typeof(IWriteRepository<,>), typeof(Repository<,>));
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
@@ -78,6 +93,7 @@ builder.Services.AddApiAuthentication(builder.Configuration);
 builder.Services.AddDbContext<ScannerDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
         x => x.MigrationsAssembly("DomainScanner.Infrastructure")
+        .UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
     )
 );
 
@@ -95,7 +111,6 @@ var app = builder.Build();
 // Migrations
 using var scope = app.Services.CreateScope();
 var context = scope.ServiceProvider.GetRequiredService<ScannerDbContext>();
-await context.Database.EnsureCreatedAsync();
 await context.Database.MigrateAsync();
 
 // Exceptions handling 

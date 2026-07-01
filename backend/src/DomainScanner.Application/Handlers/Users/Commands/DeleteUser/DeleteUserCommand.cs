@@ -3,4 +3,4 @@ using DomainScanner.Contracts.DTOs.Users.Requests;
 
 namespace DomainScanner.Application.Handlers.Users.Commands.DeleteUser;
 
-public record DeleteUserCommand(DeleteUserRequest Request) : ICommand<Guid>;
+public record DeleteUserCommand(Guid Id) : ICommand<Guid>;

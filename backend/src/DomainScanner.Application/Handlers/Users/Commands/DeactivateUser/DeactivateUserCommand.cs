@@ -4,4 +4,4 @@ using DomainScanner.Contracts.DTOs.Users.Responses;
 
 namespace DomainScanner.Application.Handlers.Users.Commands.DeactivateUser;
 
-public record DeactivateUserCommand(DeactivateUserRequest Request) : ICommand<UserResponse>;
+public record DeactivateUserCommand(Guid Id) : ICommand<UserResponse>;

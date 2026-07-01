@@ -1,7 +1,7 @@
 ﻿using DomainScanner.Application.Abstractions.Persistence.Common;
 using DomainScanner.Application.Abstractions.Scanners;
-using DomainScanner.Application.Helpers;
 using DomainScanner.Contracts.Exceptions.Domains;
+using DomainScanner.Contracts.Helpers;
 using DomainScanner.Domain.Entities;
 using DomainScanner.Domain.Models;
 using MediatR;
@@ -10,10 +10,10 @@ namespace DomainScanner.Application.Handlers.Domains.Queries.GetHttpDetails;
 
 public class GetHttpDetailsQueryHandler : IRequestHandler<GetHttpDetailsQuery, HttpResponseDetails>
 {
-    private readonly IReadRepository<DomainEntity> _repository;
+    private readonly IReadRepository<DomainEntity, Guid> _repository;
     private readonly IHttpScanner _http;
 
-    public GetHttpDetailsQueryHandler(IReadRepository<DomainEntity> repository, IHttpScanner http)
+    public GetHttpDetailsQueryHandler(IReadRepository<DomainEntity, Guid> repository, IHttpScanner http)
     {
         _repository = repository;
         _http = http;

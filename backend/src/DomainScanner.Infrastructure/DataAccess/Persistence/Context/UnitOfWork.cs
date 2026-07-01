@@ -1,4 +1,4 @@
-﻿using DomainScanner.Application.Abstractions.Persistence.Common;
+﻿using DomainScanner.Application.Abstractions.Persistence;
 using Microsoft.EntityFrameworkCore.Storage;
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
 

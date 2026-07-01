@@ -1,4 +1,4 @@
-﻿using DomainScanner.Application.Abstractions.Persistence.Common;
+﻿using DomainScanner.Application.Abstractions.Persistence;
 using DomainScanner.Contracts.Exceptions.Users;
 using DomainScanner.Domain.Entities;
 using MediatR;
@@ -7,27 +7,24 @@ namespace DomainScanner.Application.Handlers.Users.Commands.DeleteUser;
 
 public class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand, Guid>
 {
-    private readonly IReadRepository<User> _readRepository;
-    private readonly IWriteRepository<User> _writeRepository;
+    private readonly IRepository<User, Guid> _repository;
 
-    public DeleteUserCommandHandler(IWriteRepository<User> writeRepository, 
-        IReadRepository<User> readRepository)
+    public DeleteUserCommandHandler(IRepository<User, Guid> repository)
     {
-        _writeRepository = writeRepository;
-        _readRepository = readRepository;
+        _repository = repository;
     }
     
     public async Task<Guid> Handle(DeleteUserCommand request, CancellationToken ct)
     {
         // Getting user
-        var user = await _readRepository.FindAsync(request.Request.Id, ct);
+        var user = await _repository.FindAsync(request.Id, ct);
         if (user is null)
         {
-            throw new UserNotFoundException(request.Request.Id);
+            throw new UserNotFoundException(request.Id);
         }
         
         // Deleting
-        _writeRepository.Delete(user);
+        _repository.Delete(user);
         
         return user.Id;
     }
