@@ -6,7 +6,7 @@
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
     volumes:
-      - ./.containers/domains-db:/var/lib/postgresql
+      - postgres-data:/var/lib/postgresql
     ports:
       - "5432:5432"  
     healthcheck:
@@ -48,6 +48,12 @@
       DomainChecksWorker__BatchSize: 30
     networks:
       - backend-domainscanner
+
+volumes:
+  postgres-data:
+    driver: local
+    name: domains-postgres-data
+  
 
 networks:
   backend-domainscanner:

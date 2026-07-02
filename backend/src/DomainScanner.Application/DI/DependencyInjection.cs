@@ -1,12 +1,13 @@
 ﻿using DomainScanner.Application.Handlers.Domains.Commands.CreateDomain;
+using DomainScanner.Application.Mapping;
 using DomainScanner.Application.Pipelines.Behaviors;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace DomainScanner.Application.Extensions;
+namespace DomainScanner.Application.DI;
 
-public static class ServiceCollectionExtensions
+public static class DependencyInjection
 {
-    public static IServiceCollection AddApplicationServices(this IServiceCollection services)
+    public static IServiceCollection AddApplicationLayer(this IServiceCollection services)
     {
         services.AddMediatR(cfg =>
         {
@@ -14,6 +15,11 @@ public static class ServiceCollectionExtensions
             cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
             cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
             cfg.AddOpenBehavior(typeof(UnitOfWorkBehavior<,>));
+        });
+
+        services.AddAutoMapper(cfg =>
+        {
+            cfg.AddProfile<MappingProfile>();
         });
 
         return services;

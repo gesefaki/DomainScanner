@@ -25,6 +25,7 @@
       <ProjectReference Include="..\DomainScanner.Domain\DomainScanner.Domain.csproj" />
       <ProjectReference Include="..\DomainScanner.Infrastructure\DomainScanner.Infrastructure.csproj" />
       <ProjectReference Include="..\DomainScanner.Shared\DomainScanner.Shared.csproj" />
+      <ProjectReference Include="..\DomainScanner.Worker\DomainScanner.Worker.csproj" />
     </ItemGroup>
 
     <ItemGroup>

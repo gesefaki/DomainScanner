@@ -5,7 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace DomainScanner.Api.Extensions;
 
-public static class ApiExtensions
+public static class AuthExtension
 {
     public static void AddApiAuthentication(this IServiceCollection services, 
         IConfiguration configuration)

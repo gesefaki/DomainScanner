@@ -28,7 +28,7 @@ public class DomainChecksHangfireJob : IDomainsCheckJob
         _options = options.Value;
     }
 
-    public async Task RunAsync(CancellationToken ct = default)
+    public async Task RunAsync(CancellationToken ct)
     {
         var domainsBatch = (List<DomainEntity>)await _readRepository.GetBatchAsync(_options.BatchSize, ct);
 
