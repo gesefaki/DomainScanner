@@ -19,5 +19,4 @@ await app.ApplyMigrationsAsync();
 
 app.UsePresentationLayer();
 
-// Start
 app.Run();

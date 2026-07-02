@@ -6,6 +6,7 @@ using DomainScanner.Infrastructure.Auth.Authentication;
 using DomainScanner.Infrastructure.Auth.Hashing;
 using DomainScanner.Infrastructure.DataAccess.Persistence.Context;
 using DomainScanner.Infrastructure.DataAccess.Persistence.Repositories;
+using DomainScanner.Infrastructure.Extensions;
 using DomainScanner.Infrastructure.Protocols.HTTP;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -19,7 +20,9 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration
     )
-    {   
+    {
+        services.AddHttpExtensions();
+
         services.AddScoped(typeof(IRepository<,>), typeof(Repository<,>));
         services.AddScoped(typeof(IReadRepository<,>), typeof(Repository<,>));
         services.AddScoped(typeof(IWriteRepository<,>), typeof(Repository<,>));
