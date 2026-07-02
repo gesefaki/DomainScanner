@@ -18,3 +18,5 @@ obj/
 .localhistory/
 
 .containers/
+
+.env
