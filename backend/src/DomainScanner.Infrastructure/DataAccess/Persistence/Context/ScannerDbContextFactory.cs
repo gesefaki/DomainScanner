@@ -16,7 +16,7 @@ public class ScannerDbContextFactory : IDesignTimeDbContextFactory<ScannerDbCont
             .Build();
 
         var optionsBuilder = new DbContextOptionsBuilder<ScannerDbContext>();
-        optionsBuilder.UseNpgsql(config.GetConnectionString("DefaultConnection"));
+        optionsBuilder.UseNpgsql(config.GetConnectionString("PostgresConnection"));
         
         return new ScannerDbContext(optionsBuilder.Options);
     }

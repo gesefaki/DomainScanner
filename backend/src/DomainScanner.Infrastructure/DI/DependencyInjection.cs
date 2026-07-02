@@ -45,7 +45,7 @@ public static class DependencyInjection
     )
     {
         services.AddDbContext<ScannerDbContext>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"),
+            options.UseNpgsql(configuration.GetConnectionString("PostgresConnection"),
             x => x.MigrationsAssembly("DomainScanner.Infrastructure")
             .UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
         ));

@@ -1,6 +1,6 @@
 ﻿services:
   postgres-database:
-    image: postgres:latest
+    image: postgres:18-alpine
     environment:
       - POSTGRES_DB=scannerdb
       - POSTGRES_USER=postgres
@@ -27,9 +27,15 @@
       postgres-database:
         condition: service_healthy
     environment:
-      ConnectionStrings__DefaultConnection: Host=postgres-database;Port=5432;Database=scannerdb;Username=postgres;password=postgres
+      ConnectionStrings__PostgresConnection: Host=postgres-database;Port=5432;Database=scannerdb;Username=postgres;password=postgres
     ports:
       - "8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     networks:
       - backend-domainscanner
     
@@ -42,7 +48,7 @@
       postgres-database:
         condition: service_healthy
     environment:
-      ConnectionStrings__DefaultConnection: Host=postgres-database;Port=5432;Database=scannerdb;Username=postgres;password=postgres
+      ConnectionStrings__PostgresConnection: Host=postgres-database;Port=5432;Database=scannerdb;Username=postgres;password=postgres
       DomainChecksWorker__CronExpression: "*/5 * * * *"
       DomainChecksWorker__QueueName: domain-checks
       DomainChecksWorker__BatchSize: 30

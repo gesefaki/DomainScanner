@@ -1,5 +1,4 @@
-﻿using DomainScanner.Application.Abstractions.Persistence;
-using DomainScanner.Application.Abstractions.Persistence.Common;
+﻿using DomainScanner.Application.Abstractions.Persistence.Common;
 using DomainScanner.Application.Handlers.Domains.Commands.HttpSendAndSave;
 using DomainScanner.Domain.Entities;
 using DomainScanner.Shared.Hangfire.Interfaces;
@@ -38,7 +37,6 @@ public class DomainChecksHangfireJob : IDomainsCheckJob
         {
             try
             {
-                _logger.LogInformation($"Domain {domain.Id} with address {domain.Address} is being found");
                 await _mediator.Send(new HttpSendAndSaveCommand(domain.Id), ct);
             }
             catch (Exception ex)

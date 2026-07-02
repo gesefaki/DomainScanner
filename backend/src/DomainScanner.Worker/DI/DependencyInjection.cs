@@ -18,7 +18,7 @@ public static class DependencyInjection
         .UseSimpleAssemblyNameTypeSerializer()
         .UseRecommendedSerializerSettings()
         .UsePostgreSqlStorage(opt =>
-            opt.UseNpgsqlConnection(configuration.GetConnectionString("DefaultConnection"))));
+            opt.UseNpgsqlConnection(configuration.GetConnectionString("PostgresConnection"))));
 
         return services;
     }

@@ -49,6 +49,8 @@ public static class DependencyInjection
 
         services.AddApiAuthentication(configuration);
 
+        services.AddHealthCheck(configuration);
+
         return services;
     }
 
@@ -72,6 +74,8 @@ public static class DependencyInjection
             HttpOnly = HttpOnlyPolicy.Always,
             Secure = CookieSecurePolicy.Always
         });
+
+        app.UseHealthCheck();
 
         return app;
     }
