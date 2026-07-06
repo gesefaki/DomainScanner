@@ -1,8 +1,8 @@
 ﻿using DomainScanner.Application.Abstractions.Persistence.Common;
 using DomainScanner.Application.Handlers.Domains.Commands.HttpSendAndSave;
+using DomainScanner.Contracts.Options;
 using DomainScanner.Domain.Entities;
 using DomainScanner.Shared.Hangfire.Interfaces;
-using DomainScanner.Worker.Options;
 using MediatR;
 using Microsoft.Extensions.Options;
 

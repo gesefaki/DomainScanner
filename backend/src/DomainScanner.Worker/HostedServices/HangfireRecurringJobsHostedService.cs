@@ -1,5 +1,5 @@
-﻿using DomainScanner.Shared.Hangfire.Interfaces;
-using DomainScanner.Worker.Options;
+﻿using DomainScanner.Contracts.Options;
+using DomainScanner.Shared.Hangfire.Interfaces;
 using Hangfire;
 using Microsoft.Extensions.Options;
 #pragma warning disable CS0618 // Type or member is obsolete

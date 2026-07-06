@@ -1,9 +1,11 @@
 using DomainScanner.Application.Abstractions.Auth;
+using DomainScanner.Application.Abstractions.Cache;
 using DomainScanner.Application.Abstractions.Persistence;
 using DomainScanner.Application.Abstractions.Persistence.Common;
 using DomainScanner.Application.Abstractions.Scanners;
 using DomainScanner.Infrastructure.Auth.Authentication;
 using DomainScanner.Infrastructure.Auth.Hashing;
+using DomainScanner.Infrastructure.DataAccess.Cache;
 using DomainScanner.Infrastructure.DataAccess.Persistence.Context;
 using DomainScanner.Infrastructure.DataAccess.Persistence.Repositories;
 using DomainScanner.Infrastructure.Extensions;
@@ -11,6 +13,7 @@ using DomainScanner.Infrastructure.Protocols.HTTP;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using StackExchange.Redis;
 
 namespace DomainScanner.Infrastructure.DI;
 
@@ -49,6 +52,24 @@ public static class DependencyInjection
             x => x.MigrationsAssembly("DomainScanner.Infrastructure")
             .UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
         ));
+
+        return services;
+    }
+
+    public static IServiceCollection AddRedisCaching(
+        this IServiceCollection services,
+        IConfiguration configuration
+    )
+    {
+        services.AddSingleton<IConnectionMultiplexer>(_ =>
+        {
+            return ConnectionMultiplexer.Connect(
+                configuration.GetConnectionString("RedisConnection")!);
+        });
+
+        services.AddSingleton<ICacheService, RedisCacheService>();
+
+        services.AddScoped(typeof(ICacheKeyGenerator<>), typeof(CacheKeyGenerator<>));
 
         return services;
     }

@@ -1,4 +1,4 @@
-﻿namespace DomainScanner.Worker.Options;
+﻿namespace DomainScanner.Contracts.Options;
 
 public sealed class DomainChecksWorkerOptions
 {

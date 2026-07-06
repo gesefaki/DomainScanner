@@ -7,6 +7,7 @@ var builder = Host.CreateApplicationBuilder(args);
 builder.Services
     .AddInfrastructureLayer(builder.Configuration)
     .AddPostgresDatabase(builder.Configuration)
+    .AddRedisCaching(builder.Configuration)
     .AddApplicationLayer()
     .AddWorker(builder.Configuration)
     .AddWorkerServerExtension(builder.Configuration);

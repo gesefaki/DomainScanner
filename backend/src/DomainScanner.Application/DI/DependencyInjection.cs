@@ -14,6 +14,7 @@ public static class DependencyInjection
             cfg.RegisterServicesFromAssemblyContaining<CreateDomainCommandHandler>();
             cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
             cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
+            cfg.AddOpenBehavior(typeof(CachingBehavior<,>));
             cfg.AddOpenBehavior(typeof(UnitOfWorkBehavior<,>));
         });
 

@@ -20,8 +20,7 @@ private readonly ScannerDbContext _context;
     }
 
     public virtual async Task<TEntity?> GetAsync(
-        Expression<Func<TEntity,
-        bool>> predicate,
+        Expression<Func<TEntity, bool>> predicate,
         CancellationToken ct)
     {
         return await DbSet.FirstOrDefaultAsync(predicate, ct);

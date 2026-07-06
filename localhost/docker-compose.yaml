@@ -14,6 +14,19 @@
       start_period: 5s
     networks:
       - backend-domainscanner
+
+  redis-cache:
+    image: redis:8-alpine
+    restart: unless-stopped
+    depends_on:
+      postgres-database:
+        condition: service_healthy
+    ports:
+      - "${REDIS_PORT}:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - backend-domainscanner
       
   aspnet-api:
     image: api
@@ -26,6 +39,9 @@
         condition: service_healthy
     environment:
       ConnectionStrings__PostgresConnection: Host=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=${POSTGRES_DB};Username=${POSTGRES_USER};password=${POSTGRES_PASSWORD}
+      ConnectionStrings__RedisConnection: redis-cache:${REDIS_PORT}
+      RedisCacheOptions__InstanceName: ${REDIS_INSTANCEC_NAME}
+      RedisCacheOptions__DefaultExpirationMinutes: ${REDIS_DEFAULT_EXPIRATION_MINUTES}
     ports:
       - "${API_PORT}:8080"
     healthcheck:
@@ -35,7 +51,7 @@
       retries: 3
       start_period: 40s
     networks:
-      - backend-domainscanner
+      - backend-domainscanner  
     
   hangfire-worker:
     image: worker
@@ -48,6 +64,7 @@
         condition: service_healthy
     environment:
       ConnectionStrings__PostgresConnection: Host=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=${POSTGRES_DB};Username=${POSTGRES_USER};password=${POSTGRES_PASSWORD}
+      ConnectionStrings__RedisConnection: redis:${REDIS_PORT}
       DomainChecksWorker__RecurringJobId: ${RECURRING_JOB_ID}
       DomainChecksWorker__CronExpression: ${WORKER_CRON_EXPRESSION}
       DomainChecksWorker__QueueName: ${WORKER_QUEUE_NAME}
@@ -59,6 +76,7 @@ volumes:
   postgres-data:
     driver: local
     name: domains-postgres-data
+  redis-data:
   
 
 networks:
