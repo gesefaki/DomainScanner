@@ -4,4 +4,4 @@ using MediatR;
 
 namespace DomainScanner.Application.Handlers.Domains.Queries.GetAllDomainsByUser;
 
-public record GetAllDomainsByUserQuery(Guid UserId) : IRequest<IEnumerable<DomainResponse>>;
+public record GetAllDomainsByUserQuery(Guid UserId) : IRequest<IEnumerable<DomainResponse>>, ICacheableQuery;

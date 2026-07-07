@@ -4,4 +4,4 @@ using MediatR;
 
 namespace DomainScanner.Application.Handlers.Domains.Queries.GetAllDomains;
 
-public record GetAllDomainsQuery : IRequest<IEnumerable<DomainResponse>>, ICacheable;
+public record GetAllDomainsQuery : IRequest<IEnumerable<DomainResponse>>, ICacheableQuery;

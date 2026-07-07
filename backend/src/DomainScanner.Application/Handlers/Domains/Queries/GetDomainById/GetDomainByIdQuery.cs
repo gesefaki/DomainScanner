@@ -4,4 +4,4 @@ using MediatR;
 
 namespace DomainScanner.Application.Handlers.Domains.Queries.GetDomainById;
 
-public record GetDomainByIdQuery(Guid Id) : IRequest<DomainResponse>, ICacheable;
+public record GetDomainByIdQuery(Guid Id) : IRequest<DomainResponse>, ICacheableQuery;

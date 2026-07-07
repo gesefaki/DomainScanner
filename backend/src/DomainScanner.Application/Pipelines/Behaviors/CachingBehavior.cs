@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 namespace DomainScanner.Application.Pipelines.Behaviors;
 
 public class CachingBehavior<TRequest, TResponse> 
-    : IPipelineBehavior<TRequest, TResponse> where TRequest : ICacheable
+    : IPipelineBehavior<TRequest, TResponse> where TRequest : ICacheableQuery
 {
     private readonly ICacheService _cache;
     private readonly ICacheKeyGenerator<TRequest> _cacheKeyGenerator;
