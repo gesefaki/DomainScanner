@@ -5,6 +5,9 @@ using MediatR;
 
 namespace DomainScanner.Application.Handlers.Domains.Commands.DeleteDomain;
 
+/// <summary>
+/// Handles <see cref="DeleteDomainCommand"/>. 
+/// </summary>
 public class DeleteDomainCommandHandler : IRequestHandler<DeleteDomainCommand, Unit>
 {
     private readonly IRepository<DomainEntity, Guid> _repository;
@@ -13,7 +16,8 @@ public class DeleteDomainCommandHandler : IRequestHandler<DeleteDomainCommand, U
     {
         _repository = repository;
     }
-     
+    
+    /// <inheritdoc />
     public async Task<Unit> Handle(DeleteDomainCommand request, CancellationToken ct)
     {
         // Getting domain

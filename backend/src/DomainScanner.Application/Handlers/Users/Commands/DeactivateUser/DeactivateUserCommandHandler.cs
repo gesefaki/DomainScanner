@@ -8,6 +8,9 @@ using MediatR;
 
 namespace DomainScanner.Application.Handlers.Users.Commands.DeactivateUser;
 
+/// <summary>
+/// Handles <see cref="DeactivateUserCommand"/>. 
+/// </summary>
 public class DeactivateUserCommandHandler : IRequestHandler<DeactivateUserCommand, UserResponse>
 {
     private readonly IRepository<User, Guid> _repository;
@@ -20,6 +23,7 @@ public class DeactivateUserCommandHandler : IRequestHandler<DeactivateUserComman
         _mapper = mapper;
     }
     
+    /// <inheritdoc />
     public async Task<UserResponse> Handle(DeactivateUserCommand request, CancellationToken ct)
     {
         // Getting user

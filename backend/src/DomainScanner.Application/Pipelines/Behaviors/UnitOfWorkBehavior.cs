@@ -4,7 +4,12 @@ using MediatR;
 
 namespace DomainScanner.Application.Pipelines.Behaviors;
 
-public class UnitOfWorkBehavior<TRequest, TResponse>
+/// <summary>
+/// Pipeline behavior responsible for Unit of Work pattern implementation.
+/// </summary>
+/// <typeparam name="TRequest">Type of the request.</typeparam>
+/// <typeparam name="TResponse">Type of the response.</typeparam>
+public sealed class UnitOfWorkBehavior<TRequest, TResponse>
     : IPipelineBehavior<TRequest, TResponse> where TRequest : ICommand<TResponse>
 {
     private readonly IUnitOfWork _uow;
@@ -14,6 +19,7 @@ public class UnitOfWorkBehavior<TRequest, TResponse>
         _uow = uow;
     }
 
+    /// <inheritdoc />
     public async Task<TResponse> Handle(
         TRequest request,
         RequestHandlerDelegate<TResponse> next,

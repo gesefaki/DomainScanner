@@ -17,31 +17,52 @@ using StackExchange.Redis;
 
 namespace DomainScanner.Infrastructure.DI;
 
+/// <summary>
+/// Provides extension methods for configuring DI in the infrastructure layer. 
+/// Centralizes all infrastructure service registrations, making it easy to configure the application's infrastructure dependencies from the composition root.
+/// </summary>
 public static class DependencyInjection
 {
+
+    /// <summary>
+    /// Registers core infrastructure services including repositories, unit of work, auth services and HTTP scanning providers.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> to add services to.</param>
+    /// <param name="configuration"> The app configuration containing settings for infrastructure services.</param>
+    /// <returns>The <see cref="IServiceCollection"/> for chaining.</returns>
     public static IServiceCollection AddInfrastructureLayer(
         this IServiceCollection services,
         IConfiguration configuration
     )
     {
+        // Add HTTP client and related services.
         services.AddHttpExtensions();
 
+        // Register generic repository
         services.AddScoped(typeof(IRepository<,>), typeof(Repository<,>));
         services.AddScoped(typeof(IReadRepository<,>), typeof(Repository<,>));
         services.AddScoped(typeof(IWriteRepository<,>), typeof(Repository<,>));
 
+        // Register UOW
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
+        // Register HTTP services
         services.AddScoped<IHttpScanner, HttpService>();
 
+        // Register auth services
         services.AddScoped<IPasswordHasher, PasswordHasher>();
-        
         services.AddScoped<IJwtProvider, JwtProvider>();
         services.Configure<JwtOptions>(configuration.GetSection(nameof(JwtOptions)));
 
         return services;
     }
     
+    /// <summary>
+    /// Registers PostgreSQL database context with EF Core.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> to add services to.</param>
+    /// <param name="configuration">The application configuration containing the connection string.</param>
+    /// <returns>The <see cref="IServiceCollection"/> for chaining.</returns>
     public static IServiceCollection AddPostgresDatabase(
         this IServiceCollection services,
         IConfiguration configuration
@@ -56,6 +77,12 @@ public static class DependencyInjection
         return services;
     }
 
+    /// <summary>
+    /// Registers Redis distributed caching services.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> to add services to.</param>
+    /// <param name="configuration">The application configuration containing the connection string.</param>
+    /// <returns>The <see cref="IServiceCollection"/> for chaining.</returns>
     public static IServiceCollection AddRedisCaching(
         this IServiceCollection services,
         IConfiguration configuration

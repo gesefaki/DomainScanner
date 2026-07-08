@@ -1,5 +1,4 @@
 ﻿using DomainScanner.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace DomainScanner.Infrastructure.DataAccess.Persistence.Context.Configuration;

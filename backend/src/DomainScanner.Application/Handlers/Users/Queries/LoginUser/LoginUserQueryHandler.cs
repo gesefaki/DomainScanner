@@ -7,6 +7,9 @@ using MediatR;
 
 namespace DomainScanner.Application.Handlers.Users.Queries.LoginUser;
 
+/// <summary>
+/// Handles <see cref="LoginUserQuery"/>. Has a <see cref="LoginUserQueryValidator"/> must be passed. 
+/// </summary>
 public class LoginUserQueryHandler : IRequestHandler<LoginUserQuery, string>
 {
     private readonly IReadRepository<User, Guid> _readRepository;
@@ -22,6 +25,7 @@ public class LoginUserQueryHandler : IRequestHandler<LoginUserQuery, string>
         _jwtProvider = jwtProvider;
     }
 
+    /// <inheritdoc />
     public async Task<string> Handle(LoginUserQuery request, CancellationToken ct)
     {
         var user = await _readRepository.GetAsync(u => u.Email == request.Request.Email, ct);

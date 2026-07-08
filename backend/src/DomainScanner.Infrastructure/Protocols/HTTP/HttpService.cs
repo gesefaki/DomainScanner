@@ -6,15 +6,24 @@ using DomainScanner.Domain.Models;
 
 namespace DomainScanner.Infrastructure.Protocols.HTTP;
 
+/// <summary>
+/// Provides HTTP/HTTPS scanning services for domain monitoring.
+/// Implements <see cref="IHttpScanner"/>. 
+/// </summary>
 public class HttpService : IHttpScanner
 {
     private readonly IHttpClientFactory _httpFactory;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HttpService"/> class.
+    /// </summary>
+    /// <param name="httpFactory">The HTTP client factory for creating HttpClient instances.</param>
     public HttpService(IHttpClientFactory httpFactory)
     {
         _httpFactory = httpFactory;
     }
 
+    /// <inheritdoc />
     public async Task<HttpResponseObject> GetHttpResponseAsync(Uri address, CancellationToken ct)
     {
         try
@@ -50,7 +59,7 @@ public class HttpService : IHttpScanner
         }
     }
 
-
+    /// <inheritdoc />
     public async Task<HttpResponseDetails> GetHttpWithDetailsAsync(Uri address, CancellationToken ct)
     {
         var tls = new TlsFetch();

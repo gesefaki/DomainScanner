@@ -5,7 +5,12 @@ using Microsoft.Extensions.Logging;
 
 namespace DomainScanner.Application.Pipelines.Behaviors;
 
-public class CachingBehavior<TRequest, TResponse> 
+/// <summary>
+/// Pipeline behavior responsible for caching queries.
+/// </summary>
+/// <typeparam name="TRequest">Type of the request.</typeparam>
+/// <typeparam name="TResponse">Type of the response.</typeparam>
+public sealed class CachingBehavior<TRequest, TResponse> 
     : IPipelineBehavior<TRequest, TResponse> where TRequest : ICacheableQuery
 {
     private readonly ICacheService _cache;
@@ -21,6 +26,7 @@ public class CachingBehavior<TRequest, TResponse>
         _logger = logger;
     }
 
+    /// <inheritdoc />
     public async Task<TResponse> Handle(
         TRequest request,
         RequestHandlerDelegate<TResponse> next,

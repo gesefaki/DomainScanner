@@ -8,6 +8,9 @@ using MediatR;
 
 namespace DomainScanner.Application.Handlers.Domains.Commands.HttpSendAndSave;
 
+/// <summary>
+/// Handles <see cref="HttpSendAndSaveCommand"/>. 
+/// </summary>
 public class HttpSendAndSaveCommandHandler : IRequestHandler<HttpSendAndSaveCommand, DomainCheckResult>
 {
     private readonly IRepository<DomainEntity, Guid> _domainsRepository;
@@ -23,6 +26,7 @@ public class HttpSendAndSaveCommandHandler : IRequestHandler<HttpSendAndSaveComm
         _http = http;
     }
     
+    /// <inheritdoc />
     public async Task<DomainCheckResult> Handle(HttpSendAndSaveCommand request, CancellationToken ct)
     {
         // Getting domain

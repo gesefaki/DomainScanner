@@ -3,8 +3,12 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace DomainScanner.Infrastructure.DataAccess.Persistence.Context.Configuration;
 
+/// <summary>
+/// Entity type configuration for <see cref="User"/> 
+/// </summary>
 internal class UserConfiguration : BaseEntityConfiguration<User>
 {
+    /// <inheritdoc />
     public override void Configure(EntityTypeBuilder<User> builder)
     {
         // BaseEntityConfiguration

@@ -6,6 +6,9 @@ using MediatR;
 
 namespace DomainScanner.Application.Handlers.Domains.Queries.GetAllDomainsByUser;
 
+/// <summary>
+/// Handles <see cref="GetAllDomainsByUser"/> 
+/// </summary>
 public class GetAllDomainsByUserQueryHandler : IRequestHandler<GetAllDomainsByUserQuery, IEnumerable<DomainResponse>>
 {
     private readonly IReadRepository<DomainEntity, Guid> _repository;
@@ -17,6 +20,7 @@ public class GetAllDomainsByUserQueryHandler : IRequestHandler<GetAllDomainsByUs
         _mapper = mapper;
     }
 
+    /// <inheritdoc />
     public async Task<IEnumerable<DomainResponse>> Handle(GetAllDomainsByUserQuery request, CancellationToken ct)
     {
         var domains = await _repository.GetAllWhereAsync(d => d.UserId == request.UserId, ct);

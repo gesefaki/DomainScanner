@@ -5,6 +5,9 @@ using MediatR;
 
 namespace DomainScanner.Application.Handlers.Users.Commands.DeleteUser;
 
+/// <summary>
+/// Handles <see cref="DeleteUserCommand"/>. 
+/// </summary>
 public class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand, Guid>
 {
     private readonly IRepository<User, Guid> _repository;
@@ -13,7 +16,8 @@ public class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand, Guid>
     {
         _repository = repository;
     }
-    
+
+    /// <inheritdoc />
     public async Task<Guid> Handle(DeleteUserCommand request, CancellationToken ct)
     {
         // Getting user

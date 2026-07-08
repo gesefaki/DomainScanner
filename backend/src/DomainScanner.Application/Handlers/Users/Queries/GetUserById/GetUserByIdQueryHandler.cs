@@ -7,6 +7,9 @@ using MediatR;
 
 namespace DomainScanner.Application.Handlers.Users.Queries.GetUserById;
 
+/// <summary>
+/// Handles <see cref="GetUserByIdQuery"/>. 
+/// </summary>
 public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, UserResponse>
 {
     private readonly IReadRepository<User, Guid> _repository;
@@ -20,6 +23,7 @@ public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, UserRes
 
     }
     
+    /// <inheritdoc />
     public async Task<UserResponse> Handle(GetUserByIdQuery query, CancellationToken ct)
     {
         var result = await _repository.FindAsync(query.Id, ct);

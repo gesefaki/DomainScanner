@@ -8,6 +8,9 @@ using MediatR;
 
 namespace DomainScanner.Application.Handlers.Domains.Commands.CreateDomain;
 
+/// <summary>
+/// Handles <see cref="CreateDomainCommand"/>. Has a <see cref="CreateDomainCommandValidator"/> must be passed. 
+/// </summary>
 public class CreateDomainCommandHandler : IRequestHandler<CreateDomainCommand, DomainResponse>
 {
     private readonly IReadRepository<User, Guid> _usersReadRepository;
@@ -23,6 +26,7 @@ public class CreateDomainCommandHandler : IRequestHandler<CreateDomainCommand, D
         _mapper = mapper;
     }
     
+    /// <inheritdoc />
     public async Task<DomainResponse> Handle(CreateDomainCommand request, CancellationToken ct)
     {
         // find user

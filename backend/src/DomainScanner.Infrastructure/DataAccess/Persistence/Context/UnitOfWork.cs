@@ -4,26 +4,36 @@ using Microsoft.EntityFrameworkCore.Storage;
 
 namespace DomainScanner.Infrastructure.DataAccess.Persistence.Context;
 
+/// <summary>
+/// Implements the Unit of Work pattern for managing database transactions.
+/// </summary>
 public class UnitOfWork : IUnitOfWork
 {
     private readonly ScannerDbContext _context;
     private IDbContextTransaction? _transaction;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="UnitOfWork"/> class. 
+    /// </summary>
+    /// <param name="context">The database context to be used for operations.</param>
     public UnitOfWork(ScannerDbContext context)
     {
         _context = context;
     }
 
+    /// <inheritdoc />
     public async Task<int> SaveChangesAsync(CancellationToken ct)
     {
         return await _context.SaveChangesAsync(ct);
     }
 
+    /// <inheritdoc />
     public async Task BeginTransactionAsync(CancellationToken ct)
     { 
         _transaction = await _context.Database.BeginTransactionAsync(ct);
     }
 
+    /// <inheritdoc />
     public async Task CommitTransactionAsync(CancellationToken ct)
     {
         try
@@ -38,6 +48,7 @@ public class UnitOfWork : IUnitOfWork
         }
     }
 
+   /// <inheritdoc />
     public async Task RollbackTransactionAsync(CancellationToken ct)
     {
         try
@@ -51,6 +62,7 @@ public class UnitOfWork : IUnitOfWork
         }
     }
 
+    /// <inheritdoc />
     public void Attach<T>(T entity) where T : class
     {
         _context.Attach(entity);

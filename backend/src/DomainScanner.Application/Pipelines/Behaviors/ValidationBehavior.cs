@@ -3,7 +3,12 @@ using MediatR;
 
 namespace DomainScanner.Application.Pipelines.Behaviors;
 
-public class ValidationBehavior<TRequest, TResponse> 
+/// <summary>
+/// Pipeline behavior responsible for validate queries.
+/// </summary>
+/// <typeparam name="TRequest">Type of the request.</typeparam>
+/// <typeparam name="TResponse">Type of the response.</typeparam>
+public sealed class ValidationBehavior<TRequest, TResponse> 
     : IPipelineBehavior<TRequest, TResponse> where TRequest : IRequest<TResponse>
 {
     private readonly IEnumerable<IValidator<TRequest>> _validators;
@@ -13,6 +18,7 @@ public class ValidationBehavior<TRequest, TResponse>
         _validators = validators;
     }
 
+    /// <inheritdoc />
     public async Task<TResponse> Handle(
         TRequest request,
         RequestHandlerDelegate<TResponse> next,

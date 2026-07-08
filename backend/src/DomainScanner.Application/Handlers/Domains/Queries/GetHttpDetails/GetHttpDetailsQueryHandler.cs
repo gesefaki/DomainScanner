@@ -8,6 +8,9 @@ using MediatR;
 
 namespace DomainScanner.Application.Handlers.Domains.Queries.GetHttpDetails;
 
+/// <summary>
+/// Handles <see cref="GetHttpDetailsQuery"/> 
+/// </summary>
 public class GetHttpDetailsQueryHandler : IRequestHandler<GetHttpDetailsQuery, HttpResponseDetails>
 {
     private readonly IReadRepository<DomainEntity, Guid> _repository;
@@ -18,7 +21,8 @@ public class GetHttpDetailsQueryHandler : IRequestHandler<GetHttpDetailsQuery, H
         _repository = repository;
         _http = http;
     }
-    
+
+    /// <inheritdoc />
     public async Task<HttpResponseDetails> Handle(GetHttpDetailsQuery request, CancellationToken ct)
     {
         // Getting domain

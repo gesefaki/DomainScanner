@@ -4,8 +4,12 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace DomainScanner.Infrastructure.DataAccess.Persistence.Context.Configuration;
 
-internal class DomainEntityConfiguration : BaseEntityConfiguration<DomainEntity>
+/// <summary>
+/// Entity type configuration for <see cref="DomainEntity"/> 
+/// </summary>
+internal sealed class DomainEntityConfiguration : BaseEntityConfiguration<DomainEntity>
 {
+    /// <inheritdoc />
     public override void Configure(EntityTypeBuilder<DomainEntity> builder)
     {
         // BaseEntityConfiguration

@@ -4,7 +4,12 @@ using Microsoft.Extensions.Logging;
 
 namespace DomainScanner.Application.Pipelines.Behaviors;
 
-public class LoggingBehavior<TRequest, TResponse>
+/// <summary>
+/// Pipeline behavior responsible for logging queries.
+/// </summary>
+/// <typeparam name="TRequest">Type of the request.</typeparam>
+/// <typeparam name="TResponse">Type of the response.</typeparam>
+public sealed class LoggingBehavior<TRequest, TResponse>
     : IPipelineBehavior<TRequest, TResponse> where TRequest : IRequest<TResponse>
 {
     private readonly ILogger<LoggingBehavior<TRequest, TResponse>> _logger;
@@ -14,6 +19,7 @@ public class LoggingBehavior<TRequest, TResponse>
         _logger = logger;
     }
 
+    /// <inheritdoc />
     public async Task<TResponse> Handle(
         TRequest request,
         RequestHandlerDelegate<TResponse> next,

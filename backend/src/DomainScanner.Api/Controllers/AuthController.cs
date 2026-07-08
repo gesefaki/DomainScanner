@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DomainScanner.Api.Controllers;
 
-[Route("api/v1/auth")]
+[Route("api/v1/[controller]")]
 [ApiController]
 public class AuthController : ControllerBase
 {

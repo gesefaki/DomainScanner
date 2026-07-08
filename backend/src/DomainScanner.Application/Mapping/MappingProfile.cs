@@ -8,8 +8,15 @@ using DomainScanner.Domain.Models;
 
 namespace DomainScanner.Application.Mapping;
 
+/// <summary>
+/// AutoMapper profile that defines all mapping configurations between domain entities and DTOs.
+/// Provides centralized mapping rules for the entire application.
+/// </summary>
 public class MappingProfile : Profile
 {
+    /// <summary>
+    /// Configures all AutoMapper mappings for the Domain Scanner application.
+    /// </summary>
     public MappingProfile()
     {
         // HTTPs

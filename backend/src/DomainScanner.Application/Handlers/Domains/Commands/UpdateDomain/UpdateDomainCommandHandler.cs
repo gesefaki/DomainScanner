@@ -7,7 +7,9 @@ using MediatR;
 
 namespace DomainScanner.Application.Handlers.Domains.Commands.UpdateDomain;
 
-
+/// <summary>
+/// Handles <see cref="UpdateDomainCommand"/>. 
+/// </summary>
 public class UpdateDomainCommandHandler : IRequestHandler<UpdateDomainCommand, DomainResponse>
 {
     private readonly IRepository<DomainEntity, Guid> _repository;
@@ -20,6 +22,7 @@ public class UpdateDomainCommandHandler : IRequestHandler<UpdateDomainCommand, D
         _mapper = mapper;
     }
 
+    /// <inheritdoc />
     public async Task<DomainResponse> Handle(UpdateDomainCommand request, CancellationToken ct)
     {
         // Getting domain

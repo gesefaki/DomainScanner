@@ -4,8 +4,13 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace DomainScanner.Infrastructure.DataAccess.Persistence.Context.Configuration;
 
+/// <summary>
+/// Entity type configuration for <see cref="BaseEntity"/>.
+/// </summary>
+/// <typeparam name="TEntity">Type of configurable entity. Must inherit from <see cref="BaseEntity"/></typeparam>
 internal abstract class BaseEntityConfiguration<TEntity> : IEntityTypeConfiguration<TEntity> where TEntity : BaseEntity
 {
+    /// <inheritdoc />
     public virtual void Configure(EntityTypeBuilder<TEntity> builder)
     {
         // Id

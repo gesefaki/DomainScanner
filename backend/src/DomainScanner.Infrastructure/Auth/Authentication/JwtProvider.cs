@@ -1,7 +1,6 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using DomainScanner.Application.Abstractions;
 using DomainScanner.Application.Abstractions.Auth;
 using DomainScanner.Domain.Entities;
 using Microsoft.Extensions.Options;
@@ -9,10 +8,20 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace DomainScanner.Infrastructure.Auth.Authentication;
 
-public class JwtProvider(IOptions<JwtOptions> options) : IJwtProvider
+/// <summary>
+/// Provides JWT generation functionally for user auth. Implements <see cref="IJwtProvider"/>.
+/// </summary>
+public class JwtProvider : IJwtProvider
 {
-    private readonly JwtOptions _options = options.Value;
+    private readonly JwtOptions _options;
+
+    public JwtProvider(IOptions<JwtOptions> options)
+    {
+        _options = options.Value;
+    }
     
+
+    /// <inheritdoc />
     public string GenerateToken(User user)
     {
         Claim[] claims = [new("userId", user.Id.ToString())]; 

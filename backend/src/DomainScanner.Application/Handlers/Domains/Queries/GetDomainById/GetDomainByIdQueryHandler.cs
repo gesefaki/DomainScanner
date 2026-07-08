@@ -7,6 +7,9 @@ using MediatR;
 
 namespace DomainScanner.Application.Handlers.Domains.Queries.GetDomainById;
 
+/// <summary>
+/// Handles <see cref="GetDomainByIdQuery"/> 
+/// </summary>
 public class GetDomainByIdQueryHandler : IRequestHandler<GetDomainByIdQuery, DomainResponse>
 {
     private readonly IReadRepository<DomainEntity, Guid> _repository;
@@ -18,6 +21,7 @@ public class GetDomainByIdQueryHandler : IRequestHandler<GetDomainByIdQuery, Dom
         _mapper = mapper;
     }
 
+    /// <inheritdoc />
     public async Task<DomainResponse> Handle(GetDomainByIdQuery request, CancellationToken ct)
     {
         var domain = await _repository.FindAsync(request.Id, ct);
