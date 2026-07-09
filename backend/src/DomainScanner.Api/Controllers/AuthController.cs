@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DomainScanner.Api.Controllers;
 
+/// <summary>
+/// REST API controller handles auth operations.
+/// </summary>
 [Route("api/v1/[controller]")]
 [ApiController]
 public class AuthController : ControllerBase
@@ -16,6 +19,12 @@ public class AuthController : ControllerBase
         _sender = sender;
     }
     
+    /// <summary>
+    /// Authenticates a user and generates a JWT token.
+    /// </summary>
+    /// <param name="request">The login request.</param>
+    /// <param name="ct">Cancellation token provided by the user.</param>
+    /// <returns></returns>
     [HttpPost]
     public async Task<ActionResult<string>> Login([FromBody] LoginUserRequest request, CancellationToken ct)
     {

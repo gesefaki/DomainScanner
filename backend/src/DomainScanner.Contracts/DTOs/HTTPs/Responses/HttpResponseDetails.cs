@@ -1,7 +1,9 @@
 ﻿using DomainScanner.Domain.Models;
 
 namespace DomainScanner.Contracts.DTOs.HTTPs.Responses;
-
+/// <summary>
+/// Advanced <c>HttpResponse</c> variant for map <c>Domain.Models.HttpResponseDetails</c> model.
+/// </summary>
 public class HttpResponseDetails
 {
     public string Address { get; set; } = string.Empty;

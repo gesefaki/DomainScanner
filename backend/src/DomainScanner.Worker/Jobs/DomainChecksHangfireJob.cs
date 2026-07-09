@@ -8,6 +8,9 @@ using Microsoft.Extensions.Options;
 
 namespace DomainScanner.Worker.Jobs;
 
+/// <summary>
+/// Hangfire background job that permorms HTTP checks on a batch of domains. Implements <see cref="IDomainsCheckJob"/>.
+/// </summary>
 public class DomainChecksHangfireJob : IDomainsCheckJob
 {
     private readonly IReadRepository<DomainEntity, Guid> _readRepository;
@@ -27,6 +30,10 @@ public class DomainChecksHangfireJob : IDomainsCheckJob
         _options = options.Value;
     }
 
+    /// <summary>
+    /// Executes the domain check job by processing a batch of domains.
+    /// </summary>
+    /// <param name="ct">Cancellation token.</param>
     public async Task RunAsync(CancellationToken ct)
     {
         var domainsBatch = (List<DomainEntity>)await _readRepository.GetBatchAsync(_options.BatchSize, ct);

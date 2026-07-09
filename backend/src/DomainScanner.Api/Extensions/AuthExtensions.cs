@@ -1,12 +1,20 @@
 ﻿using System.Text;
-using DomainScanner.Infrastructure.Auth.Authentication;
+using DomainScanner.Contracts.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 
 namespace DomainScanner.Api.Extensions;
 
+/// <summary>
+/// Provides extension methods for configuring authentication in the presentation layer.
+/// </summary>
 public static class AuthExtension
 {
+    /// <summary>
+    /// Configures JWT Bearer auth.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> to add auth services to.</param>
+    /// <param name="configuration">The application configuration containing JWT settings.</param>
     public static void AddApiAuthentication(this IServiceCollection services, 
         IConfiguration configuration)
     {

@@ -6,6 +6,9 @@ using Microsoft.Extensions.Options;
 
 namespace DomainScanner.Worker.HostedServices;
 
+/// <summary>
+/// Hosted service that registers and manages Hangfire recuuring jobs for domain checks. Implements <see cref="IHostedService"/>. 
+/// </summary>
 public class HangfireRecurringJobsHostedService : IHostedService
 {
     private readonly ILogger<HangfireRecurringJobsHostedService> _logger;
@@ -22,6 +25,7 @@ public class HangfireRecurringJobsHostedService : IHostedService
         _options = options.Value;
     }
 
+    /// <inheritdoc />
     public Task StartAsync(CancellationToken ct)
     {
         _recurringJobManager.AddOrUpdate<IDomainsCheckJob>(
@@ -44,5 +48,6 @@ public class HangfireRecurringJobsHostedService : IHostedService
         return Task.CompletedTask;
     }
     
+    /// <inheritdoc />
     public Task StopAsync(CancellationToken ct) => Task.CompletedTask;
 }

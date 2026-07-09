@@ -5,6 +5,9 @@ using DomainScanner.Contracts.Models;
 
 namespace DomainScanner.Api.Middleware;
 
+/// <summary>
+/// Global exception handling middleware.
+/// </summary>
 public class ExceptionHandlerMiddleware
 {
     private readonly RequestDelegate _next;
@@ -16,6 +19,10 @@ public class ExceptionHandlerMiddleware
         _logger = logger;
     }
 
+    /// <summary>
+    /// Invokes the middleware to process the HTTP request and handle any exceptions.
+    /// </summary>
+    /// <param name="context">HTTP context.</param>
     public async Task Invoke(HttpContext context)
     {
         try
@@ -28,6 +35,11 @@ public class ExceptionHandlerMiddleware
         }
     }
 
+    /// <summary>
+    /// Handles the exception by mapping it to an appropriate HTTP response.
+    /// </summary>
+    /// <param name="context">HTTP context.</param>
+    /// <param name="exception">The exception that was thrown.</param>
     private async Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
         var response = exception switch

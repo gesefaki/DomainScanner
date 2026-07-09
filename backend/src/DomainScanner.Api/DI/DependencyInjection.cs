@@ -6,8 +6,18 @@ using Microsoft.OpenApi.Models;
 
 namespace DomainScanner.Api.DI;
 
+/// <summary>
+/// Provides extension methods for configuring the presentation layer of the application.
+/// Centralizes all API-related dependency injection and middleware configuration.
+/// </summary>
 public static class DependencyInjection
 {
+    /// <summary>
+    ///  Registers all presentation-layer services with the DI container.
+    /// </summary>
+    /// <param name="services"></param>
+    /// <param name="configuration"></param>
+    /// <returns></returns>
     public static IServiceCollection AddPresentationLayer(
         this IServiceCollection services,
         IConfiguration configuration
@@ -54,6 +64,9 @@ public static class DependencyInjection
         return services;
     }
 
+    /// <summary>
+    /// Utilizes registered in DI container services in application.
+    /// </summary>
     public static WebApplication UsePresentationLayer(this WebApplication app)
     {
         app.UseExceptionHandlerMiddleware();

@@ -2,6 +2,9 @@
 
 namespace DomainScanner.Contracts.DTOs.Domains.Responses;
 
+/// <summary>
+/// Basic <c>DomainEntity</c> response.
+/// </summary>
 public record DomainResponse(Guid Id, 
     string Address, 
     bool? IsAvailable, 

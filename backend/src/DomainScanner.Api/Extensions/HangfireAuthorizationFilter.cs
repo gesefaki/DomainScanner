@@ -2,6 +2,9 @@
 
 namespace DomainScanner.Api.Extensions;
 
+/// <summary>
+/// Custom auth filter for Hangfire Dashboard access control.
+/// </summary>
 public class HangfireAuthorizationFilter : IDashboardAuthorizationFilter
 {
     private readonly ILogger<HangfireAuthorizationFilter> _logger;
@@ -11,6 +14,9 @@ public class HangfireAuthorizationFilter : IDashboardAuthorizationFilter
         _logger = logger;
     }
 
+    /// <summary>
+    /// Determins whether the current user is authorized to access the dashboard.
+    /// </summary>
     public bool Authorize(DashboardContext context)
     {
         var httpContext = context.GetHttpContext();
