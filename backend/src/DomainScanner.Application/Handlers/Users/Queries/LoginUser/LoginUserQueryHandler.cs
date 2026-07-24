@@ -35,7 +35,9 @@ public class LoginUserQueryHandler : IRequestHandler<LoginUserQuery, string>
             throw new UserNotFoundException(request.Request.Email);
         }
 
-        if (!_hasher.Verify(request.Request.Password, user.PasswordHash))
+        var existsByEmail = await _readRepository.IsExistsByAttribute(u => u.Email == request.Request.Email, ct);
+
+        if (existsByEmail || !_hasher.Verify(request.Request.Password, user.PasswordHash))
         {
             throw new InvalidCredentialException();
         }

@@ -1,4 +1,5 @@
 ﻿using DomainScanner.Application.Abstractions.Persistence.Common;
+using DomainScanner.Application.Handlers.Users.Common;
 using DomainScanner.Domain.Entities;
 using FluentValidation;
 
@@ -19,23 +20,28 @@ public class RegisterUserCommandValidator : AbstractValidator<RegisterUserComman
     public RegisterUserCommandValidator(IReadRepository<User, Guid> repository)
     {
         _repository = repository;
-
-        RuleFor(r => r.Request.Username)
+        
+        // Email
+        RuleFor(x => x.Request.Email)
+            .ValidEmail()
+            .MustAsync(IsUniqueEmail)
+            .WithMessage("Email already registered.");
+        
+        // Username
+        RuleFor(x => x.Request.Username)
+            // Empty
             .NotEmpty()
-            .Length(3, 20)
-            .Matches("^[a-zA-Z0-9_-]+$");
+            .WithMessage("Username cannot be empty.")
 
-        RuleFor(r => r.Request.Email)
-            .NotEmpty()
-            .EmailAddress()
-            .MustAsync(IsUniqueEmail).WithMessage("Email already registered.");
+            // Length
+            .MaximumLength(50)
+            .WithMessage("Username must not exceed 50 characters.");
+        
+        // Password
+        RuleFor(x => x.Request.Password)
+            .StrongPassword();
+        
 
-        RuleFor(r => r.Request.Password)
-            .NotEmpty()
-            .MinimumLength(8)
-            .Matches("[A-Z]").WithMessage("Password must contain at least one uppercase letter.")
-            .Matches("[a-z]").WithMessage("Password must contain at least one lowercase letter.")
-            .Matches("[0-9]").WithMessage("Password must contain at least one digit");
     }
 
     /// <summary>
@@ -43,7 +49,7 @@ public class RegisterUserCommandValidator : AbstractValidator<RegisterUserComman
     /// </summary>
     /// <param name="email">User email as a string.</param>
     /// <param name="ct">Cancellation token provided by the user.</param>
-    /// <returns></returns>
+    /// <returns><c>true</c> if email is unique, otherwise <c>false</c>.</returns>
     private async Task<bool> IsUniqueEmail(string email, CancellationToken ct)
     {
         return !await _repository.IsExistsByAttribute(u => u.Email == email, ct);

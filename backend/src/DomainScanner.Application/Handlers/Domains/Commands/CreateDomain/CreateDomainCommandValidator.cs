@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+﻿using DomainScanner.Application.Handlers.Domains.Common;
+using FluentValidation;
 
 namespace DomainScanner.Application.Handlers.Domains.Commands.CreateDomain;
 
@@ -13,22 +14,10 @@ public class CreateDomainCommandValidator : AbstractValidator<CreateDomainComman
     /// </summary>
     public CreateDomainCommandValidator()
     {
-        RuleFor(d => d.Request.Address)
+        RuleFor(x => x.Request.UserId)
             .NotEmpty()
-            .WithMessage("Domain address is required")
-            .MaximumLength(150)
-            .WithMessage("Domain maximum length must not exceed 100 characters")
-            .Must(IsValidUrl)
-            .WithMessage("Domain URL must be valid.");
-    }
-    
-    /// <summary>
-    /// Validates that the domain address is a valid URL.
-    /// </summary>
-    /// <param name="url">The URL string to validate.</param>
-    private bool IsValidUrl(string url)
-    {
-        return Uri.TryCreate(url, UriKind.Absolute, out var uri)
-               && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
+            .WithMessage("User ID is required.");
+        
+        RuleFor(x => x.Request.Address!).ValidDomainAddress();
     }
 }

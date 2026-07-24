@@ -1,3 +1,4 @@
+using DomainScanner.Api.Configuration;
 using DomainScanner.Api.Extensions;
 using DomainScanner.Api.Middleware;
 using Microsoft.AspNetCore.CookiePolicy;

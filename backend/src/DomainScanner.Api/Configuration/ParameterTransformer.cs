@@ -1,5 +1,7 @@
 using System.Text.RegularExpressions;
 
+namespace DomainScanner.Api.Configuration;
+
 /// <summary>
 /// Transforms route parameters and controller names from PascalCase/camelCase to kebab-case format. Implements <see cref="IOutboundParameterTransformer"/>. 
 /// </summary>
@@ -28,9 +30,9 @@ internal sealed class KebabCaseParameterTransformer : IOutboundParameterTransfor
     private static string ToKebabCase(string value)
     {
         return Regex.Replace(
-            value,
-            "([a-z])([A-Z])",
-            "$1-$2")
+                value,
+                "([a-z])([A-Z])",
+                "$1-$2")
             .ToLowerInvariant();
     }
 }

@@ -8,7 +8,7 @@ using MediatR;
 namespace DomainScanner.Application.Handlers.Domains.Commands.UpdateDomain;
 
 /// <summary>
-/// Handles <see cref="UpdateDomainCommand"/>. 
+/// Handles <see cref="UpdateDomainCommand"/>. Has a <see cref="UpdateDomainCommandValidator"/> must be passed. 
 /// </summary>
 public class UpdateDomainCommandHandler : IRequestHandler<UpdateDomainCommand, DomainResponse>
 {
@@ -31,10 +31,12 @@ public class UpdateDomainCommandHandler : IRequestHandler<UpdateDomainCommand, D
         {
             throw new DomainNotFoundException(request.Id);
         }
-
+        
+        // Updating entity in-memory
         domain.Address = request.Request.Address;
         domain.IsActive = request.Request.IsActive;
-
+        
+        // Update in repository
         var updatedDomain = _repository.Update(domain);
 
         return _mapper.Map<DomainResponse>(updatedDomain);

@@ -14,7 +14,7 @@ namespace DomainScanner.Application.Handlers.Domains.Commands.CreateDomain;
 public class CreateDomainCommandHandler : IRequestHandler<CreateDomainCommand, DomainResponse>
 {
     private readonly IReadRepository<User, Guid> _usersReadRepository;
-    private readonly IRepository<DomainEntity, Guid> _domainsRepostory;
+    private readonly IRepository<DomainEntity, Guid> _domainsRepository;
     private readonly IMapper _mapper;
 
     public CreateDomainCommandHandler(IReadRepository<User, Guid> usersReadRepository, 
@@ -22,7 +22,7 @@ public class CreateDomainCommandHandler : IRequestHandler<CreateDomainCommand, D
         IMapper mapper)
     {
         _usersReadRepository = usersReadRepository;
-        _domainsRepostory = domainsRepository;
+        _domainsRepository = domainsRepository;
         _mapper = mapper;
     }
     
@@ -41,11 +41,11 @@ public class CreateDomainCommandHandler : IRequestHandler<CreateDomainCommand, D
         // create new domainEntity
         var domain = new DomainEntity
         {
-            Address = request.Request.Address
+            Address = request.Request.Address!
         };
 
         // add domain in db
-        var createdDomain = await _domainsRepostory.CreateAsync(domain, ct);
+        var createdDomain = await _domainsRepository.CreateAsync(domain, ct);
         
         // link domain to user who created
         user.Domains.Add(createdDomain);

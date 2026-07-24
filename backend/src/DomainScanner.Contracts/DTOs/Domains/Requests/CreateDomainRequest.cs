@@ -6,5 +6,5 @@
 /// <param name="Address">Domain URL.</param>
 /// <param name="UserId">Unique identifier of the user who will own this domain.</param>
 public record CreateDomainRequest(
-    string Address,
+    string? Address,
     Guid UserId);

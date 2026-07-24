@@ -8,7 +8,7 @@ namespace DomainScanner.Contracts.Helpers;
 public static class DomainsHelper
 {
     /// <summary>
-    /// Converts a DomainEntity adress to a <see cref="Uri"/> object.
+    /// Converts a DomainEntity address to a <see cref="Uri"/> object.
     /// </summary>
     /// <param name="entity">The DomainEntity containing the address to convert.</param>
     /// <returns><see cref="Uri"/> object or <c>null</c> if address cannot be parsed.</returns>

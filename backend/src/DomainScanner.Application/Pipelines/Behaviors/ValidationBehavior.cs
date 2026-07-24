@@ -32,7 +32,7 @@ public sealed class ValidationBehavior<TRequest, TResponse>
             .Where(f => f is not null)
             .ToList();
 
-        if (failures.Any())
+        if (failures.Count != 0)
         {
             throw new ValidationException(failures);
         }
