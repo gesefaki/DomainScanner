@@ -7,7 +7,7 @@ using DomainScanner.Domain.Entities;
 using FluentAssertions;
 using Moq;
 
-namespace DomainScanner.Application.UnitTests.Handlers.Domains;
+namespace DomainScanner.Application.UnitTests.Handlers.Domains.Commands;
 
 /// <summary>
 /// Unit tests for <see cref="DeleteDomainCommandHandler"/>.

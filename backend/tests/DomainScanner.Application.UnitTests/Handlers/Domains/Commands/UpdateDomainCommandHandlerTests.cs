@@ -9,7 +9,7 @@ using DomainScanner.Domain.Entities;
 using FluentAssertions;
 using Moq;
 
-namespace DomainScanner.Application.UnitTests.Handlers.Domains;
+namespace DomainScanner.Application.UnitTests.Handlers.Domains.Commands;
 
 /// <summary>
 /// Unit tests for <see cref="UpdateDomainCommandHandler"/>.
@@ -49,10 +49,7 @@ public class UpdateDomainCommandHandlerTests
             .Active()
             .BuildUpdateCommand();
 
-        var expected = new DomainResponseBuilder()
-            .WithId(_fakeDomainId)
-            .WithAddress(FakeDomainAddress)
-            .Build();
+        var expected = new DomainResponseBuilder().Build(domain);
 
         _repository.SetupFindAsync(_fakeDomainId, domain);
 

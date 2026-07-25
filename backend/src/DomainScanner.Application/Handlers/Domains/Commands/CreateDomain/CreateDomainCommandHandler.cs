@@ -41,7 +41,8 @@ public class CreateDomainCommandHandler : IRequestHandler<CreateDomainCommand, D
         // create new domainEntity
         var domain = new DomainEntity
         {
-            Address = request.Request.Address!
+            Address = request.Request.Address!,
+            UserId = request.Request.UserId
         };
 
         // add domain in db

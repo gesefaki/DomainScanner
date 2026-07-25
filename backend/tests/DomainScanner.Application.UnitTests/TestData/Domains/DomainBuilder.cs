@@ -80,4 +80,22 @@ public sealed class DomainBuilder
             IsActive = _isActive
         };
     }
+    
+    /// <summary>
+    /// Builds and returns a <see cref="List{DomainEntity}"/> with the configured properties.
+    /// </summary>
+    /// <param name="count">Length of range.</param>
+    /// <returns>The collection of <see cref="DomainEntity"/>.</returns>
+    public List<DomainEntity> BuildRange(int count)
+    {
+        var result = new List<DomainEntity>();
+        
+        for (var i = 0; i < count; i++)
+        {
+            var domain = Build();
+            result.Add(domain);
+        }
+
+        return result;
+    }
 }

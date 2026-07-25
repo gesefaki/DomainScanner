@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using DomainScanner.Application.Abstractions.Persistence.Common;
 using DomainScanner.Contracts.DTOs.Domains.Responses;
+using DomainScanner.Contracts.Exceptions.Domains;
 using DomainScanner.Contracts.Exceptions.Users;
 using DomainScanner.Domain.Entities;
 using MediatR;
@@ -27,7 +28,7 @@ public class GetDomainByIdQueryHandler : IRequestHandler<GetDomainByIdQuery, Dom
         var domain = await _repository.FindAsync(request.Id, ct);
         if (domain is null)
         {
-            throw new UserNotFoundException(request.Id);
+            throw new DomainNotFoundException(request.Id);
         }
 
         return _mapper.Map<DomainResponse>(domain);

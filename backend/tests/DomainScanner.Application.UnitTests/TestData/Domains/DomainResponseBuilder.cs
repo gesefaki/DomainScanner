@@ -1,5 +1,6 @@
 ﻿using DomainScanner.Contracts.DTOs.Domains.Responses;
 using DomainScanner.Contracts.DTOs.HTTPs.Responses;
+using DomainScanner.Domain.Entities;
 
 namespace DomainScanner.Application.UnitTests.TestData.Domains;
 
@@ -77,6 +78,22 @@ public sealed class DomainResponseBuilder
     {
         _checks = checks;
         return this;
+    }
+    
+    /// <summary>
+    /// Build and returns a <see cref="DomainResponse"/> based on the provided <see cref="DomainEntity"/>.
+    /// </summary>
+    /// <param name="baseEntity"></param>
+    /// <returns>A new <see cref="DomainResponse"/> instance.</returns>
+    public DomainResponse Build(DomainEntity baseEntity)
+    {
+        return new DomainResponse(
+            Id: baseEntity.Id,
+            Address: baseEntity.Address,
+            IsAvailable: baseEntity.IsActive,
+            UserId: baseEntity.UserId,
+            Checks: []
+            );
     }
     
     /// <summary>
