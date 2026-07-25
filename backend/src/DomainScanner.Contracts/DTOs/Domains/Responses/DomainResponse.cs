@@ -9,4 +9,4 @@ public record DomainResponse(Guid Id,
     string Address, 
     bool? IsAvailable, 
     Guid UserId,
-    HttpResponse[] Checks);
+    IEnumerable<HttpResponse> Checks);

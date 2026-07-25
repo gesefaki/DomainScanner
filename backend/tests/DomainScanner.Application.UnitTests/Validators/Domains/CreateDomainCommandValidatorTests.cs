@@ -1,4 +1,6 @@
 ﻿using DomainScanner.Application.Handlers.Domains.Commands.CreateDomain;
+using DomainScanner.Application.UnitTests.TestData;
+using DomainScanner.Application.UnitTests.TestData.Domains;
 using DomainScanner.Contracts.DTOs.Domains.Requests;
 using FluentValidation.TestHelper;
 
@@ -17,23 +19,31 @@ public class CreateDomainCommandValidatorTests
     {
         _validator = new CreateDomainCommandValidator();
     }
+    
+    /// <summary>
+    /// Tests that validation fails when UserId is empty.
+    /// </summary>
     [Fact]
     public void Validate_WhenUserIdIsEmpty_HasUserIdError()
     {
-        var command = new CreateDomainCommand(
-            new CreateDomainRequest("https://example.com", Guid.Empty));
+        var command = new DomainCommandBuilder()
+            .WithUserId(Guid.Empty)
+            .BuildCreateCommand();
 
         var result = _validator.TestValidate(command);
 
         result.ShouldHaveValidationErrorFor(x => x.Request.UserId)
             .WithErrorMessage("User ID is required.");
     }
-
+    
+    /// <summary>
+    /// Tests that validation passes when all fields are valid.
+    /// </summary>
     [Fact]
     public void Validate_WhenRequestIsValid_HasNoErrors()
     {
-        var command = new CreateDomainCommand(
-            new CreateDomainRequest("https://example.com", _fakeUserId));
+        var command = new DomainCommandBuilder()
+            .BuildCreateCommand();
 
         var result = _validator.TestValidate(command);
 

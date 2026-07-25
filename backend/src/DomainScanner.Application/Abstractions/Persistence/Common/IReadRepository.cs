@@ -7,13 +7,13 @@ namespace DomainScanner.Application.Abstractions.Persistence.Common;
 /// Defines read-only operations for a repository.
 /// </summary>
 /// <typeparam name="TEntity">The type of entity this repository manages. Must inherit from <see cref="BaseEntity"/>.</typeparam>
-/// <typeparam name="TId">The type of eneity's primary key. Must be a value type (struct).</typeparam>
+/// <typeparam name="TId">The type of entity's primary key. Must be a value type (struct).</typeparam>
 public interface IReadRepository<TEntity, TId>
     where TEntity : BaseEntity
     where TId : struct
 {
     /// <summary>
-    /// Retrivies a single entity that matches the specified predicate.
+    /// Retrieves a single entity that matches the specified predicate.
     /// </summary>
     /// <param name="predicate">The expression to filter entities.</param>
     /// <param name="ct">Cancellation token provided by the user.</param>
@@ -21,14 +21,14 @@ public interface IReadRepository<TEntity, TId>
     Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken ct);
 
     /// <summary>
-    /// Retrivies all entities from database.
+    /// Retrieves all entities from database.
     /// </summary>
     /// <param name="ct">Cancellation token provided by the user.</param>
     /// <returns>A task representing the async operation that return all entities.</returns>
     Task<IEnumerable<TEntity>> GetAllAsync(CancellationToken ct);
 
     /// <summary>
-    /// Retrivies all entities that match the specified predicate.
+    /// Retrieves all entities that match the specified predicate.
     /// </summary>
     /// <param name="predicate">The expression to filter entities.</param>
     /// <param name="ct">Cancellation token provided by the user.</param>

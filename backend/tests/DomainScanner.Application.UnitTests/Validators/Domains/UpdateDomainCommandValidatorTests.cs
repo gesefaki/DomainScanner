@@ -1,5 +1,6 @@
 using DomainScanner.Application.Handlers.Domains.Commands.UpdateDomain;
-using DomainScanner.Contracts.DTOs.Domains.Requests;
+using DomainScanner.Application.UnitTests.TestData;
+using DomainScanner.Application.UnitTests.TestData.Domains;
 using FluentValidation.TestHelper;
 
 namespace DomainScanner.Application.UnitTests.Validators.Domains;
@@ -10,24 +11,31 @@ namespace DomainScanner.Application.UnitTests.Validators.Domains;
 public class UpdateDomainCommandValidatorTests
 {
     private readonly UpdateDomainCommandValidator _validator = new();
-
+    
+    /// <summary>
+    /// Tests that validation passes when all fields are valid.
+    /// </summary>
     [Fact]
     public void Validate_WhenRequestIsValid_HasNoErrors()
     {
-        var command = new UpdateDomainCommand(
-            Guid.NewGuid(), new UpdateDomainRequest("http://example.com", true));
+        var command = new DomainCommandBuilder()
+            .BuildUpdateCommand();
 
         var result = _validator.TestValidate(command);
 
         result.ShouldNotHaveAnyValidationErrors();
     }
-
+    
+    /// <summary>
+    /// Tests that validation fails when address is invalid (unsupported scheme).
+    /// </summary>
     [Fact]
     public void Validate_WhenAddressViolatesCommonRules_HasAddressError()
     {
-        var command = new UpdateDomainCommand(
-            Guid.NewGuid(), new UpdateDomainRequest("ftp://example.com", true));
-
+        var command = new DomainCommandBuilder()
+            .WithAddress("ftp://example.com")
+            .BuildUpdateCommand();
+        
         var result = _validator.TestValidate(command);
 
         result.ShouldHaveValidationErrorFor(x => x.Request.Address)

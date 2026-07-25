@@ -13,8 +13,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{092539E5-01C8-4E46-B394-7A8FE2EE18B7}"
 	ProjectSection(SolutionItems) = preProject
 		..\..\localhost\docker-compose.yaml = ..\..\localhost\docker-compose.yaml
-		..\..\localhost\.env.example = ..\..\localhost\.env.example
 		..\..\localhost\.dockerignore = ..\..\localhost\.dockerignore
+		..\..\localhost\.env = ..\..\localhost\.env
+		..\..\localhost\.env.example = ..\..\localhost\.env.example
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomainScanner.Worker", "DomainScanner.Worker\DomainScanner.Worker.csproj", "{97DB100A-8EF2-4BCF-8CAA-B3287394F031}"

@@ -10,7 +10,11 @@ namespace DomainScanner.Application.UnitTests.Validators.Domains;
 public class DomainValidationRulesTests
 {
     private readonly AddressValidator _validator = new();
-
+    
+    /// <summary>
+    /// Tests that valid HTTP/HTTPS URLs pass validation.
+    /// </summary>
+    /// <param name="address">A valid HTTP or HTTPS URL.</param>
     [Theory]
     [InlineData("https://example.com")]
     [InlineData("http://example.com/path?query=value")]
@@ -22,7 +26,11 @@ public class DomainValidationRulesTests
         // Assert
         result.ShouldNotHaveValidationErrorFor(x => x.Address);
     }
-
+    
+    /// <summary>
+    /// Tests that invalid URLs fail validation.
+    /// </summary>
+    /// <param name="address">An invalid URL or unsupported scheme.</param>
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
@@ -36,7 +44,10 @@ public class DomainValidationRulesTests
         // Assert
         result.ShouldHaveValidationErrorFor(x => x.Address);
     }
-
+    
+    /// <summary>
+    /// Tests that addresses exceeding 150 characters fail validation.
+    /// </summary>
     [Fact]
     public void Validate_WhenAddressExceeds150Characters_HasMaximumLengthError()
     {
@@ -50,9 +61,16 @@ public class DomainValidationRulesTests
         result.ShouldHaveValidationErrorFor(x => x.Address)
             .WithErrorMessage("Domain address must not exceed 150 characters.");
     }
-
+    
+    /// <summary>
+    /// Test model wrapping an address string for validation.
+    /// </summary>
     private sealed record AddressModel(string Address);
-
+    
+    
+    /// <summary>
+    /// Validator for <see cref="AddressModel"/>.
+    /// </summary>
     private sealed class AddressValidator : AbstractValidator<AddressModel>
     {
         public AddressValidator()
