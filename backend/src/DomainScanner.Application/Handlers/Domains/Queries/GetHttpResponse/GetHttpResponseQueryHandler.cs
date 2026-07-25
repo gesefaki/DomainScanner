@@ -32,11 +32,7 @@ public class GetHttpResponseQueryHandler : IRequestHandler<GetHttpResponseQuery,
         }
         
         var uri = DomainsHelper.AddressToUri(domain);
-        if (uri is null)
-        {
-            throw new DomainUriValidationException(domain.Address);
-        }
 
-        return await _http.GetHttpResponseAsync(uri, ct);
+        return await _http.GetHttpResponseAsync(uri!, ct);
     }
 }

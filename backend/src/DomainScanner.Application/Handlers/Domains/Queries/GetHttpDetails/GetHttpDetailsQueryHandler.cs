@@ -34,11 +34,7 @@ public class GetHttpDetailsQueryHandler : IRequestHandler<GetHttpDetailsQuery, H
         
         // Address to Uri
         var uri = DomainsHelper.AddressToUri(domain);
-        if (uri is null)
-        {
-            throw new DomainUriValidationException(domain.Address);
-        }
         
-        return await _http.GetHttpWithDetailsAsync(uri, ct);
+        return await _http.GetHttpWithDetailsAsync(uri!, ct);
     }
 }

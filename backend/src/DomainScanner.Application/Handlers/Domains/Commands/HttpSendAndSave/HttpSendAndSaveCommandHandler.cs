@@ -38,13 +38,9 @@ public class HttpSendAndSaveCommandHandler : IRequestHandler<HttpSendAndSaveComm
         
         // Convert address to Uri
         var uri = DomainsHelper.AddressToUri(domain);
-        if (uri is null)
-        {
-            throw new DomainUriValidationException(domain.Address);
-        }
         
         // Getting http response
-        var response = await _http.GetHttpResponseAsync(uri, ct);
+        var response = await _http.GetHttpResponseAsync(uri!, ct);
         
         // Change the domain status
         domain.IsActive = response.IsSuccess;
@@ -54,7 +50,7 @@ public class HttpSendAndSaveCommandHandler : IRequestHandler<HttpSendAndSaveComm
         var check = new DomainCheckResult()
         {
             Id = Guid.NewGuid(),
-            Address = uri.ToString(),
+            Address = uri!.ToString(),
             StatusCode = response.StatusCode,
             IsActive = response.IsSuccess,
             CreatedAt = DateTime.UtcNow

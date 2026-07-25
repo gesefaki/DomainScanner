@@ -30,7 +30,7 @@ public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, U
     public async Task<UserResponse> Handle(RegisterUserCommand request, CancellationToken ct)
     {
         // check the existence of a user by credits
-        if (await _repository.IsExistsByAttribute(u => u.Email == request.Request.Email, ct) &&
+        if (await _repository.IsExistsByAttribute(u => u.Email == request.Request.Email, ct) ||
             await _repository.IsExistsByAttribute(u => u.Username == request.Request.Username, ct))
         {
             throw new UserConflictCredsException();

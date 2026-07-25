@@ -1,7 +1,6 @@
 ﻿using System.Security.Authentication;
 using DomainScanner.Application.Abstractions.Auth;
 using DomainScanner.Application.Abstractions.Persistence.Common;
-using DomainScanner.Contracts.Exceptions.Users;
 using DomainScanner.Domain.Entities;
 using MediatR;
 
@@ -30,14 +29,7 @@ public class LoginUserQueryHandler : IRequestHandler<LoginUserQuery, string>
     {
         var user = await _readRepository.GetAsync(u => u.Email == request.Request.Email, ct);
 
-        if (user is null)
-        {
-            throw new UserNotFoundException(request.Request.Email);
-        }
-
-        var existsByEmail = await _readRepository.IsExistsByAttribute(u => u.Email == request.Request.Email, ct);
-
-        if (existsByEmail || !_hasher.Verify(request.Request.Password, user.PasswordHash))
+        if (user is null || !_hasher.Verify(request.Request.Password, user.PasswordHash))
         {
             throw new InvalidCredentialException();
         }
