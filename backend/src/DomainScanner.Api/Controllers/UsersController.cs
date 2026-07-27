@@ -3,10 +3,11 @@ using DomainScanner.Application.Handlers.Users.Commands.DeactivateUser;
 using DomainScanner.Application.Handlers.Users.Commands.DeleteUser;
 using DomainScanner.Application.Handlers.Users.Commands.RegisterUser;
 using DomainScanner.Application.Handlers.Users.Queries.GetAllUsers;
+using DomainScanner.Application.Handlers.Users.Queries.GetMyDomainsQuery;
 using DomainScanner.Application.Handlers.Users.Queries.GetUserById;
+using DomainScanner.Contracts.DTOs.Domains.Responses;
 using DomainScanner.Contracts.DTOs.Users.Requests;
 using DomainScanner.Contracts.DTOs.Users.Responses;
-using DomainScanner.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -43,14 +44,20 @@ public class UsersController : Controller
     /// <summary>
     /// Retrieves single user for authenticated user.
     /// </summary>
-    /// <param name="id">User unique identifier.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>Single <see cref="UserResponse"/>.</returns>
-    [HttpGet("{id:guid}")]
-    public async Task<ActionResult<UserResponse>> Get(Guid id, CancellationToken ct)
+    [HttpGet("me")]
+    public async Task<ActionResult<UserResponse>> Get(CancellationToken ct)
     {
-        var user = await _sender.Send(new GetUserByIdQuery(id), ct);
+        var user = await _sender.Send(new GetUserByIdQuery(), ct);
         return Ok(user);
+    }
+
+    [HttpGet("me/domains")]
+    public async Task<ActionResult<DomainResponse>> GetMyDomains(CancellationToken ct)
+    {
+        var domains = await _sender.Send(new GetMyDomainsQuery(), ct);
+        return Ok(domains);
     }
 
     /// <summary>
@@ -63,44 +70,41 @@ public class UsersController : Controller
     public async Task<ActionResult> Register([FromBody] RegisterUserRequest request, CancellationToken ct)
     {
         var user = await _sender.Send(new RegisterUserCommand(request), ct);
-        return CreatedAtAction(nameof(Get), new { id = user.Id }, user);
+        return CreatedAtAction(nameof(Get), value: user);
     }
 
     /// <summary>
     /// Activates a user account.
     /// </summary>
-    /// <param name="id">User unique identifier.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>Single <see cref="UserResponse"/>.</returns>
-    [HttpPut("{id:guid}/activate")]
-    public async Task<ActionResult<UserResponse>> Activate(Guid id, CancellationToken ct)
+    [HttpPut("me/activate")]
+    public async Task<ActionResult<UserResponse>> Activate(CancellationToken ct)
     {
-        var result = await _sender.Send(new ActivateUserCommand(id), ct);
+        var result = await _sender.Send(new ActivateUserCommand(), ct);
         return Ok(result);
     }
 
     /// <summary>
     /// Deactivates a user account.
     /// </summary>
-    /// <param name="id">User unique identifier.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>Single <see cref="UserResponse"/>.</returns>
-    [HttpPut("{id:guid}/deactivate")]
-    public async Task<ActionResult> Deactivate(Guid id, CancellationToken ct)
+    [HttpPut("me/deactivate")]
+    public async Task<ActionResult> Deactivate(CancellationToken ct)
     {
-        var user = await _sender.Send(new DeactivateUserCommand(id), ct);
+        var user = await _sender.Send(new DeactivateUserCommand(), ct);
         return Ok(user);
     }
 
     /// <summary>
     /// Deletes a user account from database. Not soft delete.
     /// </summary>
-    /// <param name="id">User unique identifier.</param>
     /// <param name="ct">Cancellation token.</param>
-    [HttpDelete("{id:guid}")]
-    public async Task<ActionResult> Delete(Guid id, CancellationToken ct)
+    [HttpDelete("me")]
+    public async Task<ActionResult> Delete(CancellationToken ct)
     {
-        await _sender.Send(new DeleteUserCommand(id), ct);
+        await _sender.Send(new DeleteUserCommand(), ct);
         return NoContent();
     }
 }

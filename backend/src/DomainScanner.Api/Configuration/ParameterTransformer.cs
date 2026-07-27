@@ -8,10 +8,10 @@ namespace DomainScanner.Api.Configuration;
 internal sealed class KebabCaseParameterTransformer : IOutboundParameterTransformer
 {
     /// <summary>
-    /// Trasform the specified value to kebab-case format.
+    /// Transform the specified value to kebab-case format.
     /// </summary>
-    /// <param name="value">The value to transfrom</param>
-    /// <returns>Trasfromed value or <c>null</c> if inpit value is <c>null</c></returns>
+    /// <param name="value">The value to transform</param>
+    /// <returns>Transformed value or <c>null</c> if input value is <c>null</c></returns>
     public string? TransformOutbound(object? value)
     {
         if (value == null)

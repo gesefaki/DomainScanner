@@ -1,0 +1,9 @@
+.git
+.agents
+.idea
+.vscode
+**/bin
+**/obj
+**/*.user
+**/*.suo
+localhost/.env

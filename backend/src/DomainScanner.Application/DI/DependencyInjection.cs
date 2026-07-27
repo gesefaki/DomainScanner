@@ -23,6 +23,7 @@ public static class DependencyInjection
             
             cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
             cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
+            cfg.AddOpenBehavior(typeof(AuthenticationBehavior<,>));
             cfg.AddOpenBehavior(typeof(CachingBehavior<,>));
             cfg.AddOpenBehavior(typeof(UnitOfWorkBehavior<,>));
         });

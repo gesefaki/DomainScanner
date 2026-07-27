@@ -1,9 +1,8 @@
-﻿using DomainScanner.Application.Pipelines.Interfaces;
+using DomainScanner.Application.Pipelines.Interfaces;
 
 namespace DomainScanner.Application.Handlers.Users.Commands.DeleteUser;
 
 /// <summary>
-/// Command to delete user from database.
+/// Command to delete the authenticated user.
 /// </summary>
-/// <param name="Id">Unique identifier of user which needs to be deleted.</param>
-public record DeleteUserCommand(Guid Id) : ICommand<Guid>;
+public record DeleteUserCommand : ICommand<Guid>, INeedAuthentication;

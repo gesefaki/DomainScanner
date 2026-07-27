@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using DomainScanner.Application.Abstractions.Auth;
 using DomainScanner.Application.Abstractions.Persistence;
 using DomainScanner.Application.Abstractions.Persistence.Common;
 using DomainScanner.Contracts.DTOs.Domains.Responses;
@@ -16,33 +17,38 @@ public class CreateDomainCommandHandler : IRequestHandler<CreateDomainCommand, D
     private readonly IReadRepository<User, Guid> _usersReadRepository;
     private readonly IRepository<DomainEntity, Guid> _domainsRepository;
     private readonly IMapper _mapper;
+    private readonly ICurrentUser _currentUser;
 
     public CreateDomainCommandHandler(IReadRepository<User, Guid> usersReadRepository, 
         IRepository<DomainEntity, Guid> domainsRepository,
-        IMapper mapper)
+        IMapper mapper,
+        ICurrentUser currentUser)
     {
         _usersReadRepository = usersReadRepository;
         _domainsRepository = domainsRepository;
         _mapper = mapper;
+        _currentUser = currentUser;
     }
     
     /// <inheritdoc />
     public async Task<DomainResponse> Handle(CreateDomainCommand request, CancellationToken ct)
     {
+        var userId = _currentUser.Id;
+
         // find user
-        var user = await _usersReadRepository.FindAsync(request.Request.UserId, ct);
+        var user = await _usersReadRepository.FindAsync(userId, ct);
 
         // throw if user is null
         if (user is null)
         {
-            throw new UserNotFoundException(request.Request.UserId);
+            throw new UserNotFoundException(userId);
         }
 
         // create new domainEntity
         var domain = new DomainEntity
         {
             Address = request.Request.Address!,
-            UserId = request.Request.UserId
+            UserId = userId
         };
 
         // add domain in db

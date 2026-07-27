@@ -1,3 +1,4 @@
+using DomainScanner.Application.Abstractions.Auth;
 using DomainScanner.Application.Abstractions.Persistence;
 using DomainScanner.Application.Handlers.Users.Commands.DeleteUser;
 using DomainScanner.Application.UnitTests.TestData.Mocks;
@@ -15,12 +16,14 @@ namespace DomainScanner.Application.UnitTests.Handlers.Users.Commands;
 public class DeleteUserCommandHandlerTests
 {
     private readonly Mock<IRepository<User, Guid>> _repository = new();
+    private readonly Mock<ICurrentUser> _currentUser = new();
     private readonly DeleteUserCommandHandler _handler;
 
     public DeleteUserCommandHandlerTests()
     {
         _handler = new DeleteUserCommandHandler(
-            _repository.Object);
+            _repository.Object,
+            _currentUser.Object);
     }
 
     /// <summary>
@@ -31,11 +34,12 @@ public class DeleteUserCommandHandlerTests
     {
         // Arrange
         var user = new UserBuilder().Build();
+        _currentUser.SetupGet(x => x.Id).Returns(user.Id);
         
         _repository.SetupFindAsync(user.Id, user);
 
         // Act
-        var result = await _handler.Handle(new DeleteUserCommand(user.Id), CancellationToken.None);
+        var result = await _handler.Handle(new DeleteUserCommand(), CancellationToken.None);
 
         // Assert
         result.Should().Be(user.Id);
@@ -50,10 +54,11 @@ public class DeleteUserCommandHandlerTests
     {
         // Arrange
         var id = Guid.NewGuid();
+        _currentUser.SetupGet(x => x.Id).Returns(id);
         _repository.SetupFindAsync(id, (User?)null);
 
         // Act
-        var action = () => _handler.Handle(new DeleteUserCommand(id), CancellationToken.None);
+        var action = () => _handler.Handle(new DeleteUserCommand(), CancellationToken.None);
 
         // Assert
         await action.Should().ThrowAsync<UserNotFoundException>();

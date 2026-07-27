@@ -1,4 +1,5 @@
 using AutoMapper;
+using DomainScanner.Application.Abstractions.Auth;
 using DomainScanner.Application.Abstractions.Persistence;
 using DomainScanner.Application.Handlers.Users.Commands.ActivateUser;
 using DomainScanner.Application.UnitTests.TestData.Mocks;
@@ -19,13 +20,15 @@ public class ActivateUserCommandHandlerTests
 {
     private readonly Mock<IRepository<User, Guid>> _repository = new();
     private readonly Mock<IMapper> _mapper = new();
+    private readonly Mock<ICurrentUser> _currentUser = new();
     private readonly ActivateUserCommandHandler _handler;
 
     public ActivateUserCommandHandlerTests()
     {
         _handler = new ActivateUserCommandHandler(
             _repository.Object,
-            _mapper.Object
+            _mapper.Object,
+            _currentUser.Object
         );
     }
 
@@ -40,7 +43,8 @@ public class ActivateUserCommandHandlerTests
             .Inactive()
             .Build();
 
-        var command = new ActivateUserCommand(user.Id);
+        _currentUser.SetupGet(x => x.Id).Returns(user.Id);
+        var command = new ActivateUserCommand();
         
         var response = new UserResponseBuilder()
             .WithId(user.Id)
@@ -72,10 +76,11 @@ public class ActivateUserCommandHandlerTests
     {
         // Arrange
         var id = Guid.NewGuid();
+        _currentUser.SetupGet(x => x.Id).Returns(id);
         _repository.SetupFindAsync(id, (User?)null);
 
         // Act
-        var action = () => _handler.Handle(new ActivateUserCommand(id), CancellationToken.None);
+        var action = () => _handler.Handle(new ActivateUserCommand(), CancellationToken.None);
 
         // Assert
         await action.Should().ThrowAsync<UserNotFoundException>();
@@ -90,10 +95,11 @@ public class ActivateUserCommandHandlerTests
     {
         // Arrange
         var user = new UserBuilder().Active().Build();
+        _currentUser.SetupGet(x => x.Id).Returns(user.Id);
         _repository.SetupFindAsync(user.Id, user);
 
         // Act
-        var action = () => _handler.Handle(new ActivateUserCommand(user.Id), CancellationToken.None);
+        var action = () => _handler.Handle(new ActivateUserCommand(), CancellationToken.None);
 
         // Assert
         await action.Should().ThrowAsync<UnableToExecuteException>();

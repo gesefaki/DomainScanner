@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using DomainScanner.Application.Abstractions.Auth;
 using DomainScanner.Application.Abstractions.Persistence;
 using DomainScanner.Application.Abstractions.Persistence.Common;
 using DomainScanner.Application.Handlers.Domains.Commands.CreateDomain;
@@ -20,6 +21,7 @@ public class CreateDomainCommandHandlerTests
     private readonly Mock<IReadRepository<User, Guid>> _usersReadRepository = new();
     private readonly Mock<IRepository<DomainEntity, Guid>> _domainsRepository = new();
     private readonly Mock<IMapper> _mapper = new();
+    private readonly Mock<ICurrentUser> _currentUser = new();
     private readonly CreateDomainCommandHandler _handler;
 
     private readonly Guid _fakeDomainId = Guid.NewGuid();
@@ -31,7 +33,8 @@ public class CreateDomainCommandHandlerTests
         _handler = new CreateDomainCommandHandler(
             _usersReadRepository.Object,
             _domainsRepository.Object,
-            _mapper.Object);
+            _mapper.Object,
+            _currentUser.Object);
     }
 
     /// <summary>
@@ -45,13 +48,13 @@ public class CreateDomainCommandHandlerTests
         {
             Id = _fakeUserId
         };
+        _currentUser.SetupGet(x => x.Id).Returns(_fakeUserId);
 
         DomainEntity? createdDomain = null;
 
         var command = new DomainCommandBuilder()
             .WithId(_fakeDomainId)
             .WithAddress(FakeDomainAddress)
-            .WithUserId(_fakeUserId)
             .BuildCreateCommand();
 
         var expectedResponse = new DomainResponseBuilder()
@@ -107,9 +110,9 @@ public class CreateDomainCommandHandlerTests
         var command = new DomainCommandBuilder()
             .WithId(_fakeDomainId)
             .WithAddress(FakeDomainAddress)
-            .WithUserId(_fakeUserId)
             .BuildCreateCommand();
 
+        _currentUser.SetupGet(x => x.Id).Returns(_fakeUserId);
         _usersReadRepository.SetupFindAsync(_fakeUserId, (User?)null);
         
         // Act

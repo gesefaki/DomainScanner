@@ -1,6 +1,7 @@
 ﻿using DomainScanner.Application.Handlers.Users.Queries.LoginUser;
 using DomainScanner.Contracts.DTOs.Users.Requests;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DomainScanner.Api.Controllers;
@@ -25,6 +26,7 @@ public class AuthController : ControllerBase
     /// <param name="request">The login request.</param>
     /// <param name="ct">Cancellation token provided by the user.</param>
     /// <returns></returns>
+    [AllowAnonymous]
     [HttpPost]
     public async Task<ActionResult<string>> Login([FromBody] LoginUserRequest request, CancellationToken ct)
     {

@@ -13,27 +13,9 @@ public class CreateDomainCommandValidatorTests
 {
     private readonly CreateDomainCommandValidator _validator;
 
-    private readonly Guid _fakeUserId = Guid.NewGuid();
-
     public CreateDomainCommandValidatorTests()
     {
         _validator = new CreateDomainCommandValidator();
-    }
-    
-    /// <summary>
-    /// Tests that validation fails when UserId is empty.
-    /// </summary>
-    [Fact]
-    public void Validate_WhenUserIdIsEmpty_HasUserIdError()
-    {
-        var command = new DomainCommandBuilder()
-            .WithUserId(Guid.Empty)
-            .BuildCreateCommand();
-
-        var result = _validator.TestValidate(command);
-
-        result.ShouldHaveValidationErrorFor(x => x.Request.UserId)
-            .WithErrorMessage("User ID is required.");
     }
     
     /// <summary>

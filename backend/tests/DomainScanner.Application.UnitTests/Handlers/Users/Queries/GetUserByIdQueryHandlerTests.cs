@@ -1,4 +1,5 @@
 using AutoMapper;
+using DomainScanner.Application.Abstractions.Auth;
 using DomainScanner.Application.Abstractions.Persistence.Common;
 using DomainScanner.Application.Handlers.Users.Queries.GetUserById;
 using DomainScanner.Application.UnitTests.TestData.Mocks;
@@ -18,13 +19,15 @@ public class GetUserByIdQueryHandlerTests
 {
     private readonly Mock<IReadRepository<User, Guid>> _repository = new();
     private readonly Mock<IMapper> _mapper = new();
+    private readonly Mock<ICurrentUser> _currentUser = new();
     private readonly GetUserByIdQueryHandler _handler;
 
     public GetUserByIdQueryHandlerTests()
     {
         _handler = new GetUserByIdQueryHandler(
             _repository.Object,
-            _mapper.Object);
+            _mapper.Object,
+            _currentUser.Object);
     }
 
     /// <summary>Returns the mapped response when the user exists.</summary>
@@ -33,6 +36,7 @@ public class GetUserByIdQueryHandlerTests
     {
         // Arrange
         var user = new UserBuilder().Build();
+        _currentUser.SetupGet(x => x.Id).Returns(user.Id);
         
         var response = UserResponseBuilder.Build(user);
         
@@ -41,7 +45,7 @@ public class GetUserByIdQueryHandlerTests
         _mapper.Setup(x => x.Map<UserResponse>(user)).Returns(response);
 
         // Act
-        var result = await _handler.Handle(new GetUserByIdQuery(user.Id), CancellationToken.None);
+        var result = await _handler.Handle(new GetUserByIdQuery(), CancellationToken.None);
 
         // Assert
         result.Should().Be(response);
@@ -54,10 +58,11 @@ public class GetUserByIdQueryHandlerTests
     {
         // Arrange
         var id = Guid.NewGuid();
+        _currentUser.SetupGet(x => x.Id).Returns(id);
         _repository.SetupFindAsync(id, (User?)null);
 
         // Act
-        var action = () => _handler.Handle(new GetUserByIdQuery(id), CancellationToken.None);
+        var action = () => _handler.Handle(new GetUserByIdQuery(), CancellationToken.None);
 
         // Assert
         await action.Should().ThrowAsync<UserNotFoundException>();

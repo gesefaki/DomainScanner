@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <NoWarn>$(NoWarn);CS8981</NoWarn> <!-- Disabling EF Core warn -->
         <Nullable>enable</Nullable>
@@ -9,16 +9,16 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
-      <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.12" />
-      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.11" />
-      <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.11">
+      <PackageReference Include="BCrypt.Net-Next" Version="4.2.0" />
+      <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.10" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.10" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.10">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
-      <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.9" />
-      <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.11" />
-      <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+      <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.10" />
+      <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.10" />
+      <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
     </ItemGroup>
 
     <ItemGroup>

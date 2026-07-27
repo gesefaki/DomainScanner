@@ -1,4 +1,6 @@
+using DomainScanner.Application.Abstractions.Auth;
 using DomainScanner.Shared.Hangfire.Interfaces;
+using DomainScanner.Worker.Auth;
 using DomainScanner.Worker.Extensions;
 using DomainScanner.Worker.HostedServices;
 using DomainScanner.Worker.Jobs;
@@ -41,6 +43,8 @@ public static class DependencyInjection
         IConfiguration configuration
     )
     {
+        services.AddScoped<ICurrentUser, WorkerCurrentUser>();
+
         services.ConfigureWorker(configuration);
         services.AddWorkerServer(configuration);
 

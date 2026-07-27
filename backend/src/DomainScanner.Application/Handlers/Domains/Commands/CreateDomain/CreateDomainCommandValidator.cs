@@ -14,10 +14,6 @@ public class CreateDomainCommandValidator : AbstractValidator<CreateDomainComman
     /// </summary>
     public CreateDomainCommandValidator()
     {
-        RuleFor(x => x.Request.UserId)
-            .NotEmpty()
-            .WithMessage("User ID is required.");
-        
         RuleFor(x => x.Request.Address!).ValidDomainAddress();
     }
 }

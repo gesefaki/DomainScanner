@@ -1,9 +1,11 @@
+using DomainScanner.Api.Auth;
 using DomainScanner.Api.Configuration;
 using DomainScanner.Api.Extensions;
 using DomainScanner.Api.Middleware;
+using DomainScanner.Application.Abstractions.Auth;
 using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 
 namespace DomainScanner.Api.DI;
 
@@ -58,6 +60,9 @@ public static class DependencyInjection
             c.UseAllOfToExtendReferenceSchemas();
         });
 
+        services.AddHttpContextAccessor();
+        services.AddScoped<ICurrentUser, CurrentUser>();
+
         services.AddApiAuthentication(configuration);
 
         services.AddHealthCheck(configuration);
@@ -74,13 +79,16 @@ public static class DependencyInjection
 
         app.UseCors("Frontend");
 
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseSwagger();
+            app.UseSwaggerUI();
+        }
+
         app.UseAuthentication();
         app.UseAuthorization();
 
         app.MapControllers();
-
-        app.UseSwagger();
-        app.UseSwaggerUI();
 
         app.UseCookiePolicy(new CookiePolicyOptions
         {

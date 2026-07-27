@@ -59,7 +59,7 @@ public class DomainsController : Controller
     }
 
     /// <summary>
-    /// Permorms a basic HTTP health check.
+    /// Performs a basic HTTP health check.
     /// </summary>
     /// <param name="id">Unique DomainEntity identifier.</param>
     /// <param name="ct">Cancellation token.</param>
@@ -136,20 +136,5 @@ public class DomainsController : Controller
     {
         await _sender.Send(new DeleteDomainCommand(id), ct);
         return NoContent();
-    }
-    
-    [AllowAnonymous]
-    [HttpPost("hangfire/cleanup")]
-    public IActionResult CleanupHangfireJobs()
-    {
-        using var connection = JobStorage.Current.GetConnection();
-        
-        var recurringJobs = connection.GetRecurringJobs();
-        foreach (var job in recurringJobs)
-        {
-            RecurringJob.RemoveIfExists(job.Id);
-        }
-        
-        return Ok($"Removed {recurringJobs.Count()} jobs. Restart worker to recreate them.");
     }
 }

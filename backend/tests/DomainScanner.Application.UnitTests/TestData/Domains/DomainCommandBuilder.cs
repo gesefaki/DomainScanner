@@ -14,7 +14,6 @@ public sealed class DomainCommandBuilder
     private Guid _domainId = Guid.NewGuid();
     private string _address = "https://example.com/";
     private bool _isActive = true;
-    private Guid _userId = Guid.NewGuid();
 
     /// <summary>
     /// Sets the domain ID.
@@ -59,17 +58,6 @@ public sealed class DomainCommandBuilder
     }
     
     /// <summary>
-    /// Sets the user ID associated with the domain.
-    /// </summary>
-    /// <param name="userId">The user identifier.</param>
-    /// <returns>The current builder instance.</returns>
-    public DomainCommandBuilder WithUserId(Guid userId)
-    {
-        _userId = userId;
-        return this;
-    }
-    
-    /// <summary>
     /// Builds a <see cref="CreateDomainCommand"/> with the configured properties.
     /// </summary>
     /// <returns>A new <see cref="CreateDomainCommand"/> instance.</returns>
@@ -77,8 +65,7 @@ public sealed class DomainCommandBuilder
     {
         return new CreateDomainCommand(
             new CreateDomainRequest(
-                Address: _address,
-                UserId: _userId)
+                Address: _address)
         );
     }
     

@@ -52,7 +52,7 @@ public sealed class UnitOfWorkBehavior<TRequest, TResponse>
         }
     }
 
-    private bool IsTransaction(TRequest request)
+    private static bool IsTransaction(TRequest request)
     {
         return request is ITransaction<TResponse>;
     }

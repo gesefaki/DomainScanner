@@ -16,8 +16,13 @@ builder.Services
 
 var app = builder.Build();
 
-await app.ApplyMigrationsAsync();
+if (!app.Environment.IsEnvironment("Testing"))
+{
+    await app.ApplyMigrationsAsync();
+}
 
 app.UsePresentationLayer();
 
 app.Run();
+
+public partial class Program;

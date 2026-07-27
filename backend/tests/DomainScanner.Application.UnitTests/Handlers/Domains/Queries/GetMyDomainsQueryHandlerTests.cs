@@ -1,7 +1,8 @@
 using System.Linq.Expressions;
 using AutoMapper;
+using DomainScanner.Application.Abstractions.Auth;
 using DomainScanner.Application.Abstractions.Persistence.Common;
-using DomainScanner.Application.Handlers.Domains.Queries.GetAllDomainsByUser;
+using DomainScanner.Application.Handlers.Users.Queries.GetMyDomainsQuery;
 using DomainScanner.Application.UnitTests.TestData.Domains;
 using DomainScanner.Contracts.DTOs.Domains.Responses;
 using DomainScanner.Domain.Entities;
@@ -11,22 +12,25 @@ using Moq;
 namespace DomainScanner.Application.UnitTests.Handlers.Domains.Queries;
 
 /// <summary>
-/// Unit tests for <see cref="GetAllDomainsByUserQueryHandler"/>.
+/// Unit tests for <see cref="GetMyDomainsQueryHandler"/>.
 /// </summary>
-public class GetAllDomainsByUserQueryHandlerTests
+public class GetMyDomainsQueryHandlerTests
 {
     private readonly Mock<IReadRepository<DomainEntity, Guid>> _repository = new();
     private readonly Mock<IMapper> _mapper = new();
-    private readonly GetAllDomainsByUserQueryHandler _handler;
+    private readonly Mock<ICurrentUser> _currentUser = new();
+
+    private readonly GetMyDomainsQueryHandler _handler;
 
     private readonly Guid _fakeUserId = Guid.NewGuid();
     private readonly Guid _anotherUserId = Guid.NewGuid();
 
-    public GetAllDomainsByUserQueryHandlerTests()
+    public GetMyDomainsQueryHandlerTests()
     {
-        _handler = new GetAllDomainsByUserQueryHandler(
+        _handler = new GetMyDomainsQueryHandler(
             _repository.Object,
-            _mapper.Object);
+            _mapper.Object,
+            _currentUser.Object);
     }
 
     /// <summary>
@@ -37,7 +41,11 @@ public class GetAllDomainsByUserQueryHandlerTests
     {
         
         // Arrange
-        var query = new GetAllDomainsByUserQuery(_fakeUserId);
+        var query = new GetMyDomainsQuery();
+
+        _currentUser
+            .SetupGet(x => x.Id)
+            .Returns(_fakeUserId);
         
         var domains = new DomainBuilder()
             .BuildRange(2);
@@ -88,7 +96,11 @@ public class GetAllDomainsByUserQueryHandlerTests
     public async Task Handle_WhenUserHasNoDomains_ReturnsEmptyCollection()
     {
         // Arrange
-        var query = new GetAllDomainsByUserQuery(_fakeUserId);
+        var query = new GetMyDomainsQuery();
+
+        _currentUser
+            .SetupGet(x => x.Id)
+            .Returns(_fakeUserId);
         
         _repository
             .Setup(x => x.GetAllWhereAsync(

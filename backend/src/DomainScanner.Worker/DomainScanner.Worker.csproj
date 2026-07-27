@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Worker">
 
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <UserSecretsId>dotnet-DomainScanner.Worker-34085ca4-55ae-4e56-a0a2-49576da57cfc</UserSecretsId>
@@ -9,11 +9,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Hangfire.AspNetCore" Version="1.8.23" />
+        <PackageReference Include="Hangfire.AspNetCore" Version="1.8.24" />
         <PackageReference Include="Hangfire.PostgreSql" Version="1.21.1" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.11" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.11" />
-        <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.14" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.10" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.10" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.10" />
     </ItemGroup>
 
     <ItemGroup>

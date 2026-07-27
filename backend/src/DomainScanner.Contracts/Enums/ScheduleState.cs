@@ -6,7 +6,7 @@
 public enum ScheduleState
 {
     /// <summary>
-    /// Manual scheduling - checks are only performed when expicitly triggered by user actions.
+    /// Manual scheduling - checks are only performed when explicitly triggered by user actions.
     /// </summary>
     Manual = 1,
 

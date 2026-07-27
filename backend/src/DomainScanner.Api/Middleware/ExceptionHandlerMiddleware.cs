@@ -64,6 +64,11 @@ public class ExceptionHandlerMiddleware
                 StatusCode = 401,
                 Message = "Invalid email or password."
             },
+            NonAuthorizedException => new ErrorResponse()
+            {
+                StatusCode = 401,
+                Message = "Authentication required."
+            },
             DomainNotFoundException => new ErrorResponse
             {
                 StatusCode = 404,

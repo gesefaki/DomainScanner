@@ -15,7 +15,7 @@ public sealed class RedisCacheService : ICacheService
     private readonly CacheSettings _cacheSettings;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="RedisCacheService"/ class.> 
+    /// Initializes a new instance of the <see cref="RedisCacheService"/> class.
     /// </summary>
     /// <param name="redis">The Redis connection multiplexer used to interact with Redis server.</param>
     /// <param name="cacheSettings">The cache configuration settings including default expiration times.</param>
@@ -35,7 +35,9 @@ public sealed class RedisCacheService : ICacheService
             return default;
         }
 
-        return JsonSerializer.Deserialize<T>(value!);
+        var json = value.ToString();
+
+        return JsonSerializer.Deserialize<T>(json);
     }
 
     /// <inheritdoc />

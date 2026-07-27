@@ -37,11 +37,7 @@ public sealed class CachingBehavior<TRequest, TResponse>
 
         string key = _cacheKeyGenerator.GenerateKey(request);
 
-        _logger.LogInformation($"Key: {key}. Getting...");
-
         var cached = await _cache.GetAsync<TResponse>(key);
-
-        _logger.LogInformation($"Get: {cached}");
 
         if (cached != null)
         {
@@ -56,7 +52,7 @@ public sealed class CachingBehavior<TRequest, TResponse>
             response
         );
 
-        _logger.LogInformation($"Cache setted: {key}, {response}");
+        _logger.LogInformation("Cache setted: {Key}, {Response}", key, response);
 
         return response;
     }
