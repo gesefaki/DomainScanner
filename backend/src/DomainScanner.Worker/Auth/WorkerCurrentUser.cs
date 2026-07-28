@@ -10,5 +10,5 @@ public sealed class WorkerCurrentUser : ICurrentUser
 {
     public bool IsAuthenticated => false;
 
-    public Guid Id => throw new NonAuthorizedException();
+    public Guid Id => throw new NonAuthenticatedException();
 }

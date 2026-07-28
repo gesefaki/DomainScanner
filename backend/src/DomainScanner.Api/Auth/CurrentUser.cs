@@ -26,7 +26,7 @@ public sealed class CurrentUser : ICurrentUser
 
             if (!Guid.TryParse(value, out var id))
             {
-                throw new NonAuthorizedException();
+                throw new NonAuthenticatedException();
             }
 
             return id;

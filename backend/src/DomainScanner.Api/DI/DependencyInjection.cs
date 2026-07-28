@@ -3,6 +3,7 @@ using DomainScanner.Api.Configuration;
 using DomainScanner.Api.Extensions;
 using DomainScanner.Api.Middleware;
 using DomainScanner.Application.Abstractions.Auth;
+using DomainScanner.Contracts.Options;
 using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.OpenApi;
@@ -36,18 +37,32 @@ public static class DependencyInjection
                         "https://127.0.0.1:5173",
                         "http://frontend:3000"
                     )
-                .AllowAnyHeader()
-                .AllowAnyMethod()
-                .AllowCredentials(); ;
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials();
+                ;
             });
         });
 
-        services.AddControllers(options =>
+        services.AddCsrfProtection(configuration);
+
+        services.AddAntiforgery(options =>
         {
-            options.Conventions.Add(
-                new RouteTokenTransformerConvention(
-                    new KebabCaseParameterTransformer()));
-        })
+            options.HeaderName = "X-CSRF-TOKEN";
+
+            options.Cookie.Name = AuthCookieOptions.Antiforgery;
+            options.Cookie.HttpOnly = true;
+            options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+            options.Cookie.SameSite = SameSiteMode.Strict;
+            options.Cookie.Path = "/";
+        });
+
+        services.AddControllers(options =>
+            {
+                options.Conventions.Add(
+                    new RouteTokenTransformerConvention(
+                        new KebabCaseParameterTransformer()));
+            })
             .AddNewtonsoftJson(options =>
             {
                 options.SerializerSettings.ReferenceLoopHandling =
@@ -77,18 +92,31 @@ public static class DependencyInjection
     {
         app.UseExceptionHandlerMiddleware();
 
+        app.UseRouting();
         app.UseCors("Frontend");
 
         if (app.Environment.IsDevelopment())
         {
+            app.UseStaticFiles();
+            
             app.UseSwagger();
-            app.UseSwaggerUI();
+            
+            app.UseSwaggerUI(options =>
+            {
+                options.SwaggerEndpoint(
+                    "/swagger/v1/swagger.json",
+                    "DomainScanner API v1");
+
+                options.ConfigObject.AdditionalItems["withCredentials"] = true;
+                options.ConfigObject.AdditionalItems["showMutatedRequest"] = false;
+                
+                options.InjectJavascript(
+                    "/swagger-ui/csrf-interceptor.js");
+                
+                options.UseRequestInterceptor(
+                    "(request) => { return window.csrfRequestInterceptor(request); }");
+            });
         }
-
-        app.UseAuthentication();
-        app.UseAuthorization();
-
-        app.MapControllers();
 
         app.UseCookiePolicy(new CookiePolicyOptions
         {
@@ -96,7 +124,13 @@ public static class DependencyInjection
             HttpOnly = HttpOnlyPolicy.Always,
             Secure = CookieSecurePolicy.Always
         });
+        
+        app.UseAuthentication();
+        app.UseAuthorization();
 
+        app.UseMiddleware<CsrfProtectionMiddleware>();
+        
+        app.MapControllers();
         app.UseHealthCheck();
 
         return app;

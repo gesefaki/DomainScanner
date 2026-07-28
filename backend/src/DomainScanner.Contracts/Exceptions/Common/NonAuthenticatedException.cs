@@ -3,10 +3,10 @@
 /// <summary>
 /// Exception when request cant be authorized.
 /// </summary>
-public class NonAuthorizedException : Exception
+public class NonAuthenticatedException : Exception
 {
     /// <inheritdoc />
-    public NonAuthorizedException() : base("Cannot authorize.")
+    public NonAuthenticatedException() : base("Cannot authenticate.")
     {
         
     }
