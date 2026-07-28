@@ -34,23 +34,11 @@ public class DomainsController : Controller
     }
     
     /// <summary>
-    /// Retrieves all DomainEntity for authenticated user.
-    /// </summary>
-    /// <param name="ct">Cancellation token.</param>
-    /// <returns>List of <see cref="DomainResponse"/>. </returns>
-    [HttpGet]
-    public async Task<ActionResult<List<DomainResponse>>> GetAll(CancellationToken ct)
-    {
-        var domains = await _sender.Send(new GetAllDomainsQuery(), ct);
-        return Ok(domains);
-    }
-
-    /// <summary>
     /// Retrieves single DomainEntity as <see cref="DomainResponse"/> for authenticated user. 
     /// </summary>
     /// <param name="id">Unique DomainEntity identifier.</param>
     /// <param name="ct">Cancellation toker.</param>
-    /// <returns>Single <see cref="DomainResponse"/></returns>
+    /// <returns>Single <see cref="DomainResponse"/>.</returns>
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<DomainResponse>> Get(Guid id, CancellationToken ct)
     {

@@ -17,8 +17,11 @@ obj/
 ## Local History for Visual Studio
 .localhistory/
 
+## Docker
 .containers/
-
 .env
-
 .env.dev
+
+## HTTPS certs
+localhost/certs
+*.pfx

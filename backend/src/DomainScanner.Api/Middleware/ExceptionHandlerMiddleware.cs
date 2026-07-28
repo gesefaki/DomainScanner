@@ -2,13 +2,14 @@
 using DomainScanner.Contracts.Exceptions.Domains;
 using DomainScanner.Contracts.Exceptions.Users;
 using DomainScanner.Contracts.Models;
+using Microsoft.AspNetCore.Antiforgery;
 
 namespace DomainScanner.Api.Middleware;
 
 /// <summary>
 /// Global exception handling middleware.
 /// </summary>
-public class ExceptionHandlerMiddleware
+public sealed class ExceptionHandlerMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<ExceptionHandlerMiddleware> _logger;
@@ -59,12 +60,17 @@ public class ExceptionHandlerMiddleware
                 StatusCode = 400,
                 Message = "Address is invalid."
             },
+            AntiforgeryValidationException => new ErrorResponse()
+            {
+                StatusCode = 400,
+                Message = "Invalid CSRF token."
+            },
             UserInvalidCredentialsException => new ErrorResponse()
             {
                 StatusCode = 401,
                 Message = "Invalid email or password."
             },
-            NonAuthorizedException => new ErrorResponse()
+            NonAuthenticatedException => new ErrorResponse()
             {
                 StatusCode = 401,
                 Message = "Authentication required."

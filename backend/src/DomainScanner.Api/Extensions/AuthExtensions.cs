@@ -3,6 +3,7 @@ using System.Text;
 using DomainScanner.Contracts.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 
@@ -63,7 +64,7 @@ public static class AuthExtension
                     OnMessageReceived = context =>
                     {
                         if (context.Request.Cookies.TryGetValue(
-                                "tasty_cookies",
+                                AuthCookieOptions.Session,
                                 out var token)
                            )
                         {
@@ -80,5 +81,19 @@ public static class AuthExtension
             .SetFallbackPolicy(new AuthorizationPolicyBuilder()
                 .RequireAuthenticatedUser()
                 .Build());
+    }
+
+    public static IServiceCollection AddCsrfProtection(this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        var keysPath = configuration["DataProtection:KeysPath"]
+                       ?? "/var/lib/domainscanner/keys";
+
+        services
+            .AddDataProtection()
+            .SetApplicationName("DomainScanner")
+            .PersistKeysToFileSystem(new DirectoryInfo(keysPath));
+
+        return services;
     }
 }

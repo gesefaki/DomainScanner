@@ -7,3 +7,6 @@
 **/*.user
 **/*.suo
 localhost/.env
+localhost/.env.dev
+localhost/certs
+**/*.pfx

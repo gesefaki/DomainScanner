@@ -22,7 +22,7 @@ public sealed class AuthenticationBehavior<TRequest, TResponse>
     {
         if (!_currentUser.IsAuthenticated)
         {
-            throw new NonAuthorizedException();
+            throw new NonAuthenticatedException();
         }
 
         var response = await next(ct);

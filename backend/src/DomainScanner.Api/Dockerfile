@@ -1,8 +1,11 @@
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
+USER root
+RUN mkdir -p /var/lib/domainscanner/keys /https \
+    && chown -R $APP_UID:$APP_UID /var/lib/domainscanner/keys /https
 USER $APP_UID
 WORKDIR /app
 EXPOSE 8080
-EXPOSE 8081
+EXPOSE 8443
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
