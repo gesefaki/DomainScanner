@@ -44,6 +44,8 @@ public static class DependencyInjection
             });
         });
 
+        services.AddAndConfigureRateLimiter();
+        
         services.AddCsrfProtection(configuration);
 
         services.AddAntiforgery(options =>
@@ -93,6 +95,7 @@ public static class DependencyInjection
         app.UseExceptionHandlerMiddleware();
 
         app.UseRouting();
+        
         app.UseCors("Frontend");
 
         if (app.Environment.IsDevelopment())
@@ -126,6 +129,7 @@ public static class DependencyInjection
         });
         
         app.UseAuthentication();
+        app.UseRateLimiter();
         app.UseAuthorization();
 
         app.UseMiddleware<CsrfProtectionMiddleware>();

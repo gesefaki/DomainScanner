@@ -15,7 +15,7 @@ public class HangfireAuthorizationFilter : IDashboardAuthorizationFilter
     }
 
     /// <summary>
-    /// Determins whether the current user is authorized to access the dashboard.
+    /// Determines whether the current user is authorized to access the dashboard.
     /// </summary>
     public bool Authorize(DashboardContext context)
     {
@@ -27,7 +27,9 @@ public class HangfireAuthorizationFilter : IDashboardAuthorizationFilter
         _logger.LogDebug("Hangfire access attempt by {user}: {ip}", user, ip);
 
         if (httpContext.User.Identity?.IsAuthenticated != true)
+        {
             return false;
+        }
 
         return true;
     }

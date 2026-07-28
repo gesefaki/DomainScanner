@@ -8,12 +8,13 @@ using DomainScanner.Application.Handlers.Domains.Queries.GetHttpDetails;
 using DomainScanner.Application.Handlers.Domains.Queries.GetHttpResponse;
 using DomainScanner.Contracts.DTOs.Domains.Requests;
 using DomainScanner.Contracts.DTOs.Domains.Responses;
+using DomainScanner.Contracts.Options;
 using Hangfire;
 using Hangfire.Storage;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
+using Microsoft.AspNetCore.RateLimiting;
 using HttpResponse = DomainScanner.Contracts.DTOs.HTTPs.Responses.HttpResponse;
 using HttpResponseDetails = DomainScanner.Contracts.DTOs.HTTPs.Responses.HttpResponseDetails;
 
@@ -39,6 +40,7 @@ public class DomainsController : Controller
     /// <param name="id">Unique DomainEntity identifier.</param>
     /// <param name="ct">Cancellation toker.</param>
     /// <returns>Single <see cref="DomainResponse"/>.</returns>
+    [EnableRateLimiting(RateLimitingOptions.Read)]
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<DomainResponse>> Get(Guid id, CancellationToken ct)
     {
@@ -52,6 +54,7 @@ public class DomainsController : Controller
     /// <param name="id">Unique DomainEntity identifier.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>Single <see cref="HttpResponse"/></returns>
+    [EnableRateLimiting(RateLimitingOptions.Scan)]
     [HttpGet("{id:guid}/http/check")]
     public async Task<ActionResult<HttpResponse>> GetHttpCheck(Guid id, CancellationToken ct)
     {
@@ -65,6 +68,7 @@ public class DomainsController : Controller
     /// <param name="id">Unique DomainEntity identifier.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>Single <see cref="HttpResponseDetails"/>.</returns>
+    [EnableRateLimiting(RateLimitingOptions.Scan)]
     [HttpGet("{id:guid}/http/check-details")]
     public async Task<ActionResult<HttpResponseDetails>> GetHttpCheckWithDetails(Guid id, CancellationToken ct)
     {
@@ -79,6 +83,7 @@ public class DomainsController : Controller
     /// <param name="request">Request containing new data.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>Single <see cref="DomainResponse"/>.</returns> 
+    [EnableRateLimiting(RateLimitingOptions.Write)]
     [HttpPut("{id:guid}")]
     public async Task<ActionResult<DomainResponse>> Update(Guid id, 
         [FromBody] UpdateDomainRequest request, 
@@ -93,6 +98,7 @@ public class DomainsController : Controller
     /// </summary>
     /// <param name="request">Creation request.</param>
     /// <param name="ct">Cancellation Token.</param>
+    [EnableRateLimiting(RateLimitingOptions.Write)]
     [HttpPost]
     public async Task<ActionResult<DomainResponse>> Create([FromBody] CreateDomainRequest request, CancellationToken ct)
     {
@@ -106,6 +112,7 @@ public class DomainsController : Controller
     /// <param name="id">DomainEntity unique identifier.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>Single <see cref="DomainResponse"/>.</returns>
+    [EnableRateLimiting(RateLimitingOptions.Scan)]
     [HttpPost("{id:guid}/send-save")]
     public async Task<ActionResult<DomainResponse>> SendAndSave(Guid id, CancellationToken ct)
     {
@@ -119,6 +126,7 @@ public class DomainsController : Controller
     /// <param name="id">DomainEntity unique identifier.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns></returns>
+    [EnableRateLimiting(RateLimitingOptions.Write)]
     [HttpDelete("{id:guid}")]
     public async Task<ActionResult> Delete(Guid id, CancellationToken ct)
     {

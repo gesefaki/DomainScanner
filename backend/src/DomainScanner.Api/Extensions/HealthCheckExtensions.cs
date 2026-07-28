@@ -28,7 +28,10 @@ public static class HealthCheckExtensions
     /// </summary>
     public static WebApplication UseHealthCheck(this WebApplication app)
     {
-        app.MapHealthChecks("/health").AllowAnonymous();
+        app.MapHealthChecks("/health")
+            .AllowAnonymous()
+            .DisableRateLimiting();
+        
         return app;
     }
 }

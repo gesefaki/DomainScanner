@@ -5,6 +5,7 @@ using MediatR;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace DomainScanner.Api.Controllers;
 
@@ -29,6 +30,7 @@ public class AuthController : ControllerBase
     /// </summary>
     /// <param name="request">The login request.</param>
     /// <param name="ct">Cancellation token provided by the user.</param>
+    [EnableRateLimiting(RateLimitingOptions.Auth)]
     [AllowAnonymous]
     [HttpPost]
     public async Task<ActionResult> Login([FromBody] LoginUserRequest request, CancellationToken ct)
@@ -55,6 +57,7 @@ public class AuthController : ControllerBase
     /// <summary>
     /// Logout user and delete his session cookies.
     /// </summary>
+    [EnableRateLimiting(RateLimitingOptions.Auth)]
     [HttpPost("logout")]
     public ActionResult Logout()
     {
@@ -74,6 +77,7 @@ public class AuthController : ControllerBase
         return NoContent();
     }
     
+    [EnableRateLimiting(RateLimitingOptions.Auth)]
     [AllowAnonymous]
     [HttpGet("csrf")]
     [ResponseCache(
