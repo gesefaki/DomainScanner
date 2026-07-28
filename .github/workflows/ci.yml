@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: Build and test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    defaults:
+      run:
+        working-directory: backend/src
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        
+      - name: Install .NET SDK
+        uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: backend/src/global.json
+
+      - name: Restore dependencies
+        run: dotnet restore DomainScanner.sln
+
+      - name: Build
+        run: dotnet build DomainScanner.sln --configuration Release --no-restore
+
+      - name: Run test
+        run: dotnet test DomainScanner.sln --configuration Release --no-build --logger "console;verbosity=normal"
