@@ -76,6 +76,8 @@ public sealed class DomainScannerApiFactory : WebApplicationFactory<ApiProgram>
             services.RemoveAll<IHostedService>();
             services.RemoveAll<IReadRepository<DomainEntity, Guid>>();
 
+            services.AddSingleton<ScanConcurrencyProbe>();
+
             services.AddSingleton<IReadRepository<DomainEntity, Guid>>(
                 new TestDomainRepository(
                 [
@@ -132,7 +134,7 @@ public sealed class DomainScannerApiFactory : WebApplicationFactory<ApiProgram>
         DomainScannerApiFactory factory,
         Guid userId)
     {
-        var client = factory.CreateClient();
+        var client = factory.CreateHttpsClient();
 
         client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", factory.CreateAccessToken(userId));

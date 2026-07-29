@@ -1,4 +1,5 @@
-﻿using DomainScanner.Contracts.Options;
+﻿using DomainScanner.Api.IntegrationTests.Infrastructure;
+using DomainScanner.Contracts.Options;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -16,7 +17,13 @@ namespace DomainScanner.Api.IntegrationTests.Controllers;
 [Route("__tests/rate-limiting")]
 public sealed class RateLimitingProbeController : ControllerBase
 {
-    
+    private readonly ScanConcurrencyProbe _concurrencyProbe;
+
+    public RateLimitingProbeController(ScanConcurrencyProbe concurrencyProbe)
+    {
+        _concurrencyProbe = concurrencyProbe;
+    }
+
     /// <summary>
     /// Provides an endpoint configured with the write rate limiting policy.
     /// </summary>
@@ -39,4 +46,24 @@ public sealed class RateLimitingProbeController : ControllerBase
     [HttpGet("scan")]
     [EnableRateLimiting(RateLimitingOptions.Scan)]
     public IActionResult Scan() => NoContent();
+
+    /// <summary>
+    /// Blocks the request until released by the test.
+    /// </summary>
+    /// <param name="cancellationToken">
+    /// A token used to cancel the wait.
+    /// </param>
+    /// <returns>
+    /// A <see cref="StatusCodes.Status204NoContent"/> response.
+    /// </returns>
+    [HttpGet("scan-concurrency")]
+    [EnableRateLimiting(RateLimitingOptions.Scan)]
+    public async Task<IActionResult> ScanConcurrency(CancellationToken cancellationToken)
+    {
+        _concurrencyProbe.NotifyEntered();
+
+        await _concurrencyProbe.WaitForReleaseAsync(cancellationToken);
+
+        return NoContent();
+    }
 }

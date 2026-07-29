@@ -31,9 +31,7 @@ public static class TestingHelper
         HttpStatusCode allowedStatusCode
     )
     {
-        for (var requestNumber = 1;
-             requestNumber <= permitLimit;
-             requestNumber++)
+        for (var requestNumber = 1; requestNumber <= permitLimit; requestNumber++)
         {
             using var response = await client.GetAsync(endpoint);
 

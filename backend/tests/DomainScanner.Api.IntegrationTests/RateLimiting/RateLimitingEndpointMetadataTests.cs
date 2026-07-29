@@ -7,8 +7,37 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace DomainScanner.Api.IntegrationTests.RateLimiting;
 
+/// <summary>
+/// Integration tests for Rate Limiting politics.
+/// Tests API Controllers for compliance with the contract regarding rate limiting. 
+/// </summary>
 public sealed class RateLimitingEndpointMetadataTests
 {
+    [Fact]
+    public async Task HealthEndpoint_HasRateLimitingDisabled()
+    {
+        // Arrange
+        await using var factory = new DomainScannerApiFactory();
+
+        var endpointDataSource =
+            factory.Services.GetRequiredService<EndpointDataSource>();
+
+        // Act
+        var matchingEndpoints = endpointDataSource.Endpoints
+            .OfType<RouteEndpoint>()
+            .Where(endpoint =>
+                endpoint.RoutePattern.RawText == "/health")
+            .ToArray();
+
+        // Assert
+        var endpoint = Assert.Single(matchingEndpoints);
+
+        var attribute = endpoint.Metadata
+            .GetMetadata<DisableRateLimitingAttribute>();
+
+        Assert.NotNull(attribute);
+    }
+
     [Theory]
     // AuthController
     [InlineData("Auth", "Login", RateLimitingOptions.Auth)]
@@ -61,5 +90,35 @@ public sealed class RateLimitingEndpointMetadataTests
 
         Assert.NotNull(attribute);
         Assert.Equal(expectedPolicy, attribute.PolicyName);
+    }
+
+    [Fact]
+    public async Task EveryApiController_HasRateLimitingPolicy()
+    {
+        // Arrange
+        await using var factory = new DomainScannerApiFactory();
+
+        var endpointDataSource =
+            factory.Services.GetRequiredService<EndpointDataSource>();
+
+        // Act
+        var endpointsWithoutRateLimiting = endpointDataSource.Endpoints
+            .Select(endpoint => new
+            {
+                Endpoint = endpoint,
+                Action = endpoint.Metadata.GetMetadata<ControllerActionDescriptor>()
+            })
+            .Where(item =>
+                item.Action?.ControllerTypeInfo.Namespace == "DomainScanner.Api.Controllers")
+            .Where(item => item.Endpoint
+                    .Metadata.GetMetadata<EnableRateLimitingAttribute>()
+                is null)
+            .Select(item =>
+                $"{item.Action!.ControllerName}." +
+                $"{item.Action.ActionName}")
+            .ToArray();
+        
+        // Assert
+        Assert.Empty(endpointsWithoutRateLimiting);
     }
 }
