@@ -1,11 +1,17 @@
 using System.Net;
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using DomainScanner.Api.IntegrationTests.Infrastructure;
 using DomainScanner.Contracts.DTOs.Domains.Responses;
 
 namespace DomainScanner.Api.IntegrationTests.Users;
 
+/// <summary>
+/// Contains integration tests for the endpoint that returns
+/// domains owned by the currently authenticated user.
+/// </summary>
+/// <param name="factory">
+/// The application factory used to create test HTTP clients.
+/// </param>
 public sealed class GetMyDomainsEndpointTests(
     DomainScannerApiFactory factory)
     : IClassFixture<DomainScannerApiFactory>
@@ -48,13 +54,21 @@ public sealed class GetMyDomainsEndpointTests(
             domain => domainsOfUserB.Any(other => other.Id == domain.Id));
     }
 
+    /// <summary>
+    /// Requests the domains owned by the specified authenticated test user.
+    /// </summary>
+    /// <param name="userId">
+    /// The identifier of the user to authenticate as.
+    /// </param>
+    /// <returns>
+    /// A list of domains returned for the specified user.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when the endpoint returns an empty response body.
+    /// </exception>
     private async Task<List<DomainResponse>> GetMyDomainsAsync(Guid userId)
     {
-        using var client = factory.CreateClient();
-        client.DefaultRequestHeaders.Authorization =
-            new AuthenticationHeaderValue(
-                "Bearer",
-                factory.CreateAccessToken(userId));
+        using var client = factory.CreateAuthenticatedClient(factory, userId);
 
         var response = await client.GetAsync("/api/v1/users/me/domains");
 
