@@ -83,8 +83,6 @@ public static class DependencyInjection
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUser, CurrentUser>();
 
-        services.AddSingleton<IEmailNormalizer, EmailNormalizer>();
-
         services.AddApiAuthentication(configuration);
 
         services.AddHealthCheck(configuration);

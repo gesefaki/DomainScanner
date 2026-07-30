@@ -21,6 +21,10 @@ namespace DomainScanner.Api.IntegrationTests.Infrastructure;
 /// </summary>
 public sealed class DomainScannerApiFactory : WebApplicationFactory<ApiProgram>
 {
+    // Base64-encoded 32-byte value used only by the in-memory test host.
+    private const string TestLoginAccountHmacSecret =
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+
     /// <summary>
     /// Identifier of the first predefined test user.
     /// </summary>
@@ -56,6 +60,9 @@ public sealed class DomainScannerApiFactory : WebApplicationFactory<ApiProgram>
                 "JwtOptions:SecretKey",
                 "integration-tests-only-secret-key-32-bytes-minimum")
             .UseSetting("JwtOptions:ExpiresHours", "1")
+            .UseSetting(
+                "LoginAccountKeyOptions:HmacSecret",
+                TestLoginAccountHmacSecret)
             .UseSetting("RedisCacheOptions:InstanceName", "integration-tests")
             .UseSetting("RedisCacheOptions:DefaultExpirationMinutes", "1");
 

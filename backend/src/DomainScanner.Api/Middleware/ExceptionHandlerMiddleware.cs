@@ -95,13 +95,18 @@ public sealed class ExceptionHandlerMiddleware
                 StatusCode = 409,
                 Message = "Username or email already exists."
             },
+            LoginProtectionUnavailableException => new ErrorResponse()
+            {
+                StatusCode = 503,
+                Message = "Service is unavailable. Please try again later."
+            },
             _ => new ErrorResponse
             {
                 StatusCode = 500,
                 Message = "Internal Server Error. Please try again later."
             }
         };
-        _logger.LogError(exception.Message, exception.StackTrace);
+        _logger.LogError(exception, exception.Message);
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = response.StatusCode;
         await context.Response.WriteAsJsonAsync(response);

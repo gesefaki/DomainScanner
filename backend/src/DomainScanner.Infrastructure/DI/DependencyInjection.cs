@@ -5,6 +5,8 @@ using DomainScanner.Application.Abstractions.Persistence.Common;
 using DomainScanner.Application.Abstractions.Scanners;
 using DomainScanner.Contracts.Options;
 using DomainScanner.Infrastructure.Auth.Authentication;
+using DomainScanner.Infrastructure.Auth.Authentication.LoginProtection;
+using DomainScanner.Infrastructure.Auth.Authentication.Normalization;
 using DomainScanner.Infrastructure.Auth.Hashing;
 using DomainScanner.Infrastructure.DataAccess.Cache;
 using DomainScanner.Infrastructure.DataAccess.Persistence.Context;
@@ -36,6 +38,8 @@ public static class DependencyInjection
         IConfiguration configuration
     )
     {
+        services.AddLoginProtection(configuration);
+        
         // Add HTTP client and related services.
         services.AddHttpExtensions();
 
@@ -89,6 +93,8 @@ public static class DependencyInjection
         IConfiguration configuration
     )
     {
+        services.ConfigureRedisLoginProtection(configuration);
+        
         services.AddSingleton<IConnectionMultiplexer>(_ =>
         {
             return ConnectionMultiplexer.Connect(
@@ -98,6 +104,58 @@ public static class DependencyInjection
         services.AddSingleton<ICacheService, RedisCacheService>();
 
         services.AddScoped(typeof(ICacheKeyGenerator<>), typeof(CacheKeyGenerator<>));
+
+        return services;
+    }
+
+    private static IServiceCollection ConfigureRedisLoginProtection(this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.AddOptions<LoginProtectionOptions>()
+            .Bind(configuration.GetSection(
+                nameof(LoginProtectionOptions)))
+            .Validate(
+                options => options.LockoutThreshold > 0,
+                "LockoutThreshold must be greater than zero.")
+            .Validate(
+                options => options.FailureWindowMinutes > 0,
+                "FailureWindowMinutes must be greater than zero.")
+            .Validate(
+                options => options.LockoutDurationMinutes > 0,
+                "LockoutDurationMinutes must be greater than zero.")
+            .Validate(
+                options =>
+                    options.MaximumLockoutMinutes >=
+                    options.LockoutDurationMinutes,
+                "Maximum lockout must be at least the initial lockout.")
+            .Validate(
+                options =>
+                    options.DelayStartAttempt > 0 &&
+                    options.DelayStartAttempt <
+                    options.LockoutThreshold,
+                "DelayStartAttempt must be below LockoutThreshold.")
+            .ValidateOnStart();
+
+        services.AddSingleton<ILoginAttemptProtector, RedisLoginAttemptProtector>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddLoginProtection(this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.AddSingleton<IEmailNormalizer, EmailNormalizer>();
+
+        services.AddOptions<LoginAccountKeyOptions>()
+            .Bind(configuration.GetSection(
+                nameof(LoginAccountKeyOptions)))
+            .Validate(
+                options => !string.IsNullOrWhiteSpace(
+                    options.HmacSecret),
+                "Login account HMAC secret is required.")
+            .ValidateOnStart();
+
+        services.AddSingleton<ILoginAccountKeyProvider, HmacLoginAccountKeyProvider>();
 
         return services;
     }

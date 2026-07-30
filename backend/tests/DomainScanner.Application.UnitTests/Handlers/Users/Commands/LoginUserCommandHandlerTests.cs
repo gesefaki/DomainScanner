@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using DomainScanner.Application.Abstractions.Auth;
 using DomainScanner.Application.Abstractions.Auth.Models;
@@ -14,6 +15,7 @@ namespace DomainScanner.Application.UnitTests.Handlers.Users.Commands;
 /// <summary>
 /// Unit tests for <see cref="LoginUserCommandHandler"/>.
 /// </summary>
+[SuppressMessage("ReSharper", "AccessToDisposedClosure")]
 public class LoginUserCommandHandlerTests
 {
     private readonly Mock<IReadRepository<User, Guid>> _repository = new();
