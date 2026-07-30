@@ -2,8 +2,9 @@ using System.Linq.Expressions;
 using System.Security.Authentication;
 using DomainScanner.Application.Abstractions.Auth;
 using DomainScanner.Application.Abstractions.Persistence.Common;
-using DomainScanner.Application.Handlers.Users.Queries.LoginUser;
+using DomainScanner.Application.Handlers.Users.Commands.LoginUser;
 using DomainScanner.Application.UnitTests.TestData.Users;
+using DomainScanner.Contracts.Exceptions.Users;
 using DomainScanner.Domain.Entities;
 using FluentAssertions;
 using Moq;
@@ -11,20 +12,20 @@ using Moq;
 namespace DomainScanner.Application.UnitTests.Handlers.Users.Queries;
 
 /// <summary>
-/// Unit tests for <see cref="LoginUserQueryHandler"/>.
+/// Unit tests for <see cref="LoginUserCommandHandler"/>.
 /// </summary>
-public class LoginUserQueryHandlerTests
+public class LoginUserCommandHandlerTests
 {
     private readonly Mock<IReadRepository<User, Guid>> _repository = new();
     private readonly Mock<IPasswordHasher> _hasher = new();
     private readonly Mock<IJwtProvider> _jwtProvider = new();
-    private readonly LoginUserQueryHandler _handler;
+    private readonly LoginUserCommandHandler _handler;
 
     private const string FakeToken = "jwt-token";
 
-    public LoginUserQueryHandlerTests()
+    public LoginUserCommandHandlerTests()
     {
-        _handler = new LoginUserQueryHandler(
+        _handler = new LoginUserCommandHandler(
             _repository.Object,
             _hasher.Object,
             _jwtProvider.Object);
@@ -47,7 +48,7 @@ public class LoginUserQueryHandlerTests
         var action = () => _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        await action.Should().ThrowAsync<InvalidCredentialException>();
+        await action.Should().ThrowAsync<UserInvalidCredentialsException>();
         _hasher.Verify(x => x.Verify(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
         _jwtProvider.Verify(x => x.GenerateToken(It.IsAny<User>()), Times.Never);
     }
@@ -71,7 +72,7 @@ public class LoginUserQueryHandlerTests
         var action = () => _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        await action.Should().ThrowAsync<InvalidCredentialException>();
+        await action.Should().ThrowAsync<UserInvalidCredentialsException>();
         _jwtProvider.Verify(x => x.GenerateToken(It.IsAny<User>()), Times.Never);
     }
 

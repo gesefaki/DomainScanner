@@ -40,7 +40,7 @@ public sealed class RateLimitingEndpointMetadataTests
 
     [Theory]
     // AuthController
-    [InlineData("Auth", "Login", RateLimitingOptions.Auth)]
+    [InlineData("Auth", "Login", RateLimitingOptions.Login)]
     [InlineData("Auth", "Logout", RateLimitingOptions.Auth)]
     [InlineData("Auth", "GetCsrfToken", RateLimitingOptions.Auth)]
 

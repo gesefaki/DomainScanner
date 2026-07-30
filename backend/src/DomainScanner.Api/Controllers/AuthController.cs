@@ -1,4 +1,4 @@
-﻿using DomainScanner.Application.Handlers.Users.Queries.LoginUser;
+﻿using DomainScanner.Application.Handlers.Users.Commands.LoginUser;
 using DomainScanner.Contracts.DTOs.Users.Requests;
 using DomainScanner.Contracts.Options;
 using MediatR;
@@ -30,14 +30,14 @@ public class AuthController : ControllerBase
     /// </summary>
     /// <param name="request">The login request.</param>
     /// <param name="ct">Cancellation token provided by the user.</param>
-    [EnableRateLimiting(RateLimitingOptions.Auth)]
+    [EnableRateLimiting(RateLimitingOptions.Login)]
     [AllowAnonymous]
     [HttpPost]
     public async Task<ActionResult> Login([FromBody] LoginUserRequest request, CancellationToken ct)
     {
         var context = HttpContext;
 
-        var token = await _sender.Send(new LoginUserQuery(request), ct);
+        var token = await _sender.Send(new LoginUserCommand(request), ct);
         
         context.Response.Cookies.Append(
             AuthCookieOptions.Session,

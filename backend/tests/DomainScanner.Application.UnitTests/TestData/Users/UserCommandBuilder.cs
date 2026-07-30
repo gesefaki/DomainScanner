@@ -1,5 +1,5 @@
+using DomainScanner.Application.Handlers.Users.Commands.LoginUser;
 using DomainScanner.Application.Handlers.Users.Commands.RegisterUser;
-using DomainScanner.Application.Handlers.Users.Queries.LoginUser;
 using DomainScanner.Contracts.DTOs.Users.Requests;
 
 namespace DomainScanner.Application.UnitTests.TestData.Users;
@@ -38,5 +38,5 @@ public sealed class UserCommandBuilder
     public RegisterUserCommand BuildRegisterCommand() => new(new RegisterUserRequest(_username, _email, _password));
 
     /// <summary>Builds a login command.</summary>
-    public LoginUserQuery BuildLoginQuery() => new(new LoginUserRequest(_email, _password));
+    public LoginUserCommand BuildLoginQuery() => new(new LoginUserRequest(_email, _password));
 }

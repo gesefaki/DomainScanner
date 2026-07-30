@@ -1,15 +1,15 @@
-﻿using DomainScanner.Application.Handlers.Users.Queries.LoginUser;
+﻿using DomainScanner.Application.Handlers.Users.Commands.LoginUser;
 using DomainScanner.Contracts.DTOs.Users.Requests;
 using FluentValidation.TestHelper;
 
 namespace DomainScanner.Application.UnitTests.Validators.Users;
 
 /// <summary>
-/// Unit tests for <see cref="LoginUserQueryValidator"/>.
+/// Unit tests for <see cref="LoginUserCommandValidator"/>.
 /// </summary>
-public class LoginUserQueryValidatorTests
+public class LoginUserCommandValidatorTests
 {
-    private readonly LoginUserQueryValidator _validator = new();
+    private readonly LoginUserCommandValidator _validator = new();
     
     /// <summary>
     /// Tests that valid passwords (8+ characters) pass validation.
@@ -66,10 +66,10 @@ public class LoginUserQueryValidatorTests
     /// Creates a test query with default email and specified password.
     /// </summary>
     /// <param name="password">The password to test.</param>
-    /// <returns>A new <see cref="LoginUserQuery"/> instance.</returns>
-    private static LoginUserQuery CreateQuery(string password)
+    /// <returns>A new <see cref="LoginUserCommand"/> instance.</returns>
+    private static LoginUserCommand CreateQuery(string password)
     {
-        return new LoginUserQuery(new LoginUserRequest(
+        return new LoginUserCommand(new LoginUserRequest(
             "email@email.com",
             password
         ));

@@ -55,6 +55,14 @@ public static class RateLimiterExtensions
                     context,
                     permitLimit: 5)
             );
+            
+            // Login
+            options.AddPolicy(
+                RateLimitingOptions.Login,
+                context => CreateSlidingWindowPartition(
+                    context,
+                    permitLimit: 10)
+                );
 
             // Scan
             options.AddPolicy(

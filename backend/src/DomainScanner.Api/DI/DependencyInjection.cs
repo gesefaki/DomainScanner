@@ -44,6 +44,8 @@ public static class DependencyInjection
             });
         });
 
+        services.AddProxy(configuration);
+
         services.AddAndConfigureRateLimiter();
         
         services.AddCsrfProtection(configuration);
@@ -92,6 +94,8 @@ public static class DependencyInjection
     /// </summary>
     public static WebApplication UsePresentationLayer(this WebApplication app)
     {
+        app.UseForwardedHeaders();
+        
         app.UseExceptionHandlerMiddleware();
 
         app.UseRouting();

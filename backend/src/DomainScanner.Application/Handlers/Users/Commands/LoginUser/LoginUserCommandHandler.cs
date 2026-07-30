@@ -1,21 +1,22 @@
 ﻿using System.Security.Authentication;
 using DomainScanner.Application.Abstractions.Auth;
 using DomainScanner.Application.Abstractions.Persistence.Common;
+using DomainScanner.Contracts.Exceptions.Users;
 using DomainScanner.Domain.Entities;
 using MediatR;
 
-namespace DomainScanner.Application.Handlers.Users.Queries.LoginUser;
+namespace DomainScanner.Application.Handlers.Users.Commands.LoginUser;
 
 /// <summary>
-/// Handles <see cref="LoginUserQuery"/>. Has a <see cref="LoginUserQueryValidator"/> must be passed. 
+/// Handles <see cref="LoginUserCommand"/>. Has a <see cref="LoginUserCommandValidator"/> must be passed. 
 /// </summary>
-public class LoginUserQueryHandler : IRequestHandler<LoginUserQuery, string>
+public class LoginUserCommandHandler : IRequestHandler<LoginUserCommand, string>
 {
     private readonly IReadRepository<User, Guid> _readRepository;
     private readonly IPasswordHasher _hasher;
     private readonly IJwtProvider _jwtProvider;
 
-    public LoginUserQueryHandler(IReadRepository<User, Guid> readRepository,
+    public LoginUserCommandHandler(IReadRepository<User, Guid> readRepository,
         IPasswordHasher hasher,
         IJwtProvider jwtProvider)
     {
@@ -25,13 +26,13 @@ public class LoginUserQueryHandler : IRequestHandler<LoginUserQuery, string>
     }
 
     /// <inheritdoc />
-    public async Task<string> Handle(LoginUserQuery request, CancellationToken ct)
+    public async Task<string> Handle(LoginUserCommand request, CancellationToken ct)
     {
         var user = await _readRepository.GetAsync(u => u.Email == request.Request.Email, ct);
 
         if (user is null || !_hasher.Verify(request.Request.Password, user.PasswordHash))
         {
-            throw new InvalidCredentialException();
+            throw new UserInvalidCredentialsException();
         }
 
         var token = _jwtProvider.GenerateToken(user);

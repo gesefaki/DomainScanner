@@ -1,18 +1,18 @@
 ﻿using DomainScanner.Application.Handlers.Users.Common;
 using FluentValidation;
 
-namespace DomainScanner.Application.Handlers.Users.Queries.LoginUser;
+namespace DomainScanner.Application.Handlers.Users.Commands.LoginUser;
 
 /// <summary>
-/// Validates the <see cref="LoginUserQuery"/>.
+/// Validates the <see cref="LoginUserCommand"/>.
 /// Implements FluentValidation's <see cref="AbstractValidator{T}"/>.  
 /// </summary>
-public class LoginUserQueryValidator : AbstractValidator<LoginUserQuery>
+public class LoginUserCommandValidator : AbstractValidator<LoginUserCommand>
 {
      /// <summary>
-    /// Sets up all validation rules for the <see cref="LoginUserQuery"/>. 
+    /// Sets up all validation rules for the <see cref="LoginUserCommand"/>. 
     /// </summary>
-    public LoginUserQueryValidator()
+    public LoginUserCommandValidator()
     {
         // Email
         RuleFor(r => r.Request.Email)

@@ -6,5 +6,5 @@ public static class RateLimitingOptions
     public const string Write = "write";
     public const string Auth = "auth";
     public const string Scan = "scan";
-    public const string ConcurrencyScan = "concurrensyScan";
+    public const string Login = "login";
 }
