@@ -1,4 +1,5 @@
 ﻿using System.Linq.Expressions;
+using DomainScanner.Application.Abstractions.Auth;
 using DomainScanner.Application.Abstractions.Persistence.Common;
 using DomainScanner.Application.Handlers.Users.Commands.RegisterUser;
 using DomainScanner.Contracts.DTOs.Users.Requests;
@@ -14,11 +15,15 @@ namespace DomainScanner.Application.UnitTests.Validators.Users;
 public class RegisterUserCommandValidatorTests
 {
     private readonly Mock<IReadRepository<User, Guid>> _usersRepository = new();
+    private readonly Mock<IEmailNormalizer> _emailNormalizer = new();
+    
     private readonly RegisterUserCommandValidator _validator;
 
     public RegisterUserCommandValidatorTests()
     {
-        _validator = new RegisterUserCommandValidator(_usersRepository.Object);
+        _validator = new RegisterUserCommandValidator(
+            _usersRepository.Object,
+            _emailNormalizer.Object);
     }
     
     /// <summary>

@@ -4,6 +4,7 @@ using DomainScanner.Api.Extensions;
 using DomainScanner.Api.Middleware;
 using DomainScanner.Application.Abstractions.Auth;
 using DomainScanner.Contracts.Options;
+using DomainScanner.Infrastructure.Auth.Authentication.Normalization;
 using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.OpenApi;
@@ -81,6 +82,8 @@ public static class DependencyInjection
 
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUser, CurrentUser>();
+
+        services.AddSingleton<IEmailNormalizer, EmailNormalizer>();
 
         services.AddApiAuthentication(configuration);
 

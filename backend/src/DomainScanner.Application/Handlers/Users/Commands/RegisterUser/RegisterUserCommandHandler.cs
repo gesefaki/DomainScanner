@@ -16,19 +16,25 @@ public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, U
     private readonly IRepository<User, Guid> _repository;
     private readonly IPasswordHasher _hasher;
     private readonly IMapper _mapper;
+    private readonly IEmailNormalizer _emailNormalizer;
 
     public RegisterUserCommandHandler(IRepository<User, Guid> repository,
         IPasswordHasher hasher,
-        IMapper mapper)
+        IMapper mapper, IEmailNormalizer emailNormalizer)
     {
         _repository = repository;
         _hasher = hasher;
         _mapper = mapper;
+        _emailNormalizer = emailNormalizer;
     }
 
     /// <inheritdoc />
     public async Task<UserResponse> Handle(RegisterUserCommand request, CancellationToken ct)
     {
+        // normalize email to compare
+        var normalizedEmail =
+            _emailNormalizer.Normalize(request.Request.Email);
+        
         // check the existence of a user by credits
         if (await _repository.IsExistsByAttribute(u => u.Email == request.Request.Email, ct) ||
             await _repository.IsExistsByAttribute(u => u.Username == request.Request.Username, ct))
@@ -43,9 +49,9 @@ public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, U
         var user = new User
         {
             Username = request.Request.Username,
-            PasswordHash = hashedPassword,
             Email = request.Request.Email,
-            UpdatedAt = null,
+            NormalizedEmail = normalizedEmail,
+            PasswordHash = hashedPassword,
             IsActive = true
         };
 

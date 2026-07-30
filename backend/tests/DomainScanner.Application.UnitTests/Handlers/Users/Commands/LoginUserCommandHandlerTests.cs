@@ -9,7 +9,7 @@ using DomainScanner.Domain.Entities;
 using FluentAssertions;
 using Moq;
 
-namespace DomainScanner.Application.UnitTests.Handlers.Users.Queries;
+namespace DomainScanner.Application.UnitTests.Handlers.Users.Commands;
 
 /// <summary>
 /// Unit tests for <see cref="LoginUserCommandHandler"/>.
@@ -19,6 +19,10 @@ public class LoginUserCommandHandlerTests
     private readonly Mock<IReadRepository<User, Guid>> _repository = new();
     private readonly Mock<IPasswordHasher> _hasher = new();
     private readonly Mock<IJwtProvider> _jwtProvider = new();
+    private readonly Mock<IEmailNormalizer> _emailNormalizer = new();
+    private readonly Mock<ILoginAccountKeyProvider> _accountKeyProvider = new();
+    private readonly Mock<ILoginAttemptProtector> _loginAttemptProtector = new();
+    
     private readonly LoginUserCommandHandler _handler;
 
     private const string FakeToken = "jwt-token";
@@ -28,7 +32,10 @@ public class LoginUserCommandHandlerTests
         _handler = new LoginUserCommandHandler(
             _repository.Object,
             _hasher.Object,
-            _jwtProvider.Object);
+            _jwtProvider.Object,
+            _emailNormalizer.Object,
+            _accountKeyProvider.Object,
+            _loginAttemptProtector.Object);
     }
 
     /// <summary>

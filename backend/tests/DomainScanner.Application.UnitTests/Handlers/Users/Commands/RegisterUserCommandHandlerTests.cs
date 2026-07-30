@@ -20,6 +20,8 @@ public class RegisterUserCommandHandlerTests
     private readonly Mock<IRepository<User, Guid>> _repository = new();
     private readonly Mock<IPasswordHasher> _hasher = new();
     private readonly Mock<IMapper> _mapper = new();
+    private readonly Mock<IEmailNormalizer> _emailNormalizer = new();
+    
     private readonly RegisterUserCommandHandler _handler;
 
     private const string FakePassword = "Password1";
@@ -30,7 +32,8 @@ public class RegisterUserCommandHandlerTests
         _handler = new RegisterUserCommandHandler(
             _repository.Object,
             _hasher.Object,
-            _mapper.Object);
+            _mapper.Object,
+            _emailNormalizer.Object);
     }
 
     /// <summary>

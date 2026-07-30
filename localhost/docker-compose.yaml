@@ -101,6 +101,8 @@ services:
       ReverseProxy__TrustedProxy: ${TRUSTED_PROXY_ADDRESS}
       ReverseProxy__ForwardLimit: ${TRUSTED_PROXY_FORWARD_LIMIT}
       
+      LoginAccountKeyOptions__HmacSecret: ${LOGIN_ACCOUNT_KEY_SECRET}
+      
     volumes:
       - data-protection-prod:/var/lib/domainscanner/keys
     

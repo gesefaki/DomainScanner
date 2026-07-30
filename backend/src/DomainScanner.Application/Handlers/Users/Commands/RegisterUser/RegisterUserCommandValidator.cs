@@ -1,4 +1,5 @@
-﻿using DomainScanner.Application.Abstractions.Persistence.Common;
+﻿using DomainScanner.Application.Abstractions.Auth;
+using DomainScanner.Application.Abstractions.Persistence.Common;
 using DomainScanner.Application.Handlers.Users.Common;
 using DomainScanner.Domain.Entities;
 using FluentValidation;
@@ -12,18 +13,24 @@ namespace DomainScanner.Application.Handlers.Users.Commands.RegisterUser;
 public class RegisterUserCommandValidator : AbstractValidator<RegisterUserCommand>
 {
     private readonly IReadRepository<User, Guid> _repository;
+    private readonly IEmailNormalizer _emailNormalizer;
     
     /// <summary>
     /// Sets up all validation rules for the <see cref="RegisterUserCommand"/>. 
     /// </summary>
     /// <param name="repository">The <see cref="IReadRepository{User, Guid}"/> repository instance needs for check user email is unique. </param>
-    public RegisterUserCommandValidator(IReadRepository<User, Guid> repository)
+    /// <param name="emailNormalizer">Email normalizer.</param>
+    public RegisterUserCommandValidator(IReadRepository<User, Guid> repository,
+        IEmailNormalizer emailNormalizer)
     {
         _repository = repository;
+        _emailNormalizer = emailNormalizer;
         
         // Email
         RuleFor(x => x.Request.Email)
+            .Cascade(CascadeMode.Stop)
             .ValidEmail()
+            .MaximumLength(254)
             .MustAsync(IsUniqueEmail)
             .WithMessage("Email already registered.");
         
@@ -52,6 +59,8 @@ public class RegisterUserCommandValidator : AbstractValidator<RegisterUserComman
     /// <returns><c>true</c> if email is unique, otherwise <c>false</c>.</returns>
     private async Task<bool> IsUniqueEmail(string email, CancellationToken ct)
     {
-        return !await _repository.IsExistsByAttribute(u => u.Email == email, ct);
+        var normalizedEmail = _emailNormalizer.Normalize(email);
+        
+        return !await _repository.IsExistsByAttribute(u => u.NormalizedEmail == normalizedEmail, ct);
     }
 }
