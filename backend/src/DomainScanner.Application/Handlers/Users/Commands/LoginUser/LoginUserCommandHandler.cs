@@ -35,7 +35,6 @@ public class LoginUserCommandHandler : IRequestHandler<LoginUserCommand, string>
     public async Task<string> Handle(LoginUserCommand request, CancellationToken ct)
     {
         var normalizedEmail = _emailNormalizer.Normalize(request.Request.Email);
-
         var accountKey = _accountKeyProvider.Create(normalizedEmail);
 
         var state = await _loginAttemptProtector.GetStateAsync(accountKey, ct);
@@ -44,15 +43,15 @@ public class LoginUserCommandHandler : IRequestHandler<LoginUserCommand, string>
         {
             throw new LoginTemporarilyBlockedException(state.RetryAfter);
         }
+
+        var user = await _readRepository.GetAsync(
+            candidate => candidate.NormalizedEmail == normalizedEmail,
+            ct);
         
-        var user = await _readRepository.GetAsync(u => u.NormalizedEmail == normalizedEmail, ct);
-
-        if (user == null)
-        {
-            throw new UserInvalidCredentialsException();
-        }
-
-        var passwordIsValid = _hasher.Verify(request.Request.Password, user.PasswordHash);
+        var passwordIsValid = user is not null &&
+                              _hasher.Verify(
+                                  request.Request.Password,
+                                  user.PasswordHash);
 
         if (!passwordIsValid)
         {
@@ -76,7 +75,7 @@ public class LoginUserCommandHandler : IRequestHandler<LoginUserCommand, string>
         await _loginAttemptProtector.ResetAsync(
             accountKey, ct);
 
-        var token = _jwtProvider.GenerateToken(user);
+        var token = _jwtProvider.GenerateToken(user!);
         return token;
     }
 

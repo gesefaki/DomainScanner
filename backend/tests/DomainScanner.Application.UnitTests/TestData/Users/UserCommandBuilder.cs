@@ -38,5 +38,5 @@ public sealed class UserCommandBuilder
     public RegisterUserCommand BuildRegisterCommand() => new(new RegisterUserRequest(_username, _email, _password));
 
     /// <summary>Builds a login command.</summary>
-    public LoginUserCommand BuildLoginQuery() => new(new LoginUserRequest(_email, _password));
+    public LoginUserCommand BuildLoginCommand() => new(new LoginUserRequest(_email, _password));
 }
