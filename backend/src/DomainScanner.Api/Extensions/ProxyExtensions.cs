@@ -3,8 +3,14 @@ using Microsoft.AspNetCore.HttpOverrides;
 
 namespace DomainScanner.Api.Extensions;
 
+/// <summary>
+/// Provides extension methods for configuring trusted reverse proxy support.
+/// </summary>
 public static class ProxyExtensions
 {
+    /// <summary>
+    /// Configures forwarded headers when reverse proxy support is enabled.
+    /// </summary>
     public static IServiceCollection AddProxy(this IServiceCollection services,
         IConfiguration configuration)
     {

@@ -6,6 +6,9 @@ using Microsoft.Extensions.Options;
 
 namespace DomainScanner.Infrastructure.Auth.Authentication.LoginProtection;
 
+/// <summary>
+/// Creates non-reversible login account keys using HMAC-SHA256.
+/// </summary>
 public class HmacLoginAccountKeyProvider : ILoginAccountKeyProvider
 {
     private readonly byte[] _secret;

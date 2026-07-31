@@ -1,12 +1,14 @@
 ﻿using DomainScanner.Application.Abstractions.Auth;
 using DomainScanner.Application.Abstractions.Auth.Models;
-using DomainScanner.Contracts.Options;
 using DomainScanner.Contracts.Options.Login;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 
 namespace DomainScanner.Infrastructure.Auth.Authentication.LoginProtection;
 
+/// <summary>
+/// Tracks failed login attempts and temporary account lockouts in Redis.
+/// </summary>
 public class RedisLoginAttemptProtector : ILoginAttemptProtector
 {
     private readonly IDatabase _database;
@@ -169,6 +171,9 @@ public class RedisLoginAttemptProtector : ILoginAttemptProtector
         );
     }
 
+    /// <summary>
+    /// Records a failed login attempt and returns the updated protection state.
+    /// </summary>
     public async Task<LoginFailureResult> RegisterFailureAsync(string accountKey, CancellationToken ct)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(accountKey);
@@ -222,6 +227,9 @@ public class RedisLoginAttemptProtector : ILoginAttemptProtector
         );
     }
 
+    /// <summary>
+    /// Clears login protection state after successful authentication.
+    /// </summary>
     public async Task ResetAsync(string accountKey, CancellationToken ct)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(accountKey);
