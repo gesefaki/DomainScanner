@@ -10,6 +10,7 @@ builder.Services
     .AddInfrastructureLayer(builder.Configuration)
     .AddPostgresDatabase(builder.Configuration)
     .AddRedisCaching(builder.Configuration)
+    .AddUserAuthenticationInfrastructure(builder.Configuration)
     .AddApplicationLayer()
     .AddWorker(builder.Configuration)
     .AddPresentationLayer(builder.Configuration);
@@ -24,5 +25,3 @@ if (!app.Environment.IsEnvironment("Testing"))
 app.UsePresentationLayer();
 
 app.Run();
-
-public partial class Program;

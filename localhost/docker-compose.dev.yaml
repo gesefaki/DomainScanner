@@ -86,6 +86,8 @@ services:
       DataProtection__KeysPath: /var/lib/domainscanner/keys
       
       ReverseProxy__Enabled: "false"
+        
+      LoginAccountKeyOptions__HmacSecret: ${LOGIN_ACCOUNT_KEY_SECRET}
     
     volumes:
       - data-protection-dev:/var/lib/domainscanner/keys
@@ -116,10 +118,7 @@ services:
       context: ../.
       dockerfile: backend/src/DomainScanner.Worker/Dockerfile
       args:
-        BUILD_CONFIGURATION: Debud
-    
-    env_file:
-      - .env.dev
+        BUILD_CONFIGURATION: Debug
     
     depends_on:
       postgres:

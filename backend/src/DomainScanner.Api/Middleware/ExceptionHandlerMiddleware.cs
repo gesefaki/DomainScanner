@@ -1,4 +1,5 @@
 ﻿using DomainScanner.Contracts.Exceptions.Common;
+using System.Globalization;
 using DomainScanner.Contracts.Exceptions.Domains;
 using DomainScanner.Contracts.Exceptions.Users;
 using DomainScanner.Contracts.Models;
@@ -95,6 +96,11 @@ public sealed class ExceptionHandlerMiddleware
                 StatusCode = 409,
                 Message = "Username or email already exists."
             },
+            LoginTemporarilyBlockedException => new ErrorResponse
+            {
+                StatusCode = StatusCodes.Status429TooManyRequests,
+                Message = "Login is temporarily blocked. Please try again later."
+            },
             LoginProtectionUnavailableException => new ErrorResponse()
             {
                 StatusCode = 503,
@@ -106,7 +112,32 @@ public sealed class ExceptionHandlerMiddleware
                 Message = "Internal Server Error. Please try again later."
             }
         };
-        _logger.LogError(exception, exception.Message);
+
+        if (exception is LoginTemporarilyBlockedException blocked)
+        {
+            context.Response.Headers.RetryAfter = Math.Max(
+                    1,
+                    (int)Math.Ceiling(blocked.RetryAfter.TotalSeconds))
+                .ToString(CultureInfo.InvariantCulture);
+        }
+
+        if (response.StatusCode >= 500)
+        {
+            _logger.LogError(
+                exception,
+                "Unhandled exception. TraceId: {TraceId}",
+                context.TraceIdentifier);
+        }
+        else
+        {
+            _logger.LogWarning(
+                "Request rejected with {StatusCode}: {ExceptionType}. " +
+                "TraceId: {TraceId}",
+                response.StatusCode,
+                exception.GetType().Name,
+                context.TraceIdentifier);
+        }
+
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = response.StatusCode;
         await context.Response.WriteAsJsonAsync(response);

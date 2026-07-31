@@ -8,7 +8,7 @@ builder.Services
     .AddInfrastructureLayer(builder.Configuration)
     .AddPostgresDatabase(builder.Configuration)
     .AddRedisCaching(builder.Configuration)
-    .AddApplicationLayer()
+    .AddWorkerApplicationLayer()
     .AddWorker(builder.Configuration)
     .AddWorkerServerExtension(builder.Configuration);
 

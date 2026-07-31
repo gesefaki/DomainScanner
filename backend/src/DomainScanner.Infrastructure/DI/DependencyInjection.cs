@@ -40,8 +40,6 @@ public static class DependencyInjection
         IConfiguration configuration
     )
     {
-        services.AddLoginProtection(configuration);
-        
         // Add HTTP client and related services.
         services.AddHttpExtensions();
 
@@ -52,14 +50,9 @@ public static class DependencyInjection
 
         // Register UOW
         services.AddScoped<IUnitOfWork, UnitOfWork>();
-
+        
         // Register HTTP services
         services.AddScoped<IHttpScanner, HttpService>();
-
-        // Register auth services
-        services.AddScoped<IPasswordHasher, PasswordHasher>();
-        services.AddScoped<IJwtProvider, JwtProvider>();
-        services.Configure<JwtOptions>(configuration.GetSection(nameof(JwtOptions)));
 
         return services;
     }
@@ -95,17 +88,27 @@ public static class DependencyInjection
         IConfiguration configuration
     )
     {
-        services.ConfigureRedisLoginProtection(configuration);
-        
-        services.AddSingleton<IConnectionMultiplexer>(_ =>
-        {
-            return ConnectionMultiplexer.Connect(
-                configuration.GetConnectionString("RedisConnection")!);
-        });
+        services.AddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(
+            configuration.GetConnectionString("RedisConnection")!));
 
         services.AddSingleton<ICacheService, RedisCacheService>();
 
         services.AddScoped(typeof(ICacheKeyGenerator<>), typeof(CacheKeyGenerator<>));
+
+        return services;
+    }
+    
+    public static IServiceCollection AddUserAuthenticationInfrastructure(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.AddLoginProtection(configuration);
+        services.ConfigureRedisLoginProtection(configuration);
+
+        services.AddSingleton<IEmailNormalizer, EmailNormalizer>();
+        services.AddSingleton<IPasswordHasher, PasswordHasher>();
+
+        services.AddJwtAuthentication(configuration);
 
         return services;
     }
@@ -142,7 +145,7 @@ public static class DependencyInjection
 
         return services;
     }
-
+    
     private static IServiceCollection AddLoginProtection(this IServiceCollection services,
         IConfiguration configuration)
     {
@@ -158,6 +161,31 @@ public static class DependencyInjection
             .ValidateOnStart();
 
         services.AddSingleton<ILoginAccountKeyProvider, HmacLoginAccountKeyProvider>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddJwtAuthentication(this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.AddOptions<JwtOptions>()
+            .Bind(configuration.GetRequiredSection(
+                nameof(JwtOptions)))
+            .Validate(
+                options => !string.IsNullOrWhiteSpace(options.SecretKey),
+                "JWT secret key is required.")
+            .Validate(
+                options => !string.IsNullOrWhiteSpace(options.Issuer),
+                "JWT issuer is required.")
+            .Validate(
+                options => !string.IsNullOrWhiteSpace(options.Audience),
+                "JWT audience is required.")
+            .Validate(
+                options => options.ExpiresHours > 0,
+                "JWT expiration must be greater than zero.")
+            .ValidateOnStart();
+
+        services.AddScoped<IJwtProvider, JwtProvider>();
 
         return services;
     }
