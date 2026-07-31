@@ -1,6 +1,8 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+﻿using System.Globalization;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Threading.RateLimiting;
+using DomainScanner.Contracts.Models;
 using DomainScanner.Contracts.Options;
 using Microsoft.AspNetCore.RateLimiting;
 
@@ -30,7 +32,41 @@ public static class RateLimiterExtensions
     {
         services.AddRateLimiter(options =>
         {
+            // Reject model
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+            options.OnRejected = async (rejected, cancellationToken) =>
+            {
+                var context = rejected.HttpContext;
+                context.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+
+                if (rejected.Lease.TryGetMetadata(
+                        MetadataName.RetryAfter,
+                        out var retryAfter))
+                {
+                    context.Response.Headers.RetryAfter =
+                        Math.Max(1, (int)Math.Ceiling(retryAfter.TotalSeconds))
+                            .ToString(CultureInfo.InvariantCulture);
+
+                    var logger = context.RequestServices
+                        .GetRequiredService<ILoggerFactory>()
+                        .CreateLogger("RateLimiting");
+
+                    logger.LogWarning(
+                        "Rate limit exceeded for {Method} {Path}. TraceId: {TraceId}",
+                        context.Request.Method,
+                        context.Request.Path,
+                        context.TraceIdentifier
+                    );
+
+                    await context.Response.WriteAsJsonAsync(
+                        new ErrorResponse
+                        {
+                            StatusCode = StatusCodes.Status429TooManyRequests,
+                            Message = "Too many requests. Please try again later"
+                        }, cancellationToken);
+                }
+            };
 
             // Read
             options.AddPolicy(
@@ -55,14 +91,14 @@ public static class RateLimiterExtensions
                     context,
                     permitLimit: 5)
             );
-            
+
             // Login
             options.AddPolicy(
                 RateLimitingOptions.Login,
                 context => CreateSlidingWindowPartition(
                     context,
                     permitLimit: 10)
-                );
+            );
 
             // Scan
             options.AddPolicy(
