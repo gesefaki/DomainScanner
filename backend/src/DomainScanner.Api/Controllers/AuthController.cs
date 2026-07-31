@@ -1,10 +1,13 @@
-﻿using DomainScanner.Application.Handlers.Users.Queries.LoginUser;
+﻿using DomainScanner.Application.Handlers.Users.Commands.LoginUser;
 using DomainScanner.Contracts.DTOs.Users.Requests;
 using DomainScanner.Contracts.Options;
+using DomainScanner.Contracts.Options.Auth;
+using DomainScanner.Contracts.Options.RateLimiting;
 using MediatR;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace DomainScanner.Api.Controllers;
 
@@ -29,13 +32,14 @@ public class AuthController : ControllerBase
     /// </summary>
     /// <param name="request">The login request.</param>
     /// <param name="ct">Cancellation token provided by the user.</param>
+    [EnableRateLimiting(RateLimitingSettings.Policies.Login)]
     [AllowAnonymous]
     [HttpPost]
     public async Task<ActionResult> Login([FromBody] LoginUserRequest request, CancellationToken ct)
     {
         var context = HttpContext;
 
-        var token = await _sender.Send(new LoginUserQuery(request), ct);
+        var token = await _sender.Send(new LoginUserCommand(request), ct);
         
         context.Response.Cookies.Append(
             AuthCookieOptions.Session,
@@ -55,6 +59,7 @@ public class AuthController : ControllerBase
     /// <summary>
     /// Logout user and delete his session cookies.
     /// </summary>
+    [EnableRateLimiting(RateLimitingSettings.Policies.Auth)]
     [HttpPost("logout")]
     public ActionResult Logout()
     {
@@ -74,6 +79,7 @@ public class AuthController : ControllerBase
         return NoContent();
     }
     
+    [EnableRateLimiting(RateLimitingSettings.Policies.Auth)]
     [AllowAnonymous]
     [HttpGet("csrf")]
     [ResponseCache(

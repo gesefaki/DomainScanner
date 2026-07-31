@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Text;
 using DomainScanner.Application.Abstractions.Auth;
 using DomainScanner.Contracts.Options;
+using DomainScanner.Contracts.Options.Auth;
 using DomainScanner.Domain.Entities;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;

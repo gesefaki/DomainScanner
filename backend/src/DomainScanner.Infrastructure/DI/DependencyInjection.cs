@@ -4,7 +4,11 @@ using DomainScanner.Application.Abstractions.Persistence;
 using DomainScanner.Application.Abstractions.Persistence.Common;
 using DomainScanner.Application.Abstractions.Scanners;
 using DomainScanner.Contracts.Options;
+using DomainScanner.Contracts.Options.Auth;
+using DomainScanner.Contracts.Options.Login;
 using DomainScanner.Infrastructure.Auth.Authentication;
+using DomainScanner.Infrastructure.Auth.Authentication.LoginProtection;
+using DomainScanner.Infrastructure.Auth.Authentication.Normalization;
 using DomainScanner.Infrastructure.Auth.Hashing;
 using DomainScanner.Infrastructure.DataAccess.Cache;
 using DomainScanner.Infrastructure.DataAccess.Persistence.Context;
@@ -46,14 +50,9 @@ public static class DependencyInjection
 
         // Register UOW
         services.AddScoped<IUnitOfWork, UnitOfWork>();
-
+        
         // Register HTTP services
         services.AddScoped<IHttpScanner, HttpService>();
-
-        // Register auth services
-        services.AddScoped<IPasswordHasher, PasswordHasher>();
-        services.AddScoped<IJwtProvider, JwtProvider>();
-        services.Configure<JwtOptions>(configuration.GetSection(nameof(JwtOptions)));
 
         return services;
     }
@@ -89,15 +88,104 @@ public static class DependencyInjection
         IConfiguration configuration
     )
     {
-        services.AddSingleton<IConnectionMultiplexer>(_ =>
-        {
-            return ConnectionMultiplexer.Connect(
-                configuration.GetConnectionString("RedisConnection")!);
-        });
+        services.AddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(
+            configuration.GetConnectionString("RedisConnection")!));
 
         services.AddSingleton<ICacheService, RedisCacheService>();
 
         services.AddScoped(typeof(ICacheKeyGenerator<>), typeof(CacheKeyGenerator<>));
+
+        return services;
+    }
+    
+    public static IServiceCollection AddUserAuthenticationInfrastructure(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.AddLoginProtection(configuration);
+        services.ConfigureRedisLoginProtection(configuration);
+
+        services.AddSingleton<IEmailNormalizer, EmailNormalizer>();
+        services.AddSingleton<IPasswordHasher, PasswordHasher>();
+
+        services.AddJwtAuthentication(configuration);
+
+        return services;
+    }
+
+    private static IServiceCollection ConfigureRedisLoginProtection(this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.AddOptions<LoginProtectionOptions>()
+            .Bind(configuration.GetSection(
+                nameof(LoginProtectionOptions)))
+            .Validate(
+                options => options.LockoutThreshold > 0,
+                "LockoutThreshold must be greater than zero.")
+            .Validate(
+                options => options.FailureWindowMinutes > 0,
+                "FailureWindowMinutes must be greater than zero.")
+            .Validate(
+                options => options.LockoutDurationMinutes > 0,
+                "LockoutDurationMinutes must be greater than zero.")
+            .Validate(
+                options =>
+                    options.MaximumLockoutMinutes >=
+                    options.LockoutDurationMinutes,
+                "Maximum lockout must be at least the initial lockout.")
+            .Validate(
+                options =>
+                    options.DelayStartAttempt > 0 &&
+                    options.DelayStartAttempt <
+                    options.LockoutThreshold,
+                "DelayStartAttempt must be below LockoutThreshold.")
+            .ValidateOnStart();
+
+        services.AddSingleton<ILoginAttemptProtector, RedisLoginAttemptProtector>();
+
+        return services;
+    }
+    
+    private static IServiceCollection AddLoginProtection(this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.AddSingleton<IEmailNormalizer, EmailNormalizer>();
+
+        services.AddOptions<LoginAccountKeyOptions>()
+            .Bind(configuration.GetSection(
+                nameof(LoginAccountKeyOptions)))
+            .Validate(
+                options => !string.IsNullOrWhiteSpace(
+                    options.HmacSecret),
+                "Login account HMAC secret is required.")
+            .ValidateOnStart();
+
+        services.AddSingleton<ILoginAccountKeyProvider, HmacLoginAccountKeyProvider>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddJwtAuthentication(this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.AddOptions<JwtOptions>()
+            .Bind(configuration.GetRequiredSection(
+                nameof(JwtOptions)))
+            .Validate(
+                options => !string.IsNullOrWhiteSpace(options.SecretKey),
+                "JWT secret key is required.")
+            .Validate(
+                options => !string.IsNullOrWhiteSpace(options.Issuer),
+                "JWT issuer is required.")
+            .Validate(
+                options => !string.IsNullOrWhiteSpace(options.Audience),
+                "JWT audience is required.")
+            .Validate(
+                options => options.ExpiresHours > 0,
+                "JWT expiration must be greater than zero.")
+            .ValidateOnStart();
+
+        services.AddScoped<IJwtProvider, JwtProvider>();
 
         return services;
     }

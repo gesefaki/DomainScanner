@@ -1,4 +1,5 @@
 ﻿using DomainScanner.Application.Handlers.Domains.Commands.CreateDomain;
+using DomainScanner.Application.Handlers.Domains.Commands.HttpSendAndSave;
 using DomainScanner.Application.Mapping;
 using DomainScanner.Application.Pipelines.Behaviors;
 using Microsoft.Extensions.DependencyInjection;
@@ -31,6 +32,22 @@ public static class DependencyInjection
         services.AddAutoMapper(cfg =>
         {
             cfg.AddProfile<MappingProfile>();
+        });
+
+        return services;
+    }
+
+    public static IServiceCollection AddWorkerApplicationLayer(this IServiceCollection services)
+    {
+        services.AddMediatR(cfg =>
+        {
+            cfg.TypeEvaluator = type =>
+                type == typeof(HttpSendAndSaveCommandHandler);
+
+            cfg.RegisterServicesFromAssemblyContaining<HttpSendAndSaveCommandHandler>();
+
+            cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
+            cfg.AddOpenBehavior(typeof(UnitOfWorkBehavior<,>));
         });
 
         return services;

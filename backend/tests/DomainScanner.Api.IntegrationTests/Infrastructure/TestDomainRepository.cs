@@ -4,11 +4,30 @@ using DomainScanner.Domain.Entities;
 
 namespace DomainScanner.Api.IntegrationTests.Infrastructure;
 
+/// <summary>
+/// In-memory implementation of a <see cref="IReadRepository{DomainEntity, Guid}"/> used by integration tests.
+/// </summary>
+/// <param name="domains">
+/// The collection of domain entities used as test data.
+/// </param>
 internal sealed class TestDomainRepository(IEnumerable<DomainEntity> domains)
     : IReadRepository<DomainEntity, Guid>
 {
+    
     private readonly IReadOnlyCollection<DomainEntity> _domains = domains.ToArray();
-
+    
+    /// <summary>
+    /// Returns all <see cref="DomainEntity"/> that satisfy the specified predicate.
+    /// </summary>
+    /// <param name="predicate">
+    /// The predicate used to filter domain entities.
+    /// </param>
+    /// <param name="ct">
+    /// The cancellation token.
+    /// </param>
+    /// <returns>
+    /// A collection of <see cref="DomainEntity"/> that satisfy the specified predicate.
+    /// </returns>
     public Task<IEnumerable<DomainEntity>> GetAllWhereAsync(
         Expression<Func<DomainEntity, bool>> predicate,
         CancellationToken ct)

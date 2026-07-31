@@ -15,13 +15,25 @@ internal class UserConfiguration : BaseEntityConfiguration<User>
         base.Configure(builder);
         
         // Username
-        builder.Property(u => u.Username).HasMaxLength(150).IsRequired();
+        builder.Property(u => u.Username)
+            .HasMaxLength(150)
+            .IsRequired();
         
         // PasswordHash
-        builder.Property(u => u.PasswordHash).IsRequired();
+        builder.Property(u => u.PasswordHash)
+            .IsRequired();
         
         // Email
-        builder.Property(u => u.Email).IsRequired();
+        builder.Property(u => u.Email)
+            .HasMaxLength(254)
+            .IsRequired();
+
+        builder.Property(u => u.NormalizedEmail)
+            .HasMaxLength(254)
+            .IsRequired();
+
+        builder.HasIndex(u => u.NormalizedEmail)
+            .IsUnique();
         
         // Navigation
         // Domains

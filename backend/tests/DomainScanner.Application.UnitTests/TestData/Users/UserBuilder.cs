@@ -10,6 +10,7 @@ public sealed class UserBuilder
     private Guid _id = Guid.NewGuid();
     private string _username = "test_user";
     private string _email = "user@example.com";
+    private string _normalizedEmail = "user@example.com";
     private string _passwordHash = "hashed-password";
     private bool _isActive = true;
 
@@ -40,6 +41,13 @@ public sealed class UserBuilder
         return this;
     }
 
+    /// <summary>Sets the normalized email used for lookup.</summary>
+    public UserBuilder WithNormalizedEmail(string normalizedEmail)
+    {
+        _normalizedEmail = normalizedEmail;
+        return this;
+    }
+
     /// <summary>Sets the password hash.</summary>
     public UserBuilder WithPasswordHash(string passwordHash)
     {
@@ -67,6 +75,7 @@ public sealed class UserBuilder
         Id = _id,
         Username = _username,
         Email = _email,
+        NormalizedEmail = _normalizedEmail,
         PasswordHash = _passwordHash,
         IsActive = _isActive
     };

@@ -3,7 +3,7 @@ using DomainScanner.Api.Configuration;
 using DomainScanner.Api.Extensions;
 using DomainScanner.Api.Middleware;
 using DomainScanner.Application.Abstractions.Auth;
-using DomainScanner.Contracts.Options;
+using DomainScanner.Contracts.Options.Auth;
 using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.OpenApi;
@@ -44,6 +44,10 @@ public static class DependencyInjection
             });
         });
 
+        services.AddProxy(configuration);
+
+        services.AddAndConfigureRateLimiter(configuration);
+        
         services.AddCsrfProtection(configuration);
 
         services.AddAntiforgery(options =>
@@ -90,9 +94,12 @@ public static class DependencyInjection
     /// </summary>
     public static WebApplication UsePresentationLayer(this WebApplication app)
     {
+        app.UseForwardedHeaders();
+        
         app.UseExceptionHandlerMiddleware();
 
         app.UseRouting();
+        
         app.UseCors("Frontend");
 
         if (app.Environment.IsDevelopment())
@@ -126,6 +133,7 @@ public static class DependencyInjection
         });
         
         app.UseAuthentication();
+        app.UseRateLimiter();
         app.UseAuthorization();
 
         app.UseMiddleware<CsrfProtectionMiddleware>();

@@ -10,8 +10,4 @@
       <ProjectReference Include="..\DomainScanner.Domain\DomainScanner.Domain.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Auth\" />
-    </ItemGroup>
-
 </Project>

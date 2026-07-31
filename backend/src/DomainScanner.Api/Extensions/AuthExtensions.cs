@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using System.Text;
 using DomainScanner.Contracts.Options;
+using DomainScanner.Contracts.Options.Auth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;

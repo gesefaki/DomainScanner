@@ -21,9 +21,14 @@ public class User : BaseEntity
     public string PasswordHash { get; set; } = string.Empty;
 
     /// <summary>
-    /// Email for this user account.
+    /// Email non-normalized value for storage.
     /// </summary>
     public string Email { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Email normalized value for searching and comparing. 
+    /// </summary>
+    public string NormalizedEmail { get; set; } = string.Empty;
     
     /// <summary>
     /// Collection of DomainEntity owned or managed by this user.

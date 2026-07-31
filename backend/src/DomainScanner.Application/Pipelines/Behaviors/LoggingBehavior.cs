@@ -26,31 +26,17 @@ public sealed class LoggingBehavior<TRequest, TResponse>
         CancellationToken ct)
     {
         var requestName = typeof(TRequest).Name;
-
-        _logger.LogInformation("Handling: {requestName}", requestName);
-
         var stopwatch = Stopwatch.StartNew();
 
-        try
-        {
-            var response = await next(ct);
+        _logger.LogInformation("Handling {RequestName}", requestName);
 
-            _logger.LogInformation("Handled {requestName} in {elapsedTime} ms",
-                requestName,
-                stopwatch.ElapsedMilliseconds);
+        var response = await next(ct);
 
-            return response;
-        }
-        catch (Exception ex)
-        {
-            stopwatch.Stop();
+        _logger.LogInformation(
+            "Handled {RequestName} in {ElapsedTime} ms",
+            requestName,
+            stopwatch.ElapsedMilliseconds);
 
-            _logger.LogError(ex,
-                "Error when handling {requestName} in {elapsedTime} ms",
-                requestName,
-                stopwatch.ElapsedMilliseconds);
-
-            throw;
-        }
+        return response;
     }
 }

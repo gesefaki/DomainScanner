@@ -1,4 +1,4 @@
-namespace DomainScanner.Contracts.Options;
+namespace DomainScanner.Contracts.Options.Cache;
 
 /// <summary>
 /// Configuration settings for caching behavior in the application.
