@@ -4,6 +4,7 @@ using DomainScanner.Api.Extensions;
 using DomainScanner.Api.Middleware;
 using DomainScanner.Application.Abstractions.Auth;
 using DomainScanner.Contracts.Options;
+using DomainScanner.Contracts.Options.Auth;
 using DomainScanner.Infrastructure.Auth.Authentication.Normalization;
 using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
@@ -47,7 +48,7 @@ public static class DependencyInjection
 
         services.AddProxy(configuration);
 
-        services.AddAndConfigureRateLimiter();
+        services.AddAndConfigureRateLimiter(configuration);
         
         services.AddCsrfProtection(configuration);
 

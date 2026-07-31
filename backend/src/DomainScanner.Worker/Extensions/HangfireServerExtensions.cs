@@ -1,4 +1,5 @@
 using DomainScanner.Contracts.Options;
+using DomainScanner.Contracts.Options.Worker;
 using Hangfire;
 
 namespace DomainScanner.Worker.Extensions;

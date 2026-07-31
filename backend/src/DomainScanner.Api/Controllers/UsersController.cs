@@ -9,6 +9,7 @@ using DomainScanner.Contracts.DTOs.Domains.Responses;
 using DomainScanner.Contracts.DTOs.Users.Requests;
 using DomainScanner.Contracts.DTOs.Users.Responses;
 using DomainScanner.Contracts.Options;
+using DomainScanner.Contracts.Options.RateLimiting;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -36,7 +37,7 @@ public class UsersController : Controller
     /// </summary>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>List of <see cref="UserResponse"/>. </returns>
-    [EnableRateLimiting(RateLimitingOptions.Read)]
+    [EnableRateLimiting(RateLimitingSettings.Policies.Read)]
     [HttpGet]
     public async Task<ActionResult<List<UserResponse>>> GetAll(CancellationToken ct)
     {
@@ -49,7 +50,7 @@ public class UsersController : Controller
     /// </summary>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>Single <see cref="UserResponse"/>.</returns>
-    [EnableRateLimiting(RateLimitingOptions.Read)]
+    [EnableRateLimiting(RateLimitingSettings.Policies.Read)]
     [HttpGet("me")]
     public async Task<ActionResult<UserResponse>> Get(CancellationToken ct)
     {
@@ -57,7 +58,7 @@ public class UsersController : Controller
         return Ok(user);
     }
 
-    [EnableRateLimiting(RateLimitingOptions.Read)]
+    [EnableRateLimiting(RateLimitingSettings.Policies.Read)]
     [HttpGet("me/domains")]
     public async Task<ActionResult<DomainResponse>> GetMyDomains(CancellationToken ct)
     {
@@ -70,7 +71,7 @@ public class UsersController : Controller
     /// </summary>
     /// <param name="request">Register user request.</param>
     /// <param name="ct">Cancellation token.</param>
-    [EnableRateLimiting(RateLimitingOptions.Auth)]
+    [EnableRateLimiting(RateLimitingSettings.Policies.Auth)]
     [AllowAnonymous]
     [HttpPost("register")]
     public async Task<ActionResult> Register([FromBody] RegisterUserRequest request, CancellationToken ct)
@@ -84,7 +85,7 @@ public class UsersController : Controller
     /// </summary>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>Single <see cref="UserResponse"/>.</returns>
-    [EnableRateLimiting(RateLimitingOptions.Write)]
+    [EnableRateLimiting(RateLimitingSettings.Policies.Write)]
     [HttpPut("me/activate")]
     public async Task<ActionResult<UserResponse>> Activate(CancellationToken ct)
     {
@@ -97,7 +98,7 @@ public class UsersController : Controller
     /// </summary>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>Single <see cref="UserResponse"/>.</returns>
-    [EnableRateLimiting(RateLimitingOptions.Write)]
+    [EnableRateLimiting(RateLimitingSettings.Policies.Write)]
     [HttpPut("me/deactivate")]
     public async Task<ActionResult> Deactivate(CancellationToken ct)
     {
@@ -109,7 +110,7 @@ public class UsersController : Controller
     /// Deletes a user account from database. Not soft delete.
     /// </summary>
     /// <param name="ct">Cancellation token.</param>
-    [EnableRateLimiting(RateLimitingOptions.Write)]
+    [EnableRateLimiting(RateLimitingSettings.Policies.Write)]
     [HttpDelete("me")]
     public async Task<ActionResult> Delete(CancellationToken ct)
     {

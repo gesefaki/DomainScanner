@@ -1,5 +1,6 @@
 ﻿using DomainScanner.Api.IntegrationTests.Infrastructure;
 using DomainScanner.Contracts.Options;
+using DomainScanner.Contracts.Options.RateLimiting;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Routing;
@@ -40,30 +41,30 @@ public sealed class RateLimitingEndpointMetadataTests
 
     [Theory]
     // AuthController
-    [InlineData("Auth", "Login", RateLimitingOptions.Login)]
-    [InlineData("Auth", "Logout", RateLimitingOptions.Auth)]
-    [InlineData("Auth", "GetCsrfToken", RateLimitingOptions.Auth)]
+    [InlineData("Auth", "Login", RateLimitingSettings.Policies.Login)]
+    [InlineData("Auth", "Logout", RateLimitingSettings.Policies.Auth)]
+    [InlineData("Auth", "GetCsrfToken", RateLimitingSettings.Policies.Auth)]
 
     // UsersController
-    [InlineData("Users", "GetAll", RateLimitingOptions.Read)]
-    [InlineData("Users", "Get", RateLimitingOptions.Read)]
-    [InlineData("Users", "GetMyDomains", RateLimitingOptions.Read)]
-    [InlineData("Users", "Register", RateLimitingOptions.Auth)]
-    [InlineData("Users", "Activate", RateLimitingOptions.Write)]
-    [InlineData("Users", "Deactivate", RateLimitingOptions.Write)]
-    [InlineData("Users", "Delete", RateLimitingOptions.Write)]
+    [InlineData("Users", "GetAll", RateLimitingSettings.Policies.Read)]
+    [InlineData("Users", "Get", RateLimitingSettings.Policies.Read)]
+    [InlineData("Users", "GetMyDomains", RateLimitingSettings.Policies.Read)]
+    [InlineData("Users", "Register", RateLimitingSettings.Policies.Auth)]
+    [InlineData("Users", "Activate", RateLimitingSettings.Policies.Write)]
+    [InlineData("Users", "Deactivate", RateLimitingSettings.Policies.Write)]
+    [InlineData("Users", "Delete", RateLimitingSettings.Policies.Write)]
 
     // DomainsController
-    [InlineData("Domains", "Get", RateLimitingOptions.Read)]
-    [InlineData("Domains", "GetHttpCheck", RateLimitingOptions.Scan)]
+    [InlineData("Domains", "Get", RateLimitingSettings.Policies.Read)]
+    [InlineData("Domains", "GetHttpCheck", RateLimitingSettings.Policies.Scan)]
     [InlineData(
         "Domains",
         "GetHttpCheckWithDetails",
-        RateLimitingOptions.Scan)]
-    [InlineData("Domains", "Update", RateLimitingOptions.Write)]
-    [InlineData("Domains", "Create", RateLimitingOptions.Write)]
-    [InlineData("Domains", "SendAndSave", RateLimitingOptions.Scan)]
-    [InlineData("Domains", "Delete", RateLimitingOptions.Write)]
+        RateLimitingSettings.Policies.Scan)]
+    [InlineData("Domains", "Update", RateLimitingSettings.Policies.Write)]
+    [InlineData("Domains", "Create", RateLimitingSettings.Policies.Write)]
+    [InlineData("Domains", "SendAndSave", RateLimitingSettings.Policies.Scan)]
+    [InlineData("Domains", "Delete", RateLimitingSettings.Policies.Write)]
     public async Task Endpoint_UsesExpectedRateLimitingPolicy(
         string controllerName,
         string actionName,

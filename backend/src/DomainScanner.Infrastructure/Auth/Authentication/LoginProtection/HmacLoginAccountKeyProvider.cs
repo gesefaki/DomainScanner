@@ -2,6 +2,7 @@
 using System.Text;
 using DomainScanner.Application.Abstractions.Auth;
 using DomainScanner.Contracts.Options;
+using DomainScanner.Contracts.Options.Login;
 using Microsoft.Extensions.Options;
 
 namespace DomainScanner.Infrastructure.Auth.Authentication.LoginProtection;

@@ -1,4 +1,4 @@
-﻿namespace DomainScanner.Contracts.Options;
+﻿namespace DomainScanner.Contracts.Options.Auth;
 
 public static class AuthCookieOptions
 {

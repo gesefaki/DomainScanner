@@ -1,5 +1,6 @@
 ﻿using DomainScanner.Application.Abstractions.Auth.Models;
 using DomainScanner.Contracts.Options;
+using DomainScanner.Contracts.Options.Login;
 using DomainScanner.Infrastructure.Auth.Authentication.LoginProtection;
 using DomainScanner.Infrastructure.IntegrationTests.Infrastructure;
 using FluentAssertions;

@@ -3,7 +3,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Threading.RateLimiting;
 using DomainScanner.Contracts.Models;
-using DomainScanner.Contracts.Options;
+using DomainScanner.Contracts.Options.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
 
 namespace DomainScanner.Api.Extensions;
@@ -24,12 +24,28 @@ public static class RateLimiterExtensions
     /// <param name="services">
     /// The service collection to which rate limiting services are added.
     /// </param>
+    /// <param name="configuration">
+    /// App configuration.
+    /// </param>
     /// <returns>
     /// The same service collection instance for further configuration.
     /// </returns>
-    public static IServiceCollection AddAndConfigureRateLimiter(
-        this IServiceCollection services)
+    public static IServiceCollection AddAndConfigureRateLimiter(this IServiceCollection services,
+        IConfiguration configuration)
     {
+        var section = configuration.GetRequiredSection(RateLimitingSettings.SectionName);
+
+        services.AddOptions<RateLimitingSettings>()
+            .Bind(section)
+            .Validate(
+                settings => settings.IsValid(),
+                "Rate limiting configuration is invalid.")
+            .ValidateOnStart();
+
+        var settings = section.Get<RateLimitingSettings>()
+                       ?? throw new InvalidOperationException(
+                           "Rate limiting configuration is missing.");
+        
         services.AddRateLimiter(options =>
         {
             // Reject model
@@ -47,63 +63,65 @@ public static class RateLimiterExtensions
                     context.Response.Headers.RetryAfter =
                         Math.Max(1, (int)Math.Ceiling(retryAfter.TotalSeconds))
                             .ToString(CultureInfo.InvariantCulture);
-
-                    var logger = context.RequestServices
-                        .GetRequiredService<ILoggerFactory>()
-                        .CreateLogger("RateLimiting");
-
-                    logger.LogWarning(
-                        "Rate limit exceeded for {Method} {Path}. TraceId: {TraceId}",
-                        context.Request.Method,
-                        context.Request.Path,
-                        context.TraceIdentifier
-                    );
-
-                    await context.Response.WriteAsJsonAsync(
-                        new ErrorResponse
-                        {
-                            StatusCode = StatusCodes.Status429TooManyRequests,
-                            Message = "Too many requests. Please try again later"
-                        }, cancellationToken);
                 }
+
+                var logger = context.RequestServices
+                    .GetRequiredService<ILoggerFactory>()
+                    .CreateLogger("RateLimiting");
+
+                logger.LogWarning(
+                    "Rate limit exceeded for {Method} {Path}. TraceId: {TraceId}",
+                    context.Request.Method,
+                    context.Request.Path,
+                    context.TraceIdentifier
+                );
+
+                await context.Response.WriteAsJsonAsync(
+                    new ErrorResponse
+                    {
+                        StatusCode = StatusCodes.Status429TooManyRequests,
+                        Message = "Too many requests. Please try again later."
+                    }, cancellationToken);
             };
 
             // Read
             options.AddPolicy(
-                RateLimitingOptions.Read,
+                RateLimitingSettings.Policies.Read,
                 context => CreateSlidingWindowPartition(
                     context,
-                    permitLimit: 100)
+                    settings.Read)
             );
 
             // Write
             options.AddPolicy(
-                RateLimitingOptions.Write,
+                RateLimitingSettings.Policies.Write,
                 context => CreateSlidingWindowPartition(
                     context,
-                    permitLimit: 20)
+                    settings.Write)
             );
 
             // Auth
             options.AddPolicy(
-                RateLimitingOptions.Auth,
+                RateLimitingSettings.Policies.Auth,
                 context => CreateSlidingWindowPartition(
                     context,
-                    permitLimit: 5)
+                    settings.Auth)
             );
 
             // Login
             options.AddPolicy(
-                RateLimitingOptions.Login,
+                RateLimitingSettings.Policies.Login,
                 context => CreateSlidingWindowPartition(
                     context,
-                    permitLimit: 10)
-            );
+                    settings.Login)
+                );
 
             // Scan
             options.AddPolicy(
-                RateLimitingOptions.Scan,
-                context => CreateSlidingWindowPartition(context, 15));
+                RateLimitingSettings.Policies.Scan,
+                context => CreateSlidingWindowPartition(
+                    context,
+                    settings.Scan));
 
             options.GlobalLimiter =
                 PartitionedRateLimiter.Create<HttpContext, string>(context =>
@@ -119,8 +137,8 @@ public static class RateLimiterExtensions
                         key,
                         _ => new ConcurrencyLimiterOptions
                         {
-                            PermitLimit = 5,
-                            QueueLimit = 0,
+                            PermitLimit = settings.ScanConcurrency.PermitLimit,
+                            QueueLimit = settings.ScanConcurrency.QueueLimit,
                             QueueProcessingOrder = QueueProcessingOrder.OldestFirst
                         })!;
                 });
@@ -147,7 +165,7 @@ public static class RateLimiterExtensions
             .Metadata
             .GetMetadata<EnableRateLimitingAttribute>();
 
-        return attribute?.PolicyName == RateLimitingOptions.Scan;
+        return attribute?.PolicyName == RateLimitingSettings.Policies.Scan;
     }
 
     /// <summary>
@@ -156,27 +174,21 @@ public static class RateLimiterExtensions
     /// <param name="context">
     /// The HTTP context used to resolve the client partition key.
     /// </param>
-    /// <param name="permitLimit">
-    /// The maximum number of requests permitted within the rate limiting window.
+    /// <param name="settings">
+    /// The configured sliding-window rate limiting settings.
     /// </param>
     /// <returns>
     /// A sliding-window rate limit partition associated with the current client.
     /// </returns>
     private static RateLimitPartition<string?> CreateSlidingWindowPartition(
         HttpContext context,
-        int permitLimit)
+        SlidingWindowSettings settings)
     {
         var partitionKey = GetClientPartitionKey(context);
 
         return RateLimitPartition.GetSlidingWindowLimiter(
             partitionKey,
-            _ => ConfigureFactory(
-                permitLimit: permitLimit,
-                minutes: 1,
-                segments: 6,
-                queueLimit: 0,
-                order: QueueProcessingOrder.OldestFirst
-            ));
+            _ => ConfigureFactory(settings));
     }
 
     /// <summary>
@@ -199,38 +211,22 @@ public static class RateLimiterExtensions
     /// <summary>
     /// Creates sliding-window rate limiter options.
     /// </summary>
-    /// <param name="permitLimit">
-    /// The maximum number of permits available within the configured window.
-    /// </param>
-    /// <param name="minutes">
-    /// The duration of the rate limiting window, in minutes.
-    /// </param>
-    /// <param name="segments">
-    /// The number of segments into which the window is divided.
-    /// </param>
-    /// <param name="queueLimit">
-    /// The maximum number of requests that may wait for a permit.
-    /// </param>
-    /// <param name="order">
-    /// The order in which queued requests are processed.
+    /// <param name="settings">
+    /// The configured sliding-window rate limiting settings.
     /// </param>
     /// <returns>
     /// Configured sliding-window rate limiter options.
     /// </returns>
     private static SlidingWindowRateLimiterOptions ConfigureFactory(
-        int permitLimit,
-        int minutes,
-        int segments,
-        int queueLimit,
-        QueueProcessingOrder order = QueueProcessingOrder.OldestFirst)
+        SlidingWindowSettings settings)
     {
         return new SlidingWindowRateLimiterOptions
         {
-            PermitLimit = permitLimit,
-            Window = TimeSpan.FromMinutes(minutes),
-            SegmentsPerWindow = segments,
-            QueueLimit = queueLimit,
-            QueueProcessingOrder = order
+            PermitLimit = settings.PermitLimit,
+            Window = TimeSpan.FromSeconds(settings.WindowSeconds),
+            SegmentsPerWindow = settings.SegmentsPerWindow,
+            QueueLimit = settings.QueueLimit,
+            QueueProcessingOrder = QueueProcessingOrder.OldestFirst
         };
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace DomainScanner.Contracts.Options;
+﻿namespace DomainScanner.Contracts.Options.Worker;
 
 /// <summary>
 /// Configuration options for the domain checks background worker. 

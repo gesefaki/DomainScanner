@@ -1,6 +1,7 @@
 using System.Text.Json;
 using DomainScanner.Application.Abstractions.Cache;
 using DomainScanner.Contracts.Options;
+using DomainScanner.Contracts.Options.Cache;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 

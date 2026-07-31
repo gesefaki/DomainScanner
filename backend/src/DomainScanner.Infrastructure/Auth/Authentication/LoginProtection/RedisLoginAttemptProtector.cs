@@ -1,6 +1,7 @@
 ﻿using DomainScanner.Application.Abstractions.Auth;
 using DomainScanner.Application.Abstractions.Auth.Models;
 using DomainScanner.Contracts.Options;
+using DomainScanner.Contracts.Options.Login;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 

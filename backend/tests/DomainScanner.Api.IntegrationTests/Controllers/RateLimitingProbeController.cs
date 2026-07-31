@@ -1,5 +1,6 @@
 ﻿using DomainScanner.Api.IntegrationTests.Infrastructure;
 using DomainScanner.Contracts.Options;
+using DomainScanner.Contracts.Options.RateLimiting;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -32,7 +33,7 @@ public sealed class RateLimitingProbeController : ControllerBase
     /// when the request is allowed.
     /// </returns>
     [HttpGet("write")]
-    [EnableRateLimiting(RateLimitingOptions.Write)]
+    [EnableRateLimiting(RateLimitingSettings.Policies.Write)]
     public IActionResult Write() => NoContent();
 
     
@@ -44,7 +45,7 @@ public sealed class RateLimitingProbeController : ControllerBase
     /// when the request is allowed.
     /// </returns>
     [HttpGet("scan")]
-    [EnableRateLimiting(RateLimitingOptions.Scan)]
+    [EnableRateLimiting(RateLimitingSettings.Policies.Scan)]
     public IActionResult Scan() => NoContent();
 
     /// <summary>
@@ -57,7 +58,7 @@ public sealed class RateLimitingProbeController : ControllerBase
     /// A <see cref="StatusCodes.Status204NoContent"/> response.
     /// </returns>
     [HttpGet("scan-concurrency")]
-    [EnableRateLimiting(RateLimitingOptions.Scan)]
+    [EnableRateLimiting(RateLimitingSettings.Policies.Scan)]
     public async Task<IActionResult> ScanConcurrency(CancellationToken cancellationToken)
     {
         _concurrencyProbe.NotifyEntered();

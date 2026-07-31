@@ -4,6 +4,8 @@ using DomainScanner.Application.Abstractions.Persistence;
 using DomainScanner.Application.Abstractions.Persistence.Common;
 using DomainScanner.Application.Abstractions.Scanners;
 using DomainScanner.Contracts.Options;
+using DomainScanner.Contracts.Options.Auth;
+using DomainScanner.Contracts.Options.Login;
 using DomainScanner.Infrastructure.Auth.Authentication;
 using DomainScanner.Infrastructure.Auth.Authentication.LoginProtection;
 using DomainScanner.Infrastructure.Auth.Authentication.Normalization;
