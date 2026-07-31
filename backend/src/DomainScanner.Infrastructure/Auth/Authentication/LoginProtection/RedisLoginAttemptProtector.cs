@@ -55,6 +55,12 @@ public class RedisLoginAttemptProtector : ILoginAttemptProtector
                 tonumber(redisTime[1]) * 1000 +
                 math.floor(tonumber(redisTime[2]) / 1000)
 
+            local failureWindowMs = tonumber(@failureWindowMs)
+            local lockoutThreshold = tonumber(@lockoutThreshold)
+            local baseLockoutMs = tonumber(@baseLockoutMs)
+            local maximumLockoutMs = tonumber(@maximumLockoutMs)
+            local escalationWindowMs = tonumber(@escalationWindowMs)
+
             local blockedUntil = tonumber(
                 redis.call('HGET', @stateKey, 'blocked_until_ms') or '0'
             )
@@ -74,14 +80,14 @@ public class RedisLoginAttemptProtector : ILoginAttemptProtector
             local failures =
                 redis.call('HINCRBY', @stateKey, 'failures', 1)
 
-            if failures < @lockoutThreshold then
+            if failures < lockoutThreshold then
                 local ttl = redis.call('PTTL', @stateKey)
 
                 if ttl < 0 then
                     redis.call(
                         'PEXPIRE',
                         @stateKey,
-                        @failureWindowMs
+                        failureWindowMs
                     )
                 end
 
@@ -93,22 +99,22 @@ public class RedisLoginAttemptProtector : ILoginAttemptProtector
             redis.call(
                 'PEXPIRE',
                 @strikesKey,
-                @escalationWindowMs
+                escalationWindowMs
             )
 
-            local lockoutMs = @baseLockoutMs
+            local lockoutMs = baseLockoutMs
 
             for strike = 2, strikes do
                 lockoutMs = lockoutMs * 2
 
-                if lockoutMs >= @maximumLockoutMs then
-                    lockoutMs = @maximumLockoutMs
+                if lockoutMs >= maximumLockoutMs then
+                    lockoutMs = maximumLockoutMs
                     break
                 end
             end
 
-            if lockoutMs > @maximumLockoutMs then
-                lockoutMs = @maximumLockoutMs
+            if lockoutMs > maximumLockoutMs then
+                lockoutMs = maximumLockoutMs
             end
 
             local newBlockedUntil = nowMs + lockoutMs
