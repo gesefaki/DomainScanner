@@ -34,10 +34,10 @@ public class RedisLoginAttemptProtector : ILoginAttemptProtector
         end
 
         local redisTime = redis.call('TIME')
-        local nowMs = 
+        local nowMs =
             tonumber(redisTime[1]) * 1000 +
-            math.floor(tonumber(redisTime[2]/1000)
-            
+            math.floor(tonumber(redisTime[2]) / 1000)
+
         local retryAfterMs = blockedUntil - nowMs
 
         if retryAfterMs > 0 then
@@ -50,33 +50,33 @@ public class RedisLoginAttemptProtector : ILoginAttemptProtector
     private static readonly LuaScript RegisterFailureScript =
         LuaScript.Prepare(
             """
-            local redisTime = redic.call('TIME')
-            local nowMs = 
-                toNumber(redisTime[1]) * 1000 + 
-                math.floor(tonumber(redisTime[2]) / 1000
-                
+            local redisTime = redis.call('TIME')
+            local nowMs =
+                tonumber(redisTime[1]) * 1000 +
+                math.floor(tonumber(redisTime[2]) / 1000)
+
             local blockedUntil = tonumber(
                 redis.call('HGET', @stateKey, 'blocked_until_ms') or '0'
             )
 
             local currentFailures = tonumber(
-                redis.call('HGET', @stateKey, 'failures' or '0'
+                redis.call('HGET', @stateKey, 'failures') or '0'
             )
 
             if blockedUntil > nowMs then
                 return {
-                    currentFailure,
+                    currentFailures,
                     1,
                     blockedUntil - nowMs
                 }
             end
 
-            local failrues =
+            local failures =
                 redis.call('HINCRBY', @stateKey, 'failures', 1)
-                
+
             if failures < @lockoutThreshold then
                 local ttl = redis.call('PTTL', @stateKey)
-                
+
                 if ttl < 0 then
                     redis.call(
                         'PEXPIRE',
@@ -99,30 +99,36 @@ public class RedisLoginAttemptProtector : ILoginAttemptProtector
             local lockoutMs = @baseLockoutMs
 
             for strike = 2, strikes do
-                lockout = lockoutMs * 2
-                
-                if lockoutMs > @maximumLockoutMs then
+                lockoutMs = lockoutMs * 2
+
+                if lockoutMs >= @maximumLockoutMs then
                     lockoutMs = @maximumLockoutMs
+                    break
                 end
-                
-                local newBlockedUntil = nowMs + lockoutMs
-                
-                redis.call(
-                    'HSET',
-                    @stateKey,
-                    'failures',
-                    failures,
-                    'blocked_until_ms',
-                    newBlockedUntil
-                )
-                
-                redis.call(
-                    'PEXPIRE',
-                    @stateKey,
-                    lockoutMs
-                )
-                
-                return { failures, 1, lockoutMs }
+            end
+
+            if lockoutMs > @maximumLockoutMs then
+                lockoutMs = @maximumLockoutMs
+            end
+
+            local newBlockedUntil = nowMs + lockoutMs
+
+            redis.call(
+                'HSET',
+                @stateKey,
+                'failures',
+                failures,
+                'blocked_until_ms',
+                newBlockedUntil
+            )
+
+            redis.call(
+                'PEXPIRE',
+                @stateKey,
+                lockoutMs
+            )
+
+            return { failures, 1, lockoutMs }
             """);
 
     /// <inheritdoc />
@@ -151,7 +157,7 @@ public class RedisLoginAttemptProtector : ILoginAttemptProtector
         return new LoginAttemptState(
             IsBlocked: isBlocked,
             FailedAttempts: failedAttempts,
-            RetryAfter: TimeSpan.FromMicroseconds(
+            RetryAfter: TimeSpan.FromMilliseconds(
                 Math.Max(0, retryAfterMs))
         );
     }
@@ -180,7 +186,7 @@ public class RedisLoginAttemptProtector : ILoginAttemptProtector
                     baseLockoutMs =
                         ToMilliseconds(_options.LockoutDurationMinutes),
 
-                    maxiumumLockoutMs =
+                    maximumLockoutMs =
                         ToMilliseconds(_options.MaximumLockoutMinutes),
 
                     escalationWindowMs =
@@ -249,7 +255,7 @@ public class RedisLoginAttemptProtector : ILoginAttemptProtector
             failedAttempts - _options.DelayStartAttempt;
 
         var delayMilliseconds =
-            _options.InitiaLDelayMilliseconds * Math.Pow(2, exponent);
+            _options.InitialDelayMilliseconds * Math.Pow(2, exponent);
 
         var cappedMilliseconds = Math.Min(
             delayMilliseconds,
@@ -290,6 +296,6 @@ public class RedisLoginAttemptProtector : ILoginAttemptProtector
     {
         return checked((long)TimeSpan
             .FromMinutes(minutes)
-            .TotalMicroseconds);
+            .TotalMilliseconds);
     }
 }
