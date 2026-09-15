@@ -10,7 +10,7 @@ using Microsoft.Extensions.Options;
 namespace DomainScanner.Worker.Jobs;
 
 /// <summary>
-/// Hangfire background job that permorms HTTP checks on a batch of domains. Implements <see cref="IDomainsCheckJob"/>.
+/// Hangfire background job that performs HTTP checks on a batch of domains. Implements <see cref="IDomainsCheckJob"/>.
 /// </summary>
 public class DomainChecksHangfireJob : IDomainsCheckJob
 {

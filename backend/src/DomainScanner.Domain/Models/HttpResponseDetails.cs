@@ -6,7 +6,8 @@
 public class HttpResponseDetails : HttpResponseObject
 {
     /// <summary>
-    /// Total time taken to receive the complete HTTP response.
+    /// Elapsed time in milliseconds until the final response headers are received, including redirects.
+    /// If the check fails, contains the elapsed time until the failure. Response body download time is excluded.
     /// </summary>
     public long ResponseTime { get; set; }
 
@@ -21,7 +22,7 @@ public class HttpResponseDetails : HttpResponseObject
     public ushort RedirectionsCount { get; set; }
 
     /// <summary>
-    /// Reason phrase accosiated with the HTTP status code.
+    /// Reason phrase accosted with the HTTP status code.
     /// </summary>
     public string ReasonPhrase { get; set; } = string.Empty;
 
@@ -31,9 +32,9 @@ public class HttpResponseDetails : HttpResponseObject
     public string ContentType { get; set; } = string.Empty;
 
     /// <summary>
-    /// Length of the response content in bytes.
+    /// Content-Length header value in bytes, or <see langword="null"/> if the header is absent.
     /// </summary>
-    public uint ContentLength { get; set; }
+    public long? ContentLength { get; set; }
 
     /// <summary>
     /// Any error message that occured during the HTTP request, or null if no error occurred.

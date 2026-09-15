@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace DomainScanner.Infrastructure.Extensions;
 
 /// <summary>
-/// Configurates <see cref="HttpClient"/> centrally for future use.
+/// Configure <see cref="HttpClient"/> centrally for future use.
 /// </summary>
 public static class HttpExtensions
 {
@@ -16,14 +16,20 @@ public static class HttpExtensions
     /// <returns>The <see cref="IServiceCollection"/> for chaining.</returns>
     public static IServiceCollection AddHttpExtensions(this IServiceCollection services)
     {
-        services.AddHttpClient<IHttpScanner, HttpService>(client =>
+        services.AddHttpClient("DomainScanner.Basic", client =>
         {
             client.Timeout = TimeSpan.FromSeconds(30);
-            client.DefaultRequestHeaders.Add("User-Agent", "DomainScanner/1.0");
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("DomainScanner/1.0");
+        })
+        .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+        {
+            AllowAutoRedirect = true,
+            MaxAutomaticRedirections = 5,
+            UseCookies = false,
         });
 
         services.AddScoped<IHttpScanner, HttpService>();
-
+        
         return services;
     }
 }

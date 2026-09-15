@@ -98,7 +98,7 @@ public sealed class ExceptionHandlerMiddleware
             },
             LoginTemporarilyBlockedException => new ErrorResponse
             {
-                StatusCode = StatusCodes.Status429TooManyRequests,
+                StatusCode = 429,
                 Message = "Login is temporarily blocked. Please try again later."
             },
             LoginProtectionUnavailableException => new ErrorResponse()

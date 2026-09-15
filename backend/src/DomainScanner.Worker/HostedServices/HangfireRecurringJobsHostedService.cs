@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 namespace DomainScanner.Worker.HostedServices;
 
 /// <summary>
-/// Hosted service that registers and manages Hangfire recuuring jobs for domain checks. Implements <see cref="IHostedService"/>. 
+/// Hosted service that registers and manages Hangfire recurring jobs for domain checks. Implements <see cref="IHostedService"/>. 
 /// </summary>
 public class HangfireRecurringJobsHostedService : IHostedService
 {

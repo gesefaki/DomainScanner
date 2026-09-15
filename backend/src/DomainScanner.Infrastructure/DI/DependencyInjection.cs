@@ -3,7 +3,6 @@ using DomainScanner.Application.Abstractions.Cache;
 using DomainScanner.Application.Abstractions.Persistence;
 using DomainScanner.Application.Abstractions.Persistence.Common;
 using DomainScanner.Application.Abstractions.Scanners;
-using DomainScanner.Contracts.Options;
 using DomainScanner.Contracts.Options.Auth;
 using DomainScanner.Contracts.Options.Login;
 using DomainScanner.Infrastructure.Auth.Authentication;

@@ -17,7 +17,7 @@ public static class DatabaseExtensions
     /// <param name="app">The <see cref="WebApplication"/> instance to which the migrations will apply.</param>
     public static async Task ApplyMigrationsAsync(this WebApplication app)
     {
-        using var scope = app.Services.CreateAsyncScope();
+        await using var scope = app.Services.CreateAsyncScope();
         var context = scope.ServiceProvider.GetRequiredService<ScannerDbContext>();
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<ScannerDbContext>>();
 
@@ -25,9 +25,11 @@ public static class DatabaseExtensions
         {
             var pendingMigrations = await context.Database.GetPendingMigrationsAsync();
 
-            if (pendingMigrations.Any())
+            var migrations = pendingMigrations as string[] ?? pendingMigrations.ToArray();
+            
+            if (migrations.Length != 0)
             {
-                logger.LogInformation("Applying {count} migrations...", pendingMigrations.Count());
+                logger.LogInformation("Applying {count} migrations...", migrations.Length);
                 await context.Database.MigrateAsync();
             }
             else
