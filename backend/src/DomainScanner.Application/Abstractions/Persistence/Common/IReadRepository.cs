@@ -28,6 +28,16 @@ public interface IReadRepository<TEntity, TId>
     Task<IEnumerable<TEntity>> GetAllAsync(CancellationToken ct);
 
     /// <summary>
+    /// Retrieves all entity identifiers ordered by creation date, then by identifier, in ascending order.
+    /// </summary>
+    /// <param name="ct">The cancellation token for the query.</param>
+    /// <returns>
+    /// A task whose result is a read-only list of <see cref="BaseEntity.Id"/> values,
+    /// or an empty list when no entities exist.
+    /// </returns>
+    Task<IReadOnlyList<Guid>> GetIdsAsync(CancellationToken ct);
+
+    /// <summary>
     /// Retrieves all entities that match the specified predicate.
     /// </summary>
     /// <param name="predicate">The expression to filter entities.</param>

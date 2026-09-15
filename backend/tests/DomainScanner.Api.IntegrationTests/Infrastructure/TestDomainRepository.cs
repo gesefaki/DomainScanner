@@ -49,6 +49,15 @@ internal sealed class TestDomainRepository(IEnumerable<DomainEntity> domains)
     public Task<IEnumerable<DomainEntity>> GetAllAsync(CancellationToken ct) =>
         throw new NotSupportedException();
 
+    /// <summary>
+    /// Identifier queries are not supported by this test repository.
+    /// </summary>
+    /// <param name="ct">The cancellation token.</param>
+    /// <returns>This method always throws and does not return a task.</returns>
+    /// <exception cref="NotSupportedException">Always thrown because identifier queries are not implemented.</exception>
+    public Task<IReadOnlyList<Guid>> GetIdsAsync(CancellationToken ct) =>
+        throw new NotSupportedException();
+
     public Task<IEnumerable<DomainEntity>> GetBatchAsync(
         int batchSize,
         CancellationToken ct) =>

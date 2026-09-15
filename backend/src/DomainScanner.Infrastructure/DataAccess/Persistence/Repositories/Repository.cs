@@ -16,8 +16,8 @@ public class Repository<TEntity, TId> : IRepository<TEntity, TId>
     where TEntity : BaseEntity
     where TId : struct
 {
-private readonly ScannerDbContext _context;
-    protected readonly DbSet<TEntity> DbSet;
+    private readonly ScannerDbContext _context;
+    private readonly DbSet<TEntity> _dbSet;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Repository{TEntity, TId}"/> class. 
@@ -26,7 +26,7 @@ private readonly ScannerDbContext _context;
     public Repository(ScannerDbContext context)
     {
         _context = context;
-        DbSet = _context.Set<TEntity>();
+        _dbSet = _context.Set<TEntity>();
     }
 
     /// <inheritdoc />
@@ -34,19 +34,35 @@ private readonly ScannerDbContext _context;
         Expression<Func<TEntity, bool>> predicate,
         CancellationToken ct)
     {
-        return await DbSet.FirstOrDefaultAsync(predicate, ct);
+        return await _dbSet.FirstOrDefaultAsync(predicate, ct);
     }
 
     /// <inheritdoc />
     public virtual async Task<IEnumerable<TEntity>> GetAllAsync(CancellationToken ct)
     {
-        return await DbSet.AsNoTracking().ToListAsync(ct);
+        return await _dbSet.AsNoTracking().ToListAsync(ct);
+    }
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// Projects only entity identifiers without materializing or tracking entities.
+    /// Automatically included navigation properties are excluded from the query.
+    /// </remarks>
+    public virtual async Task<IReadOnlyList<Guid>> GetIdsAsync(CancellationToken ct)
+    {
+        return await _dbSet
+            .AsNoTracking()
+            .IgnoreAutoIncludes()
+            .OrderBy(e => e.CreatedAt)
+            .ThenBy(e => e.Id)
+            .Select(e => e.Id)
+            .ToListAsync(ct);
     }
 
     /// <inheritdoc />
     public virtual async Task<IEnumerable<TEntity>> GetBatchAsync(int batchSize, CancellationToken ct)
     {
-        return await DbSet
+        return await _dbSet
             .IgnoreAutoIncludes()
             .OrderBy(entity => entity.CreatedAt)
             .Take(batchSize)
@@ -58,13 +74,13 @@ private readonly ScannerDbContext _context;
         Expression<Func<TEntity, bool>> predicate,
         CancellationToken ct)
     {
-        return await DbSet.Where(predicate).ToListAsync(ct);
+        return await _dbSet.Where(predicate).ToListAsync(ct);
     }
 
     /// <inheritdoc />
     public virtual async Task<TEntity?> FindAsync(TId id, CancellationToken ct)
     {
-        return await DbSet.FindAsync([id], ct);
+        return await _dbSet.FindAsync([id], ct);
     }
 
     /// <inheritdoc />
@@ -72,7 +88,7 @@ private readonly ScannerDbContext _context;
         Expression<Func<TEntity, bool>> predicate,
         CancellationToken ct)
     {
-        return await DbSet.AnyAsync(predicate, ct);
+        return await _dbSet.AnyAsync(predicate, ct);
     }
 
     /// <inheritdoc />
@@ -80,7 +96,7 @@ private readonly ScannerDbContext _context;
     {
         ArgumentNullException.ThrowIfNull(entity);
 
-        var result = await DbSet.AddAsync(entity, ct);
+        var result = await _dbSet.AddAsync(entity, ct);
         return result.Entity;
     }
 
@@ -89,7 +105,7 @@ private readonly ScannerDbContext _context;
     {
         ArgumentNullException.ThrowIfNull(entity);
 
-        var result = DbSet.Update(entity);
+        var result = _dbSet.Update(entity);
         return result.Entity;
     }
 
@@ -98,6 +114,6 @@ private readonly ScannerDbContext _context;
     {
         ArgumentNullException.ThrowIfNull(entity);
 
-        DbSet.Remove(entity);
+        _dbSet.Remove(entity);
     }
 }

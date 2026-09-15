@@ -38,10 +38,14 @@ public sealed class DomainChecksWorkerOptions
     public string QueueName { get; set; } = "domain-checks";
 
     /// <summary>
-    /// Number of domains to process in each batch.
+    /// Maximum number of domain identifiers in each batch processed sequentially by the worker.
     /// </summary>
     /// <value>
-    /// <c>int</c> representing the batch size. Default is 30.
+    /// A positive integer representing the batch size. Default is 30.
     /// </value>
+    /// <remarks>
+    /// All identifiers loaded for a job run are processed; this value does not limit the total
+    /// number of domains checked per run. Each domain check uses a separate dependency injection scope.
+    /// </remarks>
     public int BatchSize { get; set; } = 30;
 }
