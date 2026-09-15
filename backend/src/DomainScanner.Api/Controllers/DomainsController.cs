@@ -115,12 +115,24 @@ public class DomainsController : Controller
     /// <returns>Single <see cref="DomainResponse"/>.</returns>
     [EnableRateLimiting(RateLimitingSettings.Policies.Scan)]
     [HttpPost("{id:guid}/send-save")]
-    public async Task<ActionResult<DomainResponse>> SendAndSave(Guid id, CancellationToken ct)
+    public async Task<ActionResult<HttpResponse>>
+        SendAndSave(Guid id, CancellationToken ct)
     {
-        var check = await _sender.Send(new HttpSendAndSaveCommand(id), ct);
-        return Ok(check);
+        var check = await _sender.Send(
+            new HttpSendAndSaveCommand(id),
+            ct);
+
+        return Ok(
+            new HttpResponse(
+                check.Address,
+                check.StatusCode,
+                check.IsActive,
+                check.CreatedAt
+            )
+        );
     }
     
+
     /// <summary>
     /// Deletes DomainEntity from database. Not soft delete.
     /// </summary>
