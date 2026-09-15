@@ -37,7 +37,7 @@ public class HttpSendAndSaveCommandHandlerTests
     }
 
     /// <summary>
-    /// Should send HTTP request, save check result and update domain when domain exists.
+    /// Sends an HTTP request, saves a result linked by DomainId, and updates the domain and its history.
     /// </summary>
     [Fact]
     public async Task Handle_WhenDomainIsExists_SendHttpAndSaveAndReturnsResponse()
@@ -92,13 +92,18 @@ public class HttpSendAndSaveCommandHandlerTests
         result.Should().NotBeNull();
         result.Address.Should().Be(FakeDomainAddress);
         result.StatusCode.Should().Be(200);
+        result.DomainId.Should().Be(_fakeDomainId);
+        result.Should().BeSameAs(checkResult);
+        domain.CheckResults.Should().ContainSingle().Which.Should().BeSameAs(result);
         
         checkResult!.Address.Should().Be(FakeDomainAddress);
         checkResult.StatusCode.Should().Be(200);
         checkResult.IsActive.Should().BeTrue();
+        checkResult.DomainId.Should().Be(_fakeDomainId);
 
         _checksWriteRepository.Verify(x => x.CreateAsync(It.Is<DomainCheckResult>(cr =>
                 cr.Address == FakeDomainAddress &&
+                cr.DomainId == _fakeDomainId &&
                 cr.StatusCode == 200 &&
                 cr.IsActive == true &&
                 cr.CreatedAt > DateTime.MinValue),

@@ -53,7 +53,8 @@ public class HttpSendAndSaveCommandHandler : IRequestHandler<HttpSendAndSaveComm
             Address = uri!.ToString(),
             StatusCode = response.StatusCode,
             IsActive = response.IsSuccess,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            DomainId = domain.Id
         };
         
         await _checksWriteRepository.CreateAsync(check, ct);

@@ -8,4 +8,4 @@ namespace DomainScanner.Application.Handlers.Domains.Queries.GetDomainById;
 /// Query to retrieve single <see cref="DomainResponse"/> by its identifier.  
 /// </summary>
 /// <param name="Id">Domain unique identifier.</param>
-public record GetDomainByIdQuery(Guid Id) : IRequest<DomainResponse>, ICacheableQuery;
+public record GetDomainByIdQuery(Guid Id) : IRequest<DomainResponse>, INeedAuthentication;
