@@ -12,7 +12,7 @@ using DomainScanner.Infrastructure.Auth.Hashing;
 using DomainScanner.Infrastructure.DataAccess.Cache;
 using DomainScanner.Infrastructure.DataAccess.Persistence.Context;
 using DomainScanner.Infrastructure.DataAccess.Persistence.Repositories;
-using DomainScanner.Infrastructure.Extensions;
+using DomainScanner.Infrastructure.DI.Extensions;
 using DomainScanner.Infrastructure.Protocols.HTTP;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;

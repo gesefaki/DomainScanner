@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace DomainScanner.Infrastructure.Extensions;
+namespace DomainScanner.Infrastructure.DI.Extensions;
 
 /// <summary>
 /// Applies extensions associated with the database used by the DbContext instance.
