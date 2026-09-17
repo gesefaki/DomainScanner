@@ -1,8 +1,8 @@
 ﻿using DomainScanner.Application.Abstractions.Persistence.Common;
 using DomainScanner.Application.Abstractions.Scanners;
+using DomainScanner.Application.Abstractions.Auth;
 using DomainScanner.Application.Handlers.Domains.Queries.GetHttpDetails;
 using DomainScanner.Application.UnitTests.TestData.Domains;
-using DomainScanner.Application.UnitTests.TestData.Mocks;
 using DomainScanner.Contracts.Exceptions.Domains;
 using DomainScanner.Domain.Entities;
 using DomainScanner.Domain.Models;
@@ -13,7 +13,7 @@ namespace DomainScanner.Application.UnitTests.Handlers.Domains.Queries;
 
 public class GetHttpDetailsQueryHandlerTests
 {
-    private readonly Mock<IReadRepository<DomainEntity, Guid>> _repository = new();
+    private readonly Mock<IOwnedDomainProvider> _ownedDomains = new();
     private readonly Mock<IHttpScanner> _http = new();
 
     private readonly GetHttpDetailsQueryHandler _handler;
@@ -24,7 +24,7 @@ public class GetHttpDetailsQueryHandlerTests
     public GetHttpDetailsQueryHandlerTests()
     {
         _handler = new GetHttpDetailsQueryHandler(
-            _repository.Object,
+            _ownedDomains.Object,
             _http.Object
             );
     }
@@ -47,7 +47,11 @@ public class GetHttpDetailsQueryHandlerTests
             IsSuccess = true
         };
 
-        _repository.SetupFindAsync(_fakeDomainId, domain);
+        _ownedDomains
+            .Setup(x => x.GetRequiredAsync(
+                _fakeDomainId,
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(domain);
         _http
             .Setup(x => x.GetHttpWithDetailsAsync(
                 It.Is<Uri>(uri => uri.AbsoluteUri == FakeDomainAddress),
@@ -70,14 +74,19 @@ public class GetHttpDetailsQueryHandlerTests
         // Arrange
         var query = new GetHttpDetailsQuery(_fakeDomainId);
 
-        _repository.SetupFindAsync(_fakeDomainId, (DomainEntity?)null);
+        _ownedDomains
+            .Setup(x => x.GetRequiredAsync(
+                _fakeDomainId,
+                It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new DomainNotFoundException(_fakeDomainId));
 
-        // Act + Assert
+        // Act
         var action = () => _handler.Handle(
             query,
             CancellationToken.None
         );
 
+        // Assert
         await action.Should().ThrowAsync<DomainNotFoundException>();
 
         _http.Verify(x => x.GetHttpWithDetailsAsync(

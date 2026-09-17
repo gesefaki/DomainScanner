@@ -1,19 +1,14 @@
 ﻿using DomainScanner.Application.Handlers.Domains.Commands.CreateDomain;
 using DomainScanner.Application.Handlers.Domains.Commands.DeleteDomain;
-using DomainScanner.Application.Handlers.Domains.Commands.HttpSendAndSave;
+using DomainScanner.Application.Handlers.Domains.Commands.HttpSendAndSaveOwned;
 using DomainScanner.Application.Handlers.Domains.Commands.UpdateDomain;
-using DomainScanner.Application.Handlers.Domains.Queries.GetAllDomains;
 using DomainScanner.Application.Handlers.Domains.Queries.GetDomainById;
 using DomainScanner.Application.Handlers.Domains.Queries.GetHttpDetails;
 using DomainScanner.Application.Handlers.Domains.Queries.GetHttpResponse;
 using DomainScanner.Contracts.DTOs.Domains.Requests;
 using DomainScanner.Contracts.DTOs.Domains.Responses;
-using DomainScanner.Contracts.Options;
 using DomainScanner.Contracts.Options.RateLimiting;
-using Hangfire;
-using Hangfire.Storage;
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using HttpResponse = DomainScanner.Contracts.DTOs.HTTPs.Responses.HttpResponse;
@@ -108,18 +103,18 @@ public class DomainsController : Controller
     }
 
     /// <summary>
-    /// Sends an HTTP request to the domain and saves the result in database.
+    /// Sends an HTTP request to a domain owned by the current authenticated user
+    /// and saves the result in the database.
     /// </summary>
     /// <param name="id">DomainEntity unique identifier.</param>
     /// <param name="ct">Cancellation token.</param>
-    /// <returns>Single <see cref="DomainResponse"/>.</returns>
+    /// <returns>An <see cref="HttpResponse"/> representing the persisted check result.</returns>
     [EnableRateLimiting(RateLimitingSettings.Policies.Scan)]
     [HttpPost("{id:guid}/send-save")]
-    public async Task<ActionResult<HttpResponse>>
-        SendAndSave(Guid id, CancellationToken ct)
+    public async Task<ActionResult<HttpResponse>> SendAndSave(Guid id, CancellationToken ct)
     {
         var check = await _sender.Send(
-            new HttpSendAndSaveCommand(id),
+            new HttpSendAndSaveOwnedCommand(id),
             ct);
 
         return Ok(

@@ -118,7 +118,7 @@ public class RegisLoginAttemptProtectorTests : IClassFixture<RedisFixture>
 
         LoginFailureResult? failureResult = null;
 
-        // Act + Assert
+        // Act
         for (var attempt = 1; attempt <= _options.LockoutThreshold; attempt++)
         {
             failureResult = await protector.RegisterFailureAsync(
@@ -127,6 +127,7 @@ public class RegisLoginAttemptProtectorTests : IClassFixture<RedisFixture>
             );
         }
 
+        // Assert
         failureResult.Should().NotBeNull();
         failureResult.FailedAttempts.Should().Be(5);
         failureResult.IsBlocked.Should().BeTrue();
@@ -238,6 +239,7 @@ public class RegisLoginAttemptProtectorTests : IClassFixture<RedisFixture>
                     CancellationToken.None);
         }
 
+        // Assert
         secondLockout!.RetryAfter.Should().BeCloseTo(
             TimeSpan.FromMinutes(_options.LockoutDurationMinutes),
             TimeSpan.FromSeconds(1)

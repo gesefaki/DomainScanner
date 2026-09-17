@@ -19,34 +19,43 @@ public sealed class GetMyDomainsEndpointTests(
     [Fact]
     public async Task GetMyDomains_WithoutAccessToken_ReturnsUnauthorized()
     {
+        // Arrange
         using var client = factory.CreateClient();
 
+        // Act
         var response = await client.GetAsync("/api/v1/users/me/domains");
 
+        // Assert
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     [Fact]
     public async Task GetMyDomains_ReturnsOnlyDomainsOwnedByJwtSubject()
     {
+        // Arrange
+        var userAId = DomainScannerApiFactory.UserAId;
+        var userBId = DomainScannerApiFactory.UserBId;
+
+        // Act
         var domainsOfUserA = await GetMyDomainsAsync(
-            DomainScannerApiFactory.UserAId);
+            userAId);
 
         var domainsOfUserB = await GetMyDomainsAsync(
-            DomainScannerApiFactory.UserBId);
+            userBId);
 
+        // Assert
         Assert.Equal(2, domainsOfUserA.Count);
         Assert.All(
             domainsOfUserA,
             domain => Assert.Equal(
-                DomainScannerApiFactory.UserAId,
+                userAId,
                 domain.UserId));
 
         Assert.Single(domainsOfUserB);
         Assert.All(
             domainsOfUserB,
             domain => Assert.Equal(
-                DomainScannerApiFactory.UserBId,
+                userBId,
                 domain.UserId));
 
         Assert.DoesNotContain(

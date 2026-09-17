@@ -14,6 +14,7 @@ namespace DomainScanner.Api.Controllers;
 /// <summary>
 /// REST API controller handles auth operations.
 /// </summary>
+[Authorize]
 [Route("api/v1/[controller]")]
 [ApiController]
 public class AuthController : ControllerBase

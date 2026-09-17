@@ -2,7 +2,10 @@ extern alias DomainScannerApi;
 using System.Net.Http.Headers;
 using DomainScanner.Api.IntegrationTests.Controllers;
 using DomainScanner.Application.Abstractions.Auth;
+using DomainScanner.Application.Abstractions.Persistence;
 using DomainScanner.Application.Abstractions.Persistence.Common;
+using DomainScanner.Application.Abstractions.Scanners;
+using DomainScanner.Domain.Common;
 using DomainScanner.Domain.Entities;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
@@ -81,12 +84,12 @@ public sealed class DomainScannerApiFactory : WebApplicationFactory<ApiProgram>
                 );
 
             services.RemoveAll<IHostedService>();
-            services.RemoveAll<IReadRepository<DomainEntity, Guid>>();
 
             services.AddSingleton<ScanConcurrencyProbe>();
 
-            services.AddSingleton<IReadRepository<DomainEntity, Guid>>(
-                new TestDomainRepository(
+            ReplaceRepository(
+                services,
+                new TestRepository<DomainEntity>(
                 [
                     CreateDomain(
                         "aaaaaaaa-0000-0000-0000-000000000001",
@@ -101,7 +104,42 @@ public sealed class DomainScannerApiFactory : WebApplicationFactory<ApiProgram>
                         "b-one.example",
                         UserBId)
                 ]));
+
+            ReplaceRepository(
+                services,
+                new TestRepository<User>());
+
+            ReplaceRepository(
+                services,
+                new TestRepository<DomainCheckResult>());
+
+            services.RemoveAll<IUnitOfWork>();
+            services.AddSingleton<IUnitOfWork, TestUnitOfWork>();
+
+            services.RemoveAll<IHttpScanner>();
+            services.AddSingleton<IHttpScanner, TestHttpScanner>();
         });
+    }
+
+    /// <summary>
+    /// Replaces all repository interfaces for an entity type with one shared
+    /// in-memory repository instance.
+    /// </summary>
+    /// <typeparam name="TEntity">The entity type stored by the repository.</typeparam>
+    /// <param name="services">The test host service collection.</param>
+    /// <param name="repository">The repository instance used by the test host.</param>
+    private static void ReplaceRepository<TEntity>(
+        IServiceCollection services,
+        TestRepository<TEntity> repository)
+        where TEntity : BaseEntity
+    {
+        services.RemoveAll<IRepository<TEntity, Guid>>();
+        services.RemoveAll<IReadRepository<TEntity, Guid>>();
+        services.RemoveAll<IWriteRepository<TEntity, Guid>>();
+
+        services.AddSingleton<IRepository<TEntity, Guid>>(repository);
+        services.AddSingleton<IReadRepository<TEntity, Guid>>(repository);
+        services.AddSingleton<IWriteRepository<TEntity, Guid>>(repository);
     }
 
     /// <summary>

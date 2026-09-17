@@ -1,10 +1,12 @@
-﻿using DomainScanner.Domain.Models;
+﻿using DomainScanner.Application.Pipelines.Interfaces;
+using DomainScanner.Domain.Models;
 using MediatR;
 
 namespace DomainScanner.Application.Handlers.Domains.Queries.GetHttpDetails;
 
 /// <summary>
-/// Query to retrieve base HTTP response from linked DomainEntity
+/// Query to retrieve a detailed HTTP response for a domain owned by the current authenticated user.
 /// </summary>
-/// <param name="Id">DomainEntity unique identifier.</param>
-public record GetHttpDetailsQuery(Guid Id) : IRequest<HttpResponseDetails>;
+/// <param name="Id">Unique identifier of the domain to check.</param>
+public record GetHttpDetailsQuery(Guid Id)
+    : IRequest<HttpResponseDetails>, INeedAuthentication;

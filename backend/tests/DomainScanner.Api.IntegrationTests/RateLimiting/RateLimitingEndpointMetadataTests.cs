@@ -46,7 +46,6 @@ public sealed class RateLimitingEndpointMetadataTests
     [InlineData("Auth", "GetCsrfToken", RateLimitingSettings.Policies.Auth)]
 
     // UsersController
-    [InlineData("Users", "GetAll", RateLimitingSettings.Policies.Read)]
     [InlineData("Users", "Get", RateLimitingSettings.Policies.Read)]
     [InlineData("Users", "GetMyDomains", RateLimitingSettings.Policies.Read)]
     [InlineData("Users", "Register", RateLimitingSettings.Policies.Auth)]
@@ -75,6 +74,7 @@ public sealed class RateLimitingEndpointMetadataTests
 
         var endpointDataSource = factory.Services.GetRequiredService<EndpointDataSource>();
 
+        // Act
         var matchingEndpoints = endpointDataSource.Endpoints
             .Where(endpoint =>
             {

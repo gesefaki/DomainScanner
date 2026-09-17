@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using DomainScanner.Application.Abstractions.Persistence;
+using DomainScanner.Application.Abstractions.Auth;
 using DomainScanner.Application.Handlers.Domains.Commands.UpdateDomain;
 using DomainScanner.Application.UnitTests.TestData.Domains;
-using DomainScanner.Application.UnitTests.TestData.Mocks;
 using DomainScanner.Contracts.DTOs.Domains.Responses;
 using DomainScanner.Contracts.Exceptions.Domains;
 using DomainScanner.Domain.Entities;
@@ -17,6 +17,7 @@ namespace DomainScanner.Application.UnitTests.Handlers.Domains.Commands;
 public class UpdateDomainCommandHandlerTests
 {
     private readonly Mock<IRepository<DomainEntity, Guid>> _repository = new();
+    private readonly Mock<IOwnedDomainProvider> _ownedDomains = new();
     private readonly Mock<IMapper> _mapper = new();
     private readonly UpdateDomainCommandHandler _handler;
 
@@ -26,6 +27,7 @@ public class UpdateDomainCommandHandlerTests
     public UpdateDomainCommandHandlerTests()
     {
         _handler = new UpdateDomainCommandHandler(
+            _ownedDomains.Object,
             _repository.Object,
             _mapper.Object);
     }
@@ -51,7 +53,11 @@ public class UpdateDomainCommandHandlerTests
 
         var expected = new DomainResponseBuilder().Build(domain);
 
-        _repository.SetupFindAsync(_fakeDomainId, domain);
+        _ownedDomains
+            .Setup(x => x.GetRequiredAsync(
+                _fakeDomainId,
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(domain);
 
         _repository
             .Setup(x => x.Update(domain))
@@ -87,7 +93,11 @@ public class UpdateDomainCommandHandlerTests
             .BuildUpdateCommand();
         
         // Act
-        _repository.SetupFindAsync(_fakeDomainId, (DomainEntity?)null);
+        _ownedDomains
+            .Setup(x => x.GetRequiredAsync(
+                _fakeDomainId,
+                It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new DomainNotFoundException(_fakeDomainId));
 
         var action = () => _handler.Handle(
             command,

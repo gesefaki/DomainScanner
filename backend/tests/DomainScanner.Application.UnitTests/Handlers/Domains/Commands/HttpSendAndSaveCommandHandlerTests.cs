@@ -1,13 +1,10 @@
-﻿using DomainScanner.Application.Abstractions.Persistence;
-using DomainScanner.Application.Abstractions.Persistence.Common;
+using DomainScanner.Application.Abstractions.Persistence;
 using DomainScanner.Application.Abstractions.Scanners;
 using DomainScanner.Application.Handlers.Domains.Commands.HttpSendAndSave;
 using DomainScanner.Application.UnitTests.TestData.Domains;
 using DomainScanner.Application.UnitTests.TestData.Mocks;
 using DomainScanner.Contracts.Exceptions.Domains;
-using DomainScanner.Contracts.Helpers;
 using DomainScanner.Domain.Entities;
-using DomainScanner.Domain.Models;
 using FluentAssertions;
 using Moq;
 
@@ -19,139 +16,76 @@ namespace DomainScanner.Application.UnitTests.Handlers.Domains.Commands;
 public class HttpSendAndSaveCommandHandlerTests
 {
     private readonly Mock<IRepository<DomainEntity, Guid>> _domainsRepository = new();
-    private readonly Mock<IWriteRepository<DomainCheckResult, Guid>> _checksWriteRepository = new();
-    private readonly Mock<IHttpScanner> _http = new();
-
+    private readonly Mock<IDomainCheckExecutor> _executor = new();
     private readonly HttpSendAndSaveCommandHandler _handler;
 
-    private readonly Guid _fakeDomainId = Guid.NewGuid();
-    private const string FakeDomainAddress = "https://example.com/";
+    private readonly Guid _domainId = Guid.NewGuid();
 
     public HttpSendAndSaveCommandHandlerTests()
     {
         _handler = new HttpSendAndSaveCommandHandler(
             _domainsRepository.Object,
-            _checksWriteRepository.Object,
-            _http.Object
-        );
+            _executor.Object);
     }
 
     /// <summary>
-    /// Sends an HTTP request, saves a result linked by DomainId, and updates the domain and its history.
+    /// An existing domain is passed to the shared check executor and its result is returned.
     /// </summary>
     [Fact]
-    public async Task Handle_WhenDomainIsExists_SendHttpAndSaveAndReturnsResponse()
+    public async Task Handle_WhenDomainExists_DelegatesToExecutorAndReturnsResult()
     {
         // Arrange
-
-        // Primitives
-        var command = new HttpSendAndSaveCommand(_fakeDomainId);
-
+        var command = new HttpSendAndSaveCommand(_domainId);
         var domain = new DomainBuilder()
-            .WithId(_fakeDomainId)
-            .WithAddress(FakeDomainAddress)
-            .Inactive()
+            .WithId(_domainId)
             .Build();
-
-        var uri = DomainsHelper.AddressToUri(domain);
-
-        var expectedHttpResponse = new HttpResponseObject
+        var expected = new DomainCheckResult
         {
-            Address = FakeDomainAddress,
+            Id = Guid.NewGuid(),
+            DomainId = _domainId,
+            Address = domain.Address,
             StatusCode = 200,
-            IsSuccess = true
+            IsActive = true
         };
 
-        DomainCheckResult? checkResult = null;
-
-        // Repositories
-
-        _domainsRepository.SetupFindAsync(_fakeDomainId, domain);
-
-        _domainsRepository
-            .Setup(x => x.Update(domain))
-            .Returns(domain);
-
-        _checksWriteRepository
-            .Setup(x => x.CreateAsync(It.IsAny<DomainCheckResult>(), It.IsAny<CancellationToken>()))
-            .Callback<DomainCheckResult, CancellationToken>((check, _) => checkResult = check)
-            .ReturnsAsync((DomainCheckResult check, CancellationToken _) => check);
-
-        // HTTP
-        _http
-            .Setup(x => x.GetHttpResponseAsync(uri!, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(expectedHttpResponse);
+        _domainsRepository.SetupFindAsync(_domainId, domain);
+        _executor
+            .Setup(x => x.ExecuteAndSaveAsync(
+                domain,
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(expected);
 
         // Act
         var result = await _handler.Handle(
             command,
-            CancellationToken.None
-        );
+            CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Address.Should().Be(FakeDomainAddress);
-        result.StatusCode.Should().Be(200);
-        result.DomainId.Should().Be(_fakeDomainId);
-        result.Should().BeSameAs(checkResult);
-        domain.CheckResults.Should().ContainSingle().Which.Should().BeSameAs(result);
-        
-        checkResult!.Address.Should().Be(FakeDomainAddress);
-        checkResult.StatusCode.Should().Be(200);
-        checkResult.IsActive.Should().BeTrue();
-        checkResult.DomainId.Should().Be(_fakeDomainId);
-
-        _checksWriteRepository.Verify(x => x.CreateAsync(It.Is<DomainCheckResult>(cr =>
-                cr.Address == FakeDomainAddress &&
-                cr.DomainId == _fakeDomainId &&
-                cr.StatusCode == 200 &&
-                cr.IsActive == true &&
-                cr.CreatedAt > DateTime.MinValue),
-            It.IsAny<CancellationToken>())
-        );
-
-        _domainsRepository.Verify(x => x.Update(
-                It.Is<DomainEntity>(d =>
-                    d.Id == _fakeDomainId &&
-                    d.IsActive == true &&
-                    d.UpdatedAt > DateTime.MinValue)),
-            Times.Once);
-
-        _http.Verify(x => x.GetHttpResponseAsync(It.IsAny<Uri>(), It.IsAny<CancellationToken>()),
-            Times.Once);
+        result.Should().BeSameAs(expected);
+        _executor.Verify(x => x.ExecuteAndSaveAsync(
+            domain,
+            It.IsAny<CancellationToken>()), Times.Once);
     }
-    
+
     /// <summary>
-    /// Should throw <see cref="DomainNotFoundException"/> when domain is not found.
+    /// A missing domain produces a not-found error without invoking the check executor.
     /// </summary>
     [Fact]
-    public async Task Handle_WhenDomainDoesNotExists_ThrowAndDoNothing()
+    public async Task Handle_WhenDomainDoesNotExist_ThrowsAndDoesNotExecuteCheck()
     {
         // Arrange
-        var command = new HttpSendAndSaveCommand(_fakeDomainId);
-        
-        _domainsRepository.SetupFindAsync(_fakeDomainId, (DomainEntity?)null);
-        
+        var command = new HttpSendAndSaveCommand(_domainId);
+        _domainsRepository.SetupFindAsync(_domainId, (DomainEntity?)null);
+
+        // Act
         var action = () => _handler.Handle(
             command,
-            CancellationToken.None
-        );
-        
-        // Act + Assert
+            CancellationToken.None);
+
+        // Assert
         await action.Should().ThrowAsync<DomainNotFoundException>();
-        
-        _http.Verify(x => x.GetHttpResponseAsync(
-            It.IsAny<Uri>(),
-            It.IsAny<CancellationToken>()),
-            Times.Never);
-        
-        _checksWriteRepository.Verify(x => x.CreateAsync(
-            It.IsAny<DomainCheckResult>(),
-            It.IsAny<CancellationToken>()),
-            Times.Never);
-        
-        _domainsRepository.Verify(x => x.Update(
-            It.IsAny<DomainEntity>()),
-            Times.Never);
+        _executor.Verify(x => x.ExecuteAndSaveAsync(
+            It.IsAny<DomainEntity>(),
+            It.IsAny<CancellationToken>()), Times.Never);
     }
 }

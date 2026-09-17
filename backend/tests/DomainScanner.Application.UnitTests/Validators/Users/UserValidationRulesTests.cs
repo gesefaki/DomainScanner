@@ -21,8 +21,11 @@ public class UserValidationRulesTests
     [InlineData("mail1.mail2@test.test")]
     public void Validate_WhenEmailIsValid_HasNoEmailError(string validEmail)
     {
+        // Arrange
+        var model = new EmailModel(validEmail);
+
         // Act
-        var result = _emailValidator.TestValidate(new EmailModel(validEmail));
+        var result = _emailValidator.TestValidate(model);
         
         // Assert
         result.ShouldNotHaveAnyValidationErrors();
@@ -39,8 +42,11 @@ public class UserValidationRulesTests
     [InlineData("mail@")]
     public void Validate_WhenEmailIsInvalid_HasEmailError(string invalidEmail)
     {
+        // Arrange
+        var model = new EmailModel(invalidEmail);
+
         // Act
-        var result = _emailValidator.TestValidate(new EmailModel(invalidEmail));
+        var result = _emailValidator.TestValidate(model);
         
         // Assert
         result.ShouldHaveValidationErrorFor(x => x.Email);
@@ -61,8 +67,11 @@ public class UserValidationRulesTests
     [InlineData("StrongP@ss2023")]
     public void Validate_WhenPasswordIsStrong_HasNoPasswordError(string strongPassword)
     {
+        // Arrange
+        var model = new PasswordModel(strongPassword);
+
         // Act
-        var result = _passwordValidator.TestValidate(new PasswordModel(strongPassword));
+        var result = _passwordValidator.TestValidate(model);
         
         // Assert
         result.ShouldNotHaveAnyValidationErrors();
@@ -90,8 +99,11 @@ public class UserValidationRulesTests
     [InlineData("P1")]
     public void Validate_WhenPasswordIsNotStrong_HasPasswordError(string notStrongPassword)
     {
+        // Arrange
+        var model = new PasswordModel(notStrongPassword);
+
         // Act
-        var result = _passwordValidator.TestValidate(new PasswordModel(notStrongPassword));
+        var result = _passwordValidator.TestValidate(model);
         
         // Assert
         result.ShouldHaveValidationErrorFor(x => x.Password);

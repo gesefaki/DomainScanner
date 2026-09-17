@@ -11,41 +11,34 @@ using MediatR;
 namespace DomainScanner.Application.Handlers.Domains.Queries.GetDomainById;
 
 /// <summary>
-/// Handles <see cref="GetDomainByIdQuery"/> 
+/// Handles <see cref="GetDomainByIdQuery"/> by retrieving an owned domain and its check history.
 /// </summary>
 public class GetDomainByIdQueryHandler : IRequestHandler<GetDomainByIdQuery, DomainResponse>
 {
-    private readonly IReadRepository<DomainEntity, Guid> _repository;
+    private readonly IOwnedDomainProvider _ownedDomains;
     private readonly IReadRepository<DomainCheckResult, Guid> _checkRepository;
-    private readonly IMapper _mapper;
-    private readonly ICurrentUser _currentUser;
 
     public GetDomainByIdQueryHandler(
-        IReadRepository<DomainEntity, Guid> repository,
-        IReadRepository<DomainCheckResult, Guid> checkRepository,
-        IMapper mapper,
-        ICurrentUser currentUser)
+        IOwnedDomainProvider ownedDomains,
+        IReadRepository<DomainCheckResult, Guid> checkRepository)
     {
-        _repository = repository;
+        _ownedDomains = ownedDomains;
         _checkRepository = checkRepository;
-        _mapper = mapper;
-        _currentUser = currentUser;
     }
 
     /// <inheritdoc />
-    public async Task<DomainResponse> Handle(GetDomainByIdQuery request, CancellationToken ct)
+    public async Task<DomainResponse> Handle(
+        GetDomainByIdQuery request,
+        CancellationToken ct)
     {
-        var domain = await _repository.FindAsync(request.Id, ct);
-
-        if (domain is null || domain.UserId != _currentUser.Id)
-        {
-            throw new DomainNotFoundException(request.Id);
-        }
+        var domain = await _ownedDomains.GetRequiredAsync(
+            request.Id,
+            ct);
 
         var checks = await _checkRepository.GetAllWhereAsync(
             check => check.DomainId == domain.Id,
             ct);
-        
+
         return new DomainResponse(
             domain.Id,
             domain.Address,
@@ -54,12 +47,11 @@ public class GetDomainByIdQueryHandler : IRequestHandler<GetDomainByIdQuery, Dom
             checks
                 .OrderByDescending(check => check.CreatedAt)
                 .ThenByDescending(check => check.Id)
-                .Select(check =>
-                    new HttpResponse(
-                        check.Address,
-                        check.StatusCode,
-                        check.IsActive,
-                        check.CreatedAt))
+                .Select(check => new HttpResponse(
+                    check.Address,
+                    check.StatusCode,
+                    check.IsActive,
+                    check.CreatedAt))
                 .ToArray());
     }
 }

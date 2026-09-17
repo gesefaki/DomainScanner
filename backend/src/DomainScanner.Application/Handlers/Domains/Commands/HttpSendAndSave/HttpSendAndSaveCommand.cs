@@ -4,7 +4,7 @@ using DomainScanner.Domain.Entities;
 namespace DomainScanner.Application.Handlers.Domains.Commands.HttpSendAndSave;
 
 /// <summary>
-/// Command to send HTTP request and save <see cref="DomainCheckResult"/> in database. 
+/// Command to execute and persist a background HTTP check without applying HTTP user ownership checks.
 /// </summary>
-/// <param name="Id">Unique identifier of DomainEntity which stores request address.</param>
+/// <param name="Id">Unique identifier of the domain to check.</param>
 public record HttpSendAndSaveCommand(Guid Id) : ICommand<DomainCheckResult>;
