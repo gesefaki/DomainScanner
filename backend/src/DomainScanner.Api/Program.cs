@@ -1,7 +1,7 @@
 using DomainScanner.Api.DI;
 using DomainScanner.Application.DI;
 using DomainScanner.Infrastructure.DI;
-using DomainScanner.Infrastructure.Extensions;
+using DomainScanner.Infrastructure.DI.Extensions;
 using DomainScanner.Worker.DI;
 
 var builder = WebApplication.CreateBuilder(args);

@@ -2,6 +2,7 @@
 using System.Net.Security;
 using System.Net.Sockets;
 using DomainScanner.Application.Abstractions.Scanners;
+using DomainScanner.Contracts.Exceptions.HTTP;
 using DomainScanner.Domain.Models;
 
 namespace DomainScanner.Infrastructure.Protocols.HTTP;
@@ -13,6 +14,8 @@ namespace DomainScanner.Infrastructure.Protocols.HTTP;
 public class HttpService : IHttpScanner
 {
     private readonly IHttpClientFactory _httpFactory;
+    
+    private const int MaxRedirections = 5;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HttpService"/> class.
@@ -20,7 +23,7 @@ public class HttpService : IHttpScanner
     /// <param name="httpFactory">The HTTP client factory for creating HttpClient instances.</param>
     public HttpService(IHttpClientFactory httpFactory)
     {
-        _httpFactory = httpFactory;
+        _httpFactory = httpFactory;           
     }
 
     /// <inheritdoc />
@@ -28,13 +31,21 @@ public class HttpService : IHttpScanner
     {
         try
         {
-            using var http = _httpFactory.CreateClient("DomainScanner.Basic");
+            // TODO: add from configuration
+            var http = _httpFactory.CreateClient("DomainScanner.Basic");
 
-            using var response = await http.GetAsync(address, ct);
-            return new HttpResponseObject()
+            var result = await SendSafeAsync(
+                http,
+                address,
+                ct);
+
+            using var response = result.Response;
+
+            return new HttpResponseObject
             {
+                Address = result.FinalAddress.ToString(),
                 StatusCode = (ushort)response.StatusCode,
-                IsSuccess = response.IsSuccessStatusCode
+                IsSuccess = response.IsSuccessStatusCode,
             };
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
@@ -43,21 +54,19 @@ public class HttpService : IHttpScanner
         }
         catch (OperationCanceledException)
         {
-            return new HttpResponseObject()
-            {
-                Address = address.ToString(),
-                StatusCode = 504,
-                IsSuccess = false
-            };
+            return Failure(address, 504);
         }
-        catch (Exception ex) when (ex is HttpRequestException or SocketException)
+        catch (UnsafeOutboundDestinationException)
         {
-            return new HttpResponseObject()
-            {
-                Address = address.ToString(),
-                StatusCode = 504,
-                IsSuccess = false
-            };
+            return Failure(address, 502);
+        }
+        catch (HttpRequestException)
+        {
+            return Failure(address, 502);
+        }
+        catch (SocketException)
+        {
+            return Failure(address, 502);
         }
     }
 
@@ -66,144 +75,161 @@ public class HttpService : IHttpScanner
     {
         var tls = new TlsFetch();
 
-        var handler = new HttpClientHandler
-        {
-            AllowAutoRedirect = false,
-            UseCookies = false,
-            
-            ServerCertificateCustomValidationCallback = (message, cert, chain, error) =>
+        var handler = PublicNetworkHttpHandler.Create(
+            (_, certificate, chain, errors) =>
             {
-                tls.Message = message.ToString();
-                tls.Certificate = cert?.ToString();
+                tls.Certificate = certificate?.ToString();
+
                 if (chain is not null)
                 {
-                    var chainElements = new List<string>();
-                    foreach (var element in chain.ChainElements)
-                    {
-                        chainElements
-                            .Add($"Subject: {element.Certificate.Subject}, " +
-                                 $"Issuer: {element.Certificate.Issuer}, " +
-                                 $"Thumbprint: {element.Certificate.Thumbprint}, " +
-                                 $"Valid: {element.Certificate.NotBefore} - {element.Certificate.NotAfter}");
-                    }
-                    tls.Chain = string.Join('\n', chainElements);
+                    tls.Chain = string.Join(
+                        '\n',
+                        chain.ChainElements
+                            .Select(element =>
+                                $"Subject: {element.Certificate.Subject}, " +
+                                $"Issuer: {element.Certificate.Issuer}, " +
+                                $"Thumbprint: {element.Certificate.Thumbprint}, " +
+                                $"Valid: {element.Certificate.NotBefore} - " +
+                                $"{element.Certificate.NotAfter}"));
                 }
-                tls.SslPolicyErrors = error != SslPolicyErrors.None;
 
-                return error == SslPolicyErrors.None;
-            }
-        };
+                tls.SslPolicyErrors = errors != SslPolicyErrors.None;
+                
+                return errors == SslPolicyErrors.None;
+            });
 
         using var http = new HttpClient(handler);
-        http.Timeout = TimeSpan.FromSeconds(30);
+        http.Timeout = Timeout.InfiniteTimeSpan;
         
-        http.DefaultRequestHeaders.UserAgent.ParseAdd("DomainScanner/1.0");
-
-        const int maxRedirections = 5;
-
-        Uri currentAddress = address;
-        var redirections = new List<string>();
-        var stopwatch = Stopwatch.StartNew();
+        http.DefaultRequestHeaders.UserAgent.ParseAdd(
+            "DomainScanner/1.0");
         
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(ct);
         
         deadline.CancelAfter(TimeSpan.FromSeconds(30));
 
-        HttpResponseDetails Failure(ushort statusCode, string message)
-        {
-            return new HttpResponseDetails
-            {
-                Address = currentAddress.ToString(),
-                StatusCode = statusCode,
-                IsSuccess = false,
-                ResponseTime = stopwatch.ElapsedMilliseconds,
-                Redirections = redirections,
-                RedirectionsCount = (ushort)redirections.Count,
-                ErrorMessage = message,
-                Tls = tls
-            };
-        }
+        var stopwatch = Stopwatch.StartNew();
+        
+        var result = await SendSafeAsync(
+            http,
+            address,
+            deadline.Token);
+        
+        stopwatch.Stop();
 
-        try
+        using var response = result.Response;
+
+        return new HttpResponseDetails
         {
-            while (true)
+            Address = result.FinalAddress.ToString(),
+            StatusCode = (ushort)response.StatusCode,
+            IsSuccess = response.IsSuccessStatusCode,
+            ResponseTime = stopwatch.ElapsedMilliseconds,
+            Redirections = result.Redirections,
+            RedirectionsCount =
+                checked((ushort)result.Redirections.Count),
+            ReasonPhrase = response.ReasonPhrase ?? string.Empty,
+            ContentType =
+                response.Content.Headers.ContentType?.ToString()
+                ?? string.Empty,
+            ContentLength =
+                response.Content.Headers.ContentLength,
+            ErrorMessage = response.IsSuccessStatusCode
+                ? null
+                : $"Remote server returned HTTP {(int)response.StatusCode}.",
+            Version = response.Version.ToString(),
+            Tls = tls
+        };
+    }
+
+    private static async Task<SafeHttpResult> SendSafeAsync(
+        HttpClient http,
+        Uri initAddress,
+        CancellationToken ct)
+    {
+        var currentAddress = initAddress;
+        var redirections = new List<string>();
+
+        for (var attempt = 0;; attempt++)
+        {
+            PublicNetworkHttpHandler.ValidateUri(currentAddress);
+            
+            using var request = new HttpRequestMessage(
+                HttpMethod.Get,
+                currentAddress);
+
+            var response = await http.SendAsync(
+                request,
+                HttpCompletionOption.ResponseHeadersRead,
+                ct);
+
+            if (!IsRedirect((int)response.StatusCode))
             {
-                using var response = await http.GetAsync(
+                return new SafeHttpResult(
+                    response,
                     currentAddress,
-                    HttpCompletionOption.ResponseHeadersRead, // reading only headers
-                    deadline.Token); 
-                
-                var statusCode = (int)response.StatusCode;
-                var isRedirect = statusCode is 301 or 302 or 303 or 307 or 308;
-
-                if (isRedirect)
-                {
-                    var location = response.Headers.Location;
-
-                    if (location is null)
-                    {
-                        return Failure(
-                            (ushort)statusCode,
-                            "Redirection response has no location header."); 
-                    }
-
-                    if (redirections.Count >= maxRedirections)
-                    {
-                        return Failure(
-                            (ushort)statusCode,
-                            "Redirect limit exceeded.");
-                    }
-
-                    var nextAddress = new Uri(currentAddress, location);
-
-                    if (nextAddress.Scheme != Uri.UriSchemeHttp &&
-                        nextAddress.Scheme != Uri.UriSchemeHttps)
-                    {
-                        return Failure(
-                            (ushort)statusCode,
-                            "Unsupported redirect scheme.");
-                    }
-                    
-                    currentAddress = nextAddress;
-                    redirections.Add(currentAddress.ToString());
-                    
-                    continue;
-                }
-
-                return new HttpResponseDetails
-                {
-                    Address = currentAddress.ToString(),
-                    StatusCode = (ushort)statusCode,
-                    IsSuccess = response.IsSuccessStatusCode,
-                    ResponseTime = stopwatch.ElapsedMilliseconds,
-                    Redirections = redirections,
-                    RedirectionsCount = (ushort)redirections.Count,
-                    ReasonPhrase = response.ReasonPhrase ?? string.Empty,
-                    ContentType =
-                        response.Content.Headers.ContentType?.ToString()
-                        ?? string.Empty,
-                    ContentLength = response.Content.Headers.ContentLength,
-                    ErrorMessage = response.IsSuccessStatusCode
-                        ? null
-                        : $"Remote server returned HTTP {statusCode}.",
-                    Version = response.Version.ToString(),
-                    Tls = tls
-                };
-                
+                    redirections);
             }
+
+            if (attempt >= MaxRedirections)
+            {
+                response.Dispose();
+                
+                throw new HttpRequestException(
+                    "Redirect limit exceeded.");
+            }
+            
+            var location = response.Headers.Location;
+
+            if (location is null)
+            {
+                response.Dispose();
+
+                throw new HttpRequestException(
+                    "Redirection response has no location header."
+                );
+            }
+
+            Uri nextAddress;
+
+            try
+            {
+                nextAddress = new Uri(currentAddress, location);
+                PublicNetworkHttpHandler.ValidateUri(nextAddress);
+            }
+            catch
+            {
+                response.Dispose();
+                throw;
+            }
+            
+            response.Dispose();
+            
+            currentAddress = nextAddress;
+            redirections.Add(currentAddress.ToString());
         }
-        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+    }
+
+    private static bool IsRedirect(int statusCode)
+    {
+        return statusCode is >= 300 and <= 399;
+    }
+    
+    private sealed record SafeHttpResult(
+        HttpResponseMessage Response,
+        Uri FinalAddress,
+        List<string> Redirections
+    );
+
+    private static HttpResponseObject Failure(
+        Uri address,
+        ushort statusCode)
+    {
+        return new HttpResponseObject
         {
-            throw;
-        }
-        catch (OperationCanceledException)
-        {
-            return Failure(504, "HTTP check timed out.");
-        }
-        catch (Exception ex) when (
-            ex is HttpRequestException or SocketException)
-        {
-            return Failure(502, "Connection or TLS error.");
-        }
+            Address = address.ToString(),
+            StatusCode = statusCode,
+            IsSuccess = false
+        };
     }
 }
