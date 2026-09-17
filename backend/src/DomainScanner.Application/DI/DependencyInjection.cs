@@ -1,7 +1,11 @@
-﻿using DomainScanner.Application.Handlers.Domains.Commands.CreateDomain;
+﻿using DomainScanner.Application.Abstractions.Auth;
+using DomainScanner.Application.Abstractions.Scanners;
+using DomainScanner.Application.Handlers.Domains.Commands.CreateDomain;
 using DomainScanner.Application.Handlers.Domains.Commands.HttpSendAndSave;
 using DomainScanner.Application.Mapping;
 using DomainScanner.Application.Pipelines.Behaviors;
+using DomainScanner.Application.Services.Auth;
+using DomainScanner.Application.Services.Domains;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DomainScanner.Application.DI;
@@ -34,9 +38,18 @@ public static class DependencyInjection
             cfg.AddProfile<MappingProfile>();
         });
 
+        services.AddScoped<IOwnedDomainProvider, OwnedDomainProvider>();
+
+        services.AddScoped<IDomainCheckExecutor, DomainCheckExecutor>();
+
         return services;
     }
 
+    /// <summary>
+    /// Registers the application-layer services required by the background worker.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> to add services to.</param>
+    /// <returns>The <see cref="IServiceCollection"/> for chaining.</returns>
     public static IServiceCollection AddWorkerApplicationLayer(this IServiceCollection services)
     {
         services.AddMediatR(cfg =>

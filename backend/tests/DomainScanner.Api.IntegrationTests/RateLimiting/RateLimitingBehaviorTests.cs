@@ -30,12 +30,15 @@ public class RateLimitingBehaviorTests
         await using var factory = new DomainScannerApiFactory();
         using var client = factory.CreateHttpsClient();
 
-        // Act + Assert
-        await TestingHelper.AssertAllowedThenRejectedAsync(
+        // Act
+        var action = () => TestingHelper.AssertAllowedThenRejectedAsync(
             client: client,
             endpoint: AuthEndpoint,
             permitLimit: 5,
             allowedStatusCode: HttpStatusCode.OK);
+
+        // Assert
+        await action();
     }
 
     [Fact]
@@ -54,18 +57,23 @@ public class RateLimitingBehaviorTests
             permitLimit: permitLimit,
             allowedStatusCode: HttpStatusCode.OK);
 
-        // Act + Assert
+        // Act
+        var statusCodes = new List<HttpStatusCode>();
+
         for (var requestNumber = permitLimit + 2;
              requestNumber <= permitLimit + additionalRejectedRequests + 1;
              requestNumber++)
         {
             using var response = await client.GetAsync(AuthEndpoint);
-
-            await TestingHelper.AssertStatusCodeAsync(
-                response: response,
-                expected: HttpStatusCode.TooManyRequests,
-                requestNumber: requestNumber);
+            statusCodes.Add(response.StatusCode);
         }
+
+        // Assert
+        Assert.All(
+            statusCodes,
+            statusCode => Assert.Equal(
+                HttpStatusCode.TooManyRequests,
+                statusCode));
     }
 
     /// <summary>
@@ -78,12 +86,15 @@ public class RateLimitingBehaviorTests
         await using var factory = new DomainScannerApiFactory();
         using var client = factory.CreateAuthenticatedClient(factory, DomainScannerApiFactory.UserAId);
 
-        // Act + Assert
-        await TestingHelper.AssertAllowedThenRejectedAsync(
+        // Act
+        var action = () => TestingHelper.AssertAllowedThenRejectedAsync(
             client: client,
             endpoint: ReadEndpoint,
             permitLimit: 100,
             allowedStatusCode: HttpStatusCode.OK);
+
+        // Assert
+        await action();
     }
 
     [Fact]
@@ -93,12 +104,15 @@ public class RateLimitingBehaviorTests
         await using var factory = new DomainScannerApiFactory();
         using var client = factory.CreateAuthenticatedClient(factory, DomainScannerApiFactory.UserAId);
 
-        // Act + Assert
-        await TestingHelper.AssertAllowedThenRejectedAsync(
+        // Act
+        var action = () => TestingHelper.AssertAllowedThenRejectedAsync(
             client: client,
             endpoint: WriteProbeEndpoint,
             permitLimit: 20,
             allowedStatusCode: HttpStatusCode.NoContent);
+
+        // Assert
+        await action();
     }
 
     [Fact]
@@ -108,12 +122,15 @@ public class RateLimitingBehaviorTests
         await using var factory = new DomainScannerApiFactory();
         using var client = factory.CreateAuthenticatedClient(factory, DomainScannerApiFactory.UserAId);
 
-        // Act + Assert
-        await TestingHelper.AssertAllowedThenRejectedAsync(
+        // Act
+        var action = () => TestingHelper.AssertAllowedThenRejectedAsync(
             client: client,
             endpoint: ScanProbeEndpoint,
             permitLimit: 15,
             allowedStatusCode: HttpStatusCode.NoContent);
+
+        // Assert
+        await action();
     }
 
     [Fact]
@@ -154,7 +171,7 @@ public class RateLimitingBehaviorTests
         // Next request after quota exhausting should return 429
         response = await client.GetAsync(AnotherReadEndpoint);
 
-        // Arrange
+        // Assert
         Assert.Equal(HttpStatusCode.TooManyRequests, response.StatusCode);
     }
 
@@ -262,18 +279,17 @@ public class RateLimitingBehaviorTests
 
         try
         {
+            // Act
+            using var nextResponse =
+                await client.GetAsync(endpoint, timeout.Token);
+
+            // Assert
             Assert.All(
                 completedResponse,
                 response => Assert.Equal(
                     HttpStatusCode.NoContent,
                     response.StatusCode)
             );
-
-            // Act: the previous five have already been granted concurrency permits.
-            using var nextResponse =
-                await client.GetAsync(endpoint, timeout.Token);
-
-            // Assert
             Assert.Equal(
                 HttpStatusCode.NoContent,
                 nextResponse.StatusCode);

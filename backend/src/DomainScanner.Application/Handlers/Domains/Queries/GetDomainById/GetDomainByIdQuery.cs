@@ -5,7 +5,8 @@ using MediatR;
 namespace DomainScanner.Application.Handlers.Domains.Queries.GetDomainById;
 
 /// <summary>
-/// Query to retrieve single <see cref="DomainResponse"/> by its identifier.  
+/// Query to retrieve a single <see cref="DomainResponse"/> owned by the current authenticated user.
 /// </summary>
-/// <param name="Id">Domain unique identifier.</param>
-public record GetDomainByIdQuery(Guid Id) : IRequest<DomainResponse>, INeedAuthentication;
+/// <param name="Id">Unique identifier of the domain to retrieve.</param>
+public record GetDomainByIdQuery(Guid Id)
+    : IRequest<DomainResponse>, INeedAuthentication;

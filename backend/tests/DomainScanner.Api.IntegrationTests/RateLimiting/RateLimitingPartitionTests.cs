@@ -1,5 +1,4 @@
 ﻿using System.Net;
-using DomainScanner.Api.IntegrationTests.Helpers;
 using DomainScanner.Api.IntegrationTests.Infrastructure;
 
 namespace DomainScanner.Api.IntegrationTests.RateLimiting;
@@ -29,35 +28,33 @@ public class RateLimitingPartitionTests
             factory,
             DomainScannerApiFactory.UserBId);
 
-        // Act + Assert
+        // Act
+        var userAStatusCodes = new List<HttpStatusCode>();
+
         for (var requestNumber = 1; requestNumber <= 100; requestNumber++)
         {
             using var response =
                 await userAClient.GetAsync(ReadEndpoint);
 
-            await TestingHelper.AssertStatusCodeAsync(
-                response: response,
-                expected: HttpStatusCode.OK,
-                requestNumber: requestNumber);
+            userAStatusCodes.Add(response.StatusCode);
         }
 
         // User A quota should be really exhausted.
         using var userARejected =
             await userAClient.GetAsync(ReadEndpoint);
 
-        await TestingHelper.AssertStatusCodeAsync(
-            userARejected,
-            HttpStatusCode.TooManyRequests,
-            requestNumber: 101);
-
         // User B quota should be unexhausted.
         using var userBResponse =
             await userBClient.GetAsync(ReadEndpoint);
 
-        await TestingHelper.AssertStatusCodeAsync(
-            response: userBResponse,
-            expected: HttpStatusCode.OK,
-            requestNumber: 1);
+        // Assert
+        Assert.All(
+            userAStatusCodes,
+            statusCode => Assert.Equal(HttpStatusCode.OK, statusCode));
+        Assert.Equal(
+            HttpStatusCode.TooManyRequests,
+            userARejected.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, userBResponse.StatusCode);
     }
 
     /// <summary>
@@ -90,34 +87,29 @@ public class RateLimitingPartitionTests
         // Arrange
         await using var factory = new DomainScannerApiFactory();
 
-        HttpResponseMessage response;
-
         using var authenticatedClient = factory.CreateAuthenticatedClient(factory, DomainScannerApiFactory.UserAId);
         using var anonymousClient = factory.CreateHttpsClient();
         
         // Act
         // Sending requests to auth endpoint with IP address as partition key
+        var anonymousStatusCodes = new List<HttpStatusCode>();
+
         for (var requestNumber = 1; requestNumber <= 5; requestNumber++)
         {
-            response = await anonymousClient.GetAsync(AuthEndpoint);
-            await TestingHelper.AssertStatusCodeAsync(
-                response: response,
-                expected: HttpStatusCode.OK,
-                requestNumber: requestNumber
-            );
+            using var response = await anonymousClient.GetAsync(AuthEndpoint);
+            anonymousStatusCodes.Add(response.StatusCode);
         }
 
         // Request to auth endpoint with JWT as partition key
-        response = await authenticatedClient.GetAsync(AuthEndpoint);
-        await TestingHelper.AssertStatusCodeAsync(
-            response: response,
-            expected: HttpStatusCode.OK,
-            requestNumber: 1
-        );
+        using var authenticatedResponse =
+            await authenticatedClient.GetAsync(AuthEndpoint);
         
         // Assert
         // Should be OK. IP quota is independent of JWT.
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.All(
+            anonymousStatusCodes,
+            statusCode => Assert.Equal(HttpStatusCode.OK, statusCode));
+        Assert.Equal(HttpStatusCode.OK, authenticatedResponse.StatusCode);
     }
 
     [Fact]
@@ -130,29 +122,26 @@ public class RateLimitingPartitionTests
         using var secondAnonymousClient = factory.CreateHttpsClient();
         
         // Act
+        var allowedStatusCodes = new List<HttpStatusCode>();
+
         for (var requestNumber = 1; requestNumber <= 3; requestNumber++)
         {
             using var response = await firstAnonymousClient.GetAsync(AuthEndpoint);
-
-            await TestingHelper.AssertStatusCodeAsync(
-                response: response,
-                expected: HttpStatusCode.OK,
-                requestNumber: requestNumber);
+            allowedStatusCodes.Add(response.StatusCode);
         }
 
         for (var requestNumber = 4; requestNumber <= 5; requestNumber++)
         {
             using var response = await secondAnonymousClient.GetAsync(AuthEndpoint);
-
-            await TestingHelper.AssertStatusCodeAsync(
-                response: response,
-                expected: HttpStatusCode.OK,
-                requestNumber: requestNumber);
+            allowedStatusCodes.Add(response.StatusCode);
         }
 
         using var rejectedResponse = await secondAnonymousClient.GetAsync(AuthEndpoint);
         
         // Assert
+        Assert.All(
+            allowedStatusCodes,
+            statusCode => Assert.Equal(HttpStatusCode.OK, statusCode));
         Assert.Equal(HttpStatusCode.TooManyRequests, rejectedResponse.StatusCode);
     }
 }

@@ -33,19 +33,6 @@ public class UsersController : Controller
     }
 
     /// <summary>
-    /// Retrieves all users for authenticated user.
-    /// </summary>
-    /// <param name="ct">Cancellation token.</param>
-    /// <returns>List of <see cref="UserResponse"/>. </returns>
-    [EnableRateLimiting(RateLimitingSettings.Policies.Read)]
-    [HttpGet]
-    public async Task<ActionResult<List<UserResponse>>> GetAll(CancellationToken ct)
-    {
-        var users = await _sender.Send(new GetAllUsersQuery(), ct);
-        return Ok(users);
-    }
-
-    /// <summary>
     /// Retrieves single user for authenticated user.
     /// </summary>
     /// <param name="ct">Cancellation token.</param>

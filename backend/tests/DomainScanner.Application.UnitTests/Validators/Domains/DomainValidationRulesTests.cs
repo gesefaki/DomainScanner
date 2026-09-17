@@ -20,8 +20,11 @@ public class DomainValidationRulesTests
     [InlineData("http://example.com/path?query=value")]
     public void Validate_WhenHttpUrlIsValid_HasNoAddressError(string address)
     {
+        // Arrange
+        var model = new AddressModel(address);
+
         // Act
-        var result = _validator.TestValidate(new AddressModel(address));
+        var result = _validator.TestValidate(model);
         
         // Assert
         result.ShouldNotHaveValidationErrorFor(x => x.Address);
@@ -38,8 +41,11 @@ public class DomainValidationRulesTests
     [InlineData("ftp://example.com")]
     public void Validate_WhenAddressIsInvalid_HasAddressError(string address)
     {
+        // Arrange
+        var model = new AddressModel(address);
+
         // Act
-        var result = _validator.TestValidate(new AddressModel(address));
+        var result = _validator.TestValidate(model);
         
         // Assert
         result.ShouldHaveValidationErrorFor(x => x.Address);

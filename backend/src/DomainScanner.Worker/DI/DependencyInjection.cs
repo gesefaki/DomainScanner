@@ -1,4 +1,6 @@
 using DomainScanner.Application.Abstractions.Auth;
+using DomainScanner.Application.Abstractions.Scanners;
+using DomainScanner.Application.Services.Domains;
 using DomainScanner.Shared.Hangfire.Interfaces;
 using DomainScanner.Worker.Auth;
 using DomainScanner.Worker.Extensions;
@@ -15,7 +17,7 @@ namespace DomainScanner.Worker.DI;
 public static class DependencyInjection
 {
     /// <summary>
-    /// Configures Hangfire.
+    /// Configures Hangfire storage and the domain check execution service.
     /// </summary>
     /// <param name="services"><see cref="IServiceCollection"/> to add services to.</param>
     /// <param name="configuration">App configuration.</param>
@@ -29,6 +31,8 @@ public static class DependencyInjection
         .UseRecommendedSerializerSettings()
         .UsePostgreSqlStorage(opt =>
             opt.UseNpgsqlConnection(configuration.GetConnectionString("PostgresConnection"))));
+
+        services.AddScoped<IDomainCheckExecutor, DomainCheckExecutor>();
 
         return services;
     }

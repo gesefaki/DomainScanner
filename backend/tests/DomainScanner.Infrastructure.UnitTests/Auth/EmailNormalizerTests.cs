@@ -21,8 +21,11 @@ public class EmailNormalizerTests
         string expected
     )
     {
+        // Arrange
+        var email = source;
+
         // Act
-        var result = _normalizer.Normalize(source);
+        var result = _normalizer.Normalize(email);
         
         // Assert
         result.Should().Be(expected);
@@ -31,8 +34,11 @@ public class EmailNormalizerTests
     [Fact]
     public void Normalize_NullEmail_ThrowsArgumentNullException()
     {
+        // Arrange
+        const string? email = null;
+
         // Act
-        var action = () => _normalizer.Normalize(null!);
+        var action = () => _normalizer.Normalize(email!);
 
         // Assert
         action.Should().Throw<ArgumentNullException>();

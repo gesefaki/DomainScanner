@@ -1,5 +1,4 @@
 using System.Linq.Expressions;
-using AutoMapper;
 using DomainScanner.Application.Abstractions.Auth;
 using DomainScanner.Application.Abstractions.Persistence.Common;
 using DomainScanner.Application.Handlers.Domains.Queries.GetDomainById;
@@ -19,9 +18,8 @@ namespace DomainScanner.Application.UnitTests.Handlers.Domains.Queries;
 /// </summary>
 public class GetDomainByIdQueryHandlerTests
 {
-    private readonly Mock<IReadRepository<DomainEntity, Guid>> _repository = new(MockBehavior.Strict);
+    private readonly Mock<IOwnedDomainProvider> _ownedDomains = new(MockBehavior.Strict);
     private readonly Mock<IReadRepository<DomainCheckResult, Guid>> _checks = new(MockBehavior.Strict);
-    private readonly Mock<IMapper> _mapper = new(MockBehavior.Strict);
     private readonly Mock<ICurrentUser> _currentUser = new();
     private readonly Guid _userId = Guid.NewGuid();
     private readonly Guid _domainId = Guid.NewGuid();
@@ -32,7 +30,8 @@ public class GetDomainByIdQueryHandlerTests
         _currentUser.SetupGet(user => user.Id).Returns(_userId);
         _currentUser.SetupGet(user => user.IsAuthenticated).Returns(true);
         _handler = new GetDomainByIdQueryHandler(
-            _repository.Object, _checks.Object, _mapper.Object, _currentUser.Object);
+            _ownedDomains.Object,
+            _checks.Object);
     }
 
     /// <summary>
@@ -42,6 +41,7 @@ public class GetDomainByIdQueryHandlerTests
     [Fact]
     public async Task Handle_WhenDomainBelongsToCurrentUser_ReturnsOrderedHistoryFromCheckRepository()
     {
+        // Arrange
         var domain = new DomainBuilder().WithId(_domainId).WithUserId(_userId).Inactive().Build();
         domain.CheckResults.Add(new DomainCheckResult { Address = "navigation-only.example" });
         var createdAt = new DateTime(2026, 9, 15, 12, 0, 0, DateTimeKind.Utc);
@@ -51,14 +51,18 @@ public class GetDomainByIdQueryHandlerTests
         var foreign = CreateCheck("00000000-0000-0000-0000-000000000004", Guid.NewGuid(), createdAt.AddMinutes(1), 200, true);
         DomainCheckResult[] allChecks = [older, smallerId, foreign, largerId];
         using var cts = new CancellationTokenSource();
-        _repository.Setup(repository => repository.FindAsync(_domainId, cts.Token)).ReturnsAsync(domain);
+        _ownedDomains
+            .Setup(provider => provider.GetRequiredAsync(_domainId, cts.Token))
+            .ReturnsAsync(domain);
         _checks.Setup(repository => repository.GetAllWhereAsync(
                 It.IsAny<Expression<Func<DomainCheckResult, bool>>>(), cts.Token))
             .ReturnsAsync((Expression<Func<DomainCheckResult, bool>> predicate, CancellationToken _) =>
                 allChecks.Where(predicate.Compile()).ToArray());
 
+        // Act
         var response = await _handler.Handle(new GetDomainByIdQuery(_domainId), cts.Token);
 
+        // Assert
         Assert.Equal(domain.Id, response.Id);
         Assert.Equal(domain.UserId, response.UserId);
         Assert.Equal(domain.Address, response.Address);
@@ -70,7 +74,9 @@ public class GetDomainByIdQueryHandlerTests
         Assert.Equal(new[] { createdAt, createdAt, older.CreatedAt }, history.Select(check => check.CreatedAt));
         _checks.Verify(repository => repository.GetAllWhereAsync(
             It.IsAny<Expression<Func<DomainCheckResult, bool>>>(), cts.Token), Times.Once);
-        _mapper.VerifyNoOtherCalls();
+        _ownedDomains.Verify(
+            provider => provider.GetRequiredAsync(_domainId, cts.Token),
+            Times.Once);
     }
 
     /// <summary>
@@ -79,36 +85,50 @@ public class GetDomainByIdQueryHandlerTests
     [Fact]
     public async Task Handle_WhenNoChecksExist_ReturnsEmptyHistory()
     {
+        // Arrange
         var domain = new DomainBuilder().WithId(_domainId).WithUserId(_userId).Build();
-        _repository.Setup(repository => repository.FindAsync(_domainId, CancellationToken.None)).ReturnsAsync(domain);
+        _ownedDomains
+            .Setup(provider => provider.GetRequiredAsync(
+                _domainId,
+                CancellationToken.None))
+            .ReturnsAsync(domain);
         _checks.Setup(repository => repository.GetAllWhereAsync(
                 It.IsAny<Expression<Func<DomainCheckResult, bool>>>(), CancellationToken.None))
             .ReturnsAsync(Array.Empty<DomainCheckResult>());
 
+        // Act
         var response = await _handler.Handle(new GetDomainByIdQuery(_domainId), CancellationToken.None);
 
+        // Assert
         Assert.Empty(response.Checks);
     }
 
     /// <summary>
-    /// Missing and foreign domains return the same not-found error without loading history,
-    /// even when the foreign domain identifier equals the current user identifier.
+    /// A domain rejected by the ownership provider returns a not-found error without loading history,
+    /// even when the domain identifier equals the current user identifier.
     /// </summary>
     [Theory]
-    [InlineData(false, false)]
-    [InlineData(true, false)]
-    [InlineData(true, true)]
-    public async Task Handle_WhenDomainIsMissingOrForeign_ThrowsWithoutLoadingHistory(bool exists, bool idEqualsUserId)
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Handle_WhenOwnershipProviderRejectsDomain_ThrowsWithoutLoadingHistory(
+        bool idEqualsUserId)
     {
+        // Arrange
         var id = idEqualsUserId ? _userId : _domainId;
-        var domain = exists ? new DomainBuilder().WithId(id).WithUserId(Guid.NewGuid()).Build() : null;
-        _repository.Setup(repository => repository.FindAsync(id, CancellationToken.None)).ReturnsAsync(domain);
+        _ownedDomains
+            .Setup(provider => provider.GetRequiredAsync(
+                id,
+                CancellationToken.None))
+            .ThrowsAsync(new DomainNotFoundException(id));
 
-        await Assert.ThrowsAsync<DomainNotFoundException>(
-            () => _handler.Handle(new GetDomainByIdQuery(id), CancellationToken.None));
+        // Act
+        var action = () => _handler.Handle(
+            new GetDomainByIdQuery(id),
+            CancellationToken.None);
 
+        // Assert
+        await Assert.ThrowsAsync<DomainNotFoundException>(action);
         _checks.VerifyNoOtherCalls();
-        _mapper.VerifyNoOtherCalls();
     }
 
     /// <summary>
@@ -118,16 +138,22 @@ public class GetDomainByIdQueryHandlerTests
     [Fact]
     public async Task Query_RequiresAuthenticationAndDoesNotUseQueryCache()
     {
+        // Arrange
         var query = new GetDomainByIdQuery(_domainId);
-        Assert.IsAssignableFrom<INeedAuthentication>(query);
-        Assert.False(typeof(ICacheableQuery).IsAssignableFrom(query.GetType()));
         _currentUser.SetupGet(user => user.IsAuthenticated).Returns(false);
         var behavior = new AuthenticationBehavior<GetDomainByIdQuery, DomainResponse>(_currentUser.Object);
 
-        await Assert.ThrowsAsync<NonAuthenticatedException>(() => behavior.Handle(
-            query, ct => _handler.Handle(query, ct), CancellationToken.None));
+        // Act
+        var action = () => behavior.Handle(
+            query,
+            ct => _handler.Handle(query, ct),
+            CancellationToken.None);
 
-        _repository.VerifyNoOtherCalls();
+        // Assert
+        Assert.IsAssignableFrom<INeedAuthentication>(query);
+        Assert.False(typeof(ICacheableQuery).IsAssignableFrom(query.GetType()));
+        await Assert.ThrowsAsync<NonAuthenticatedException>(action);
+        _ownedDomains.VerifyNoOtherCalls();
         _checks.VerifyNoOtherCalls();
     }
 

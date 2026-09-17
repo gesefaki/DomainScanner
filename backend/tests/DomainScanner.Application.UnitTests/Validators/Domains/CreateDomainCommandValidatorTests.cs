@@ -24,11 +24,14 @@ public class CreateDomainCommandValidatorTests
     [Fact]
     public void Validate_WhenRequestIsValid_HasNoErrors()
     {
+        // Arrange
         var command = new DomainCommandBuilder()
             .BuildCreateCommand();
 
+        // Act
         var result = _validator.TestValidate(command);
 
+        // Assert
         result.ShouldNotHaveAnyValidationErrors();
     }
 }

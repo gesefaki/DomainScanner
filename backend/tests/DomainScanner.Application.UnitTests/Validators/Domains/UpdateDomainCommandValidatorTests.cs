@@ -18,11 +18,14 @@ public class UpdateDomainCommandValidatorTests
     [Fact]
     public void Validate_WhenRequestIsValid_HasNoErrors()
     {
+        // Arrange
         var command = new DomainCommandBuilder()
             .BuildUpdateCommand();
 
+        // Act
         var result = _validator.TestValidate(command);
 
+        // Assert
         result.ShouldNotHaveAnyValidationErrors();
     }
     
@@ -32,12 +35,15 @@ public class UpdateDomainCommandValidatorTests
     [Fact]
     public void Validate_WhenAddressViolatesCommonRules_HasAddressError()
     {
+        // Arrange
         var command = new DomainCommandBuilder()
             .WithAddress("ftp://example.com")
             .BuildUpdateCommand();
-        
+
+        // Act
         var result = _validator.TestValidate(command);
 
+        // Assert
         result.ShouldHaveValidationErrorFor(x => x.Request.Address)
             .WithErrorMessage("Domain URL must be a valid HTTP or HTTPS URL.");
     }

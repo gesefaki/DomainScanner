@@ -1,4 +1,5 @@
-﻿using DomainScanner.Application.Abstractions.Persistence.Common;
+﻿using DomainScanner.Application.Abstractions.Auth;
+using DomainScanner.Application.Abstractions.Persistence.Common;
 using DomainScanner.Application.Abstractions.Scanners;
 using DomainScanner.Contracts.Exceptions.Domains;
 using DomainScanner.Contracts.Helpers;
@@ -9,30 +10,31 @@ using MediatR;
 namespace DomainScanner.Application.Handlers.Domains.Queries.GetHttpResponse;
 
 /// <summary>
-/// Handles <see cref="GetHttpResponseQuery"/>
+/// Handles <see cref="GetHttpResponseQuery"/> by verifying domain ownership
+/// and executing a basic HTTP check.
 /// </summary>
 public class GetHttpResponseQueryHandler : IRequestHandler<GetHttpResponseQuery, HttpResponseObject>
 {
-    private readonly IReadRepository<DomainEntity, Guid> _repository;
+    private readonly IOwnedDomainProvider _ownedDomains;
     private readonly IHttpScanner _http;
 
-    public GetHttpResponseQueryHandler(IReadRepository<DomainEntity, Guid> repository, IHttpScanner http)
+    public GetHttpResponseQueryHandler(IOwnedDomainProvider ownedDomains, IHttpScanner http)
     {
+        _ownedDomains = ownedDomains;
         _http = http;
-        _repository = repository;
     }
 
     /// <inheritdoc />
     public async Task<HttpResponseObject> Handle(GetHttpResponseQuery request, CancellationToken ct)
     {
-        var domain = await _repository.FindAsync(request.Id, ct);
-        if (domain is null)
-        {
-            throw new DomainNotFoundException(request.Id);
-        }
-        
-        var uri = DomainsHelper.AddressToUri(domain);
+        var domain = await _ownedDomains.GetRequiredAsync(
+            request.Id,
+            ct);
 
-        return await _http.GetHttpResponseAsync(uri!, ct);
+        var uri = DomainsHelper.AddressToUri(domain)
+                  ?? throw new DomainInvalidAddressFormatException(
+                      domain.Address);
+
+        return await _http.GetHttpResponseAsync(uri, ct);
     }
 }

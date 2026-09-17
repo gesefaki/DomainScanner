@@ -4,7 +4,8 @@ using MediatR;
 namespace DomainScanner.Application.Handlers.Domains.Commands.DeleteDomain;
 
 /// <summary>
-/// Command to delete DomainEntity from database.
+/// Command to delete a domain owned by the current authenticated user from the database.
 /// </summary>
-/// <param name="Id">Unique identifier of DomainEntity which needs to be deleted.</param>
-public record DeleteDomainCommand(Guid Id) : ICommand<Unit>;
+/// <param name="Id">Unique identifier of the domain to delete.</param>
+public record DeleteDomainCommand(Guid Id)
+    : ICommand<Unit>, INeedAuthentication;
