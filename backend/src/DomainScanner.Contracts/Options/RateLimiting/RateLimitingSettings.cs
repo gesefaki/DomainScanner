@@ -67,9 +67,15 @@ public sealed class RateLimitingSettings
     public SlidingWindowSettings Scan { get; init; } = new();
 
     /// <summary>
-    /// Concurrency settings for domain scanning operations.
+    /// Maximum concurrent scan requests per authenticated user or anonymous client IP.
     /// </summary>
     public ConcurrencySettings ScanConcurrency { get; init; } = new();
+    
+    /// <summary>
+    /// Concurrency budget shared by all scan requests within one API process.
+    /// Separate API replicas have independent budgets; background workers are not included.
+    /// </summary>
+    public ConcurrencySettings GlobalScanConcurrency { get; init; } = new();
 
     /// <summary>
     /// Determines whether all rate limiting settings are valid.
@@ -80,7 +86,8 @@ public sealed class RateLimitingSettings
         Auth.IsValid() &&
         Login.IsValid() &&
         Scan.IsValid() &&
-        ScanConcurrency.IsValid();
+        ScanConcurrency.IsValid() &&
+        GlobalScanConcurrency.IsValid();
 }
 
 /// <summary>

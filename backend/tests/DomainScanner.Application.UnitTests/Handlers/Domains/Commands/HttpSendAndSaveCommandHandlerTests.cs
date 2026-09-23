@@ -2,7 +2,6 @@ using DomainScanner.Application.Abstractions.Persistence;
 using DomainScanner.Application.Abstractions.Scanners;
 using DomainScanner.Application.Handlers.Domains.Commands.HttpSendAndSave;
 using DomainScanner.Application.UnitTests.TestData.Domains;
-using DomainScanner.Application.UnitTests.TestData.Mocks;
 using DomainScanner.Contracts.Exceptions.Domains;
 using DomainScanner.Domain.Entities;
 using FluentAssertions;
@@ -15,7 +14,7 @@ namespace DomainScanner.Application.UnitTests.Handlers.Domains.Commands;
 /// </summary>
 public class HttpSendAndSaveCommandHandlerTests
 {
-    private readonly Mock<IRepository<DomainEntity, Guid>> _domainsRepository = new();
+    private readonly Mock<IDomainScanRepository> _domainsRepository = new();
     private readonly Mock<IDomainCheckExecutor> _executor = new();
     private readonly HttpSendAndSaveCommandHandler _handler;
 
@@ -29,7 +28,7 @@ public class HttpSendAndSaveCommandHandlerTests
     }
 
     /// <summary>
-    /// An existing domain is passed to the shared check executor and its result is returned.
+    /// An eligible monitored domain is passed to the shared check executor and its result is returned.
     /// </summary>
     [Fact]
     public async Task Handle_WhenDomainExists_DelegatesToExecutorAndReturnsResult()
@@ -48,7 +47,8 @@ public class HttpSendAndSaveCommandHandlerTests
             IsActive = true
         };
 
-        _domainsRepository.SetupFindAsync(_domainId, domain);
+        _domainsRepository.Setup(x => x.GetForScanAsync(_domainId, CancellationToken.None))
+            .ReturnsAsync(domain);
         _executor
             .Setup(x => x.ExecuteAndSaveAsync(
                 domain,
@@ -68,14 +68,15 @@ public class HttpSendAndSaveCommandHandlerTests
     }
 
     /// <summary>
-    /// A missing domain produces a not-found error without invoking the check executor.
+    /// A missing or no-longer-eligible domain is rejected without invoking the check executor.
     /// </summary>
     [Fact]
     public async Task Handle_WhenDomainDoesNotExist_ThrowsAndDoesNotExecuteCheck()
     {
         // Arrange
         var command = new HttpSendAndSaveCommand(_domainId);
-        _domainsRepository.SetupFindAsync(_domainId, (DomainEntity?)null);
+        _domainsRepository.Setup(x => x.GetForScanAsync(_domainId, CancellationToken.None))
+            .ReturnsAsync((DomainEntity?)null);
 
         // Act
         var action = () => _handler.Handle(

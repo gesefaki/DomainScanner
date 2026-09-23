@@ -101,6 +101,11 @@ public sealed class ExceptionHandlerMiddleware
                 StatusCode = 429,
                 Message = "Login is temporarily blocked. Please try again later."
             },
+            DomainQuotaExceededException => new ErrorResponse
+            {
+                StatusCode = 429,
+                Message = "Domain quota exceeded. Please try again later."
+            },
             LoginProtectionUnavailableException => new ErrorResponse()
             {
                 StatusCode = 503,

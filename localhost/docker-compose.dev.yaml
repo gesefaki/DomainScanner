@@ -88,6 +88,8 @@ services:
       ReverseProxy__Enabled: "false"
         
       LoginAccountKeyOptions__HmacSecret: ${LOGIN_ACCOUNT_KEY_SECRET}
+      
+      DomainQuota__MaxDomainsPerUser: ${MAX_DOMAINS_PER_USER}
     
     volumes:
       - data-protection-dev:/var/lib/domainscanner/keys
@@ -136,6 +138,9 @@ services:
       DomainChecksWorker__CronExpression: ${WORKER_CRON_EXPRESSION}
       DomainChecksWorker__QueueName: ${WORKER_QUEUE_NAME}
       DomainChecksWorker__BatchSize: ${WORKER_BATCH_SIZE}
+      DomainChecksWorker__MaxDomainsPerRun: ${WORKER_MAX_DOMAINS_PER_RUN}
+      DomainChecksWorker__RetentionDays: ${WORKER_RETENTION_DAYS}
+      DomainChecksWorker__MaxResultsPerDomain: ${WORKER_MAX_RESULTS_PER_DOMAIN}
     networks:
       - domainscanner-dev
 

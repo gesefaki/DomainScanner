@@ -116,4 +116,12 @@ public class Repository<TEntity, TId> : IRepository<TEntity, TId>
 
         _dbSet.Remove(entity);
     }
+
+    /// <inheritdoc />
+    public virtual async Task<int> CountAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken ct)
+    {
+        return await _dbSet
+            .IgnoreAutoIncludes()
+            .CountAsync(predicate, ct);
+    }
 }

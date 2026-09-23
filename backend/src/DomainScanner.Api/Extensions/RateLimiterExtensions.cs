@@ -8,34 +8,30 @@ using Microsoft.AspNetCore.RateLimiting;
 
 namespace DomainScanner.Api.Extensions;
 
-/// <summary>
-/// Provides extension methods for configuring API rate limiting.
-/// </summary>
+/// <summary>Registers per-client request quotas and per-client and process-wide scan concurrency limits.</summary>
 public static class RateLimiterExtensions
 {
     private const string GlobalScanPartition = "global-scan";
     private const string NonScanPartition = "non-scan";
 
-    /// <summary>
-    /// Adds and configures rate limiting policies used by the API,
-    /// including per-client sliding-window limits and a global
-    /// concurrency limit for scan endpoints.
-    /// </summary>
-    /// <param name="services">
-    /// The service collection to which rate limiting services are added.
-    /// </param>
-    /// <param name="configuration">
-    /// App configuration.
-    /// </param>
-    /// <returns>
-    /// The same service collection instance for further configuration.
-    /// </returns>
-    public static IServiceCollection AddAndConfigureRateLimiter(this IServiceCollection services,
+    /// <summary>Configures validated rate limiting options and HTTP 429 responses.</summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="configuration">Configuration containing the RateLimiting section.</param>
+    /// <returns>The service collection.</returns>
+    /// <remarks>
+    /// Only endpoints marked with the scan policy acquire concurrency permits.
+    /// The shared partition limits one API process, not background workers or other replicas.
+    /// Client partitions use the authenticated subject, falling back to the remote IP address.
+    /// </remarks>
+    public static IServiceCollection AddAndConfigureRateLimiter(
+        this IServiceCollection services,
         IConfiguration configuration)
     {
-        var section = configuration.GetRequiredSection(RateLimitingSettings.SectionName);
+        var section = configuration.GetRequiredSection(
+            RateLimitingSettings.SectionName);
 
-        services.AddOptions<RateLimitingSettings>()
+        services
+            .AddOptions<RateLimitingSettings>()
             .Bind(section)
             .Validate(
                 settings => settings.IsValid(),
@@ -45,24 +41,32 @@ public static class RateLimiterExtensions
         var settings = section.Get<RateLimitingSettings>()
                        ?? throw new InvalidOperationException(
                            "Rate limiting configuration is missing.");
-        
+
         services.AddRateLimiter(options =>
         {
-            // Reject model
-            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+            options.RejectionStatusCode =
+                StatusCodes.Status429TooManyRequests;
 
-            options.OnRejected = async (rejected, cancellationToken) =>
+            options.OnRejected = async (
+                rejected,
+                cancellationToken) =>
             {
                 var context = rejected.HttpContext;
-                context.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+
+                context.Response.StatusCode =
+                    StatusCodes.Status429TooManyRequests;
 
                 if (rejected.Lease.TryGetMetadata(
                         MetadataName.RetryAfter,
                         out var retryAfter))
                 {
                     context.Response.Headers.RetryAfter =
-                        Math.Max(1, (int)Math.Ceiling(retryAfter.TotalSeconds))
-                            .ToString(CultureInfo.InvariantCulture);
+                        Math.Max(
+                                1,
+                                (int)Math.Ceiling(
+                                    retryAfter.TotalSeconds))
+                            .ToString(
+                                CultureInfo.InvariantCulture);
                 }
 
                 var logger = context.RequestServices
@@ -70,163 +74,154 @@ public static class RateLimiterExtensions
                     .CreateLogger("RateLimiting");
 
                 logger.LogWarning(
-                    "Rate limit exceeded for {Method} {Path}. TraceId: {TraceId}",
+                    "Rate limit exceeded for {Method} {Path}. " +
+                    "TraceId: {TraceId}",
                     context.Request.Method,
                     context.Request.Path,
-                    context.TraceIdentifier
-                );
+                    context.TraceIdentifier);
 
                 await context.Response.WriteAsJsonAsync(
                     new ErrorResponse
                     {
-                        StatusCode = StatusCodes.Status429TooManyRequests,
-                        Message = "Too many requests. Please try again later."
-                    }, cancellationToken);
+                        StatusCode =
+                            StatusCodes.Status429TooManyRequests,
+                        Message =
+                            "Too many requests. Please try again later."
+                    },
+                    cancellationToken);
             };
 
-            // Read
             options.AddPolicy(
                 RateLimitingSettings.Policies.Read,
                 context => CreateSlidingWindowPartition(
                     context,
-                    settings.Read)
-            );
+                    settings.Read));
 
-            // Write
             options.AddPolicy(
                 RateLimitingSettings.Policies.Write,
                 context => CreateSlidingWindowPartition(
                     context,
-                    settings.Write)
-            );
+                    settings.Write));
 
-            // Auth
             options.AddPolicy(
                 RateLimitingSettings.Policies.Auth,
                 context => CreateSlidingWindowPartition(
                     context,
-                    settings.Auth)
-            );
+                    settings.Auth));
 
-            // Login
             options.AddPolicy(
                 RateLimitingSettings.Policies.Login,
                 context => CreateSlidingWindowPartition(
                     context,
-                    settings.Login)
-                );
+                    settings.Login));
 
-            // Scan
             options.AddPolicy(
                 RateLimitingSettings.Policies.Scan,
                 context => CreateSlidingWindowPartition(
                     context,
                     settings.Scan));
-
+            
             options.GlobalLimiter =
-                PartitionedRateLimiter.Create<HttpContext, string>(context =>
-                {
-                    if (!IsScanEndpoint(context))
-                    {
-                        return RateLimitPartition.GetNoLimiter("no-limit")!;
-                    }
-
-                    var key = GetClientPartitionKey(context);
-
-                    return RateLimitPartition.GetConcurrencyLimiter(
-                        key,
-                        _ => new ConcurrencyLimiterOptions
-                        {
-                            PermitLimit = settings.ScanConcurrency.PermitLimit,
-                            QueueLimit = settings.ScanConcurrency.QueueLimit,
-                            QueueProcessingOrder = QueueProcessingOrder.OldestFirst
-                        })!;
-                });
+                PartitionedRateLimiter.CreateChained<HttpContext>(
+                    CreateGlobalScanLimiter(
+                        settings.GlobalScanConcurrency),
+                    CreatePerClientScanLimiter(
+                        settings.ScanConcurrency));
         });
 
         return services;
     }
 
-    /// <summary>
-    /// Determines whether the current request targets an endpoint
-    /// configured with the scan rate limiting policy.
-    /// </summary>
-    /// <param name="context">
-    /// The HTTP context associated with the current request.
-    /// </param>
-    /// <returns>
-    /// <see langword="true"/> if the selected endpoint uses the scan
-    /// rate limiting policy; otherwise, <see langword="false"/>.
-    /// </returns>
-    private static bool IsScanEndpoint(HttpContext context)
+    private static PartitionedRateLimiter<HttpContext>
+        CreateGlobalScanLimiter(
+            ConcurrencySettings settings)
+    {
+        return PartitionedRateLimiter.Create<HttpContext, string>(
+            context =>
+            {
+                if (!IsScanEndpoint(context))
+                {
+                    return RateLimitPartition.GetNoLimiter(
+                        NonScanPartition);
+                }
+                
+                return RateLimitPartition.GetConcurrencyLimiter(
+                    GlobalScanPartition,
+                    _ => CreateConcurrencyOptions(settings));
+            });
+    }
+
+    private static PartitionedRateLimiter<HttpContext>
+        CreatePerClientScanLimiter(
+            ConcurrencySettings settings)
+    {
+        return PartitionedRateLimiter.Create<HttpContext, string>(
+            context =>
+            {
+                if (!IsScanEndpoint(context))
+                {
+                    return RateLimitPartition.GetNoLimiter(
+                        NonScanPartition);
+                }
+
+                return RateLimitPartition.GetConcurrencyLimiter(
+                    GetClientPartitionKey(context),
+                    _ => CreateConcurrencyOptions(settings));
+            });
+    }
+
+    private static ConcurrencyLimiterOptions
+        CreateConcurrencyOptions(
+            ConcurrencySettings settings)
+    {
+        return new ConcurrencyLimiterOptions
+        {
+            PermitLimit = settings.PermitLimit,
+            QueueLimit = settings.QueueLimit,
+            QueueProcessingOrder =
+                QueueProcessingOrder.OldestFirst
+        };
+    }
+
+    private static RateLimitPartition<string>
+        CreateSlidingWindowPartition(
+            HttpContext context,
+            SlidingWindowSettings settings)
+    {
+        return RateLimitPartition.GetSlidingWindowLimiter(
+            GetClientPartitionKey(context),
+            _ => new SlidingWindowRateLimiterOptions
+            {
+                PermitLimit = settings.PermitLimit,
+                Window =
+                    TimeSpan.FromSeconds(
+                        settings.WindowSeconds),
+                SegmentsPerWindow =
+                    settings.SegmentsPerWindow,
+                QueueLimit = settings.QueueLimit,
+                QueueProcessingOrder =
+                    QueueProcessingOrder.OldestFirst
+            });
+    }
+
+    private static bool IsScanEndpoint(
+        HttpContext context)
     {
         var attribute = context
             .GetEndpoint()?
             .Metadata
             .GetMetadata<EnableRateLimitingAttribute>();
 
-        return attribute?.PolicyName == RateLimitingSettings.Policies.Scan;
+        return attribute?.PolicyName ==
+               RateLimitingSettings.Policies.Scan;
     }
 
-    /// <summary>
-    /// Creates a sliding-window rate limit partition for the current client.
-    /// </summary>
-    /// <param name="context">
-    /// The HTTP context used to resolve the client partition key.
-    /// </param>
-    /// <param name="settings">
-    /// The configured sliding-window rate limiting settings.
-    /// </param>
-    /// <returns>
-    /// A sliding-window rate limit partition associated with the current client.
-    /// </returns>
-    private static RateLimitPartition<string?> CreateSlidingWindowPartition(
-        HttpContext context,
-        SlidingWindowSettings settings)
+    private static string GetClientPartitionKey(
+        HttpContext context)
     {
-        var partitionKey = GetClientPartitionKey(context);
-
-        return RateLimitPartition.GetSlidingWindowLimiter(
-            partitionKey,
-            _ => ConfigureFactory(settings));
-    }
-
-    /// <summary>
-    /// Resolves the partition key used to isolate rate limits between clients.
-    /// </summary>
-    /// <param name="context">
-    /// The HTTP context associated with the current request.
-    /// </param>
-    /// <returns>
-    /// The authenticated user's identifier when available; otherwise,
-    /// the remote IP address or the <c>anonymous</c> fallback value.
-    /// </returns>
-    private static string? GetClientPartitionKey(HttpContext context)
-    {
-        return context.User.FindFirstValue(JwtRegisteredClaimNames.Sub)
+        return context.User.FindFirstValue(
+                   JwtRegisteredClaimNames.Sub)
                ?? context.Connection.RemoteIpAddress?.ToString()
                ?? "anonymous";
-    }
-
-    /// <summary>
-    /// Creates sliding-window rate limiter options.
-    /// </summary>
-    /// <param name="settings">
-    /// The configured sliding-window rate limiting settings.
-    /// </param>
-    /// <returns>
-    /// Configured sliding-window rate limiter options.
-    /// </returns>
-    private static SlidingWindowRateLimiterOptions ConfigureFactory(
-        SlidingWindowSettings settings)
-    {
-        return new SlidingWindowRateLimiterOptions
-        {
-            PermitLimit = settings.PermitLimit,
-            Window = TimeSpan.FromSeconds(settings.WindowSeconds),
-            SegmentsPerWindow = settings.SegmentsPerWindow,
-            QueueLimit = settings.QueueLimit,
-            QueueProcessingOrder = QueueProcessingOrder.OldestFirst
-        };
     }
 }

@@ -46,7 +46,7 @@ public interface IReadRepository<TEntity, TId>
     Task<IEnumerable<TEntity>> GetAllWhereAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken ct);
 
     /// <summary>
-    /// Retrivies a batch of entities ordered by creation date.
+    /// Retrieves a batch of entities ordered by creation date.
     /// </summary>
     /// <param name="batchSize">The maximum number of entities to retrieve.</param>
     /// <param name="ct">Cancellation token provided by the user.</param>
@@ -68,4 +68,12 @@ public interface IReadRepository<TEntity, TId>
     /// <param name="ct">Cancellation token provided by the user.</param>
     /// <returns></returns>
     Task<bool> IsExistsByAttribute(Expression<Func<TEntity, bool>> predicate, CancellationToken ct);
+    
+    /// <summary>Counts entities matching the predicate without loading them.</summary>
+    /// <param name="predicate">The filter, including ownership constraints when required.</param>
+    /// <param name="ct">The cancellation token for the query.</param>
+    /// <returns>The number of matching entities.</returns>
+    Task<int> CountAsync(
+        Expression<Func<TEntity, bool>> predicate,
+        CancellationToken ct);
 }

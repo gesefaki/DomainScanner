@@ -9,15 +9,15 @@ public sealed class DomainChecksWorkerOptions
     /// Configuration section name for these options.
     /// </summary>
     /// <value>
-    /// const <c>string</c> "DomainsChecksWorker".
+    /// The <c>DomainChecksWorker</c> section shared by JSON and environment configuration.
     /// </value>
-    public const string SectionName = "DomainsChecksWorker";
+    public const string SectionName = "DomainChecksWorker";
 
     /// <summary>
     /// Unique identifier for the recurring Hangfire job.
     /// </summary>
     /// <value>
-    /// <c>string</c> identifier for the reccuring job. Default is "domain-checks-recurring".
+    /// <c>string</c> identifier for the recurring job. Default is "domain-checks-recurring".
     /// </value>
     public string RecurringJobId { get; set; } = "domain-checks-recurring";
 
@@ -44,8 +44,24 @@ public sealed class DomainChecksWorkerOptions
     /// A positive integer representing the batch size. Default is 30.
     /// </value>
     /// <remarks>
-    /// All identifiers loaded for a job run are processed; this value does not limit the total
-    /// number of domains checked per run. Each domain check uses a separate dependency injection scope.
+    /// Controls sequential grouping only. <see cref="MaxDomainsPerRun"/> limits the selection size.
+    /// Each domain check uses a separate dependency injection scope.
     /// </remarks>
     public int BatchSize { get; set; } = 30;
+
+    /// <summary>
+    /// Maximum eligible domain identifiers selected per run, oldest updated first. Defaults to 500.
+    /// </summary>
+    public int MaxDomainsPerRun { get; set; } = 500;
+
+    /// <summary>
+    /// Age in days after which check results are deleted during post-run cleanup. Defaults to 30.
+    /// </summary>
+    public int RetentionDays { get; set; } = 30;
+    
+    /// <summary>
+    /// Maximum newest results retained per domain after cleanup. Defaults to 100.
+    /// This is a cleanup target, not a hard limit between job runs.
+    /// </summary>
+    public int MaxResultsPerDomain { get; set; } = 100;
 }

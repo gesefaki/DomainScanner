@@ -46,6 +46,12 @@ public static class DependencyInjection
         services.AddScoped(typeof(IRepository<,>), typeof(Repository<,>));
         services.AddScoped(typeof(IReadRepository<,>), typeof(Repository<,>));
         services.AddScoped(typeof(IWriteRepository<,>), typeof(Repository<,>));
+        
+        // Register worker repository
+        services.AddScoped<IDomainScanRepository, DomainScanRepository>();
+        
+        // Register check retention services
+        services.AddScoped<IDomainCheckRetentionService, DomainCheckRetentionService>();
 
         // Register UOW
         services.AddScoped<IUnitOfWork, UnitOfWork>();
