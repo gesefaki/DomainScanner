@@ -218,14 +218,17 @@ partitioned by remote IP address.
 | `login` | 10 | 60 seconds | Login endpoint |
 | `scan` | 15 | 60 seconds | Domain HTTP checks |
 
-Scan endpoints additionally allow up to five concurrent requests per client.
+Scan endpoints additionally allow up to three concurrent requests per client
+and 20 concurrent requests across the API process.
 Rate-limited responses return `429 Too Many Requests` and include `Retry-After`
 when the limiter can calculate it. The `/health` endpoint is excluded from rate
 limiting.
 
 ## Authentication and CSRF
 
-Successful login stores the JWT in a secure, HTTP-only session cookie. For
+Successful login stores a one-hour JWT in a secure, HTTP-only session cookie
+with the same lifetime. Inactive accounts cannot sign in; account activation
+and deactivation are not exposed by the API. For
 state-changing API requests (`POST`, `PUT`, `PATCH`, and `DELETE`):
 
 1. Request a token from `GET /api/v1/auth/csrf`.
@@ -246,8 +249,6 @@ Most endpoints require authentication.
 | `POST` | `/api/v1/users/register` | Register a user |
 | `GET` | `/api/v1/users/me` | Get the current user |
 | `GET` | `/api/v1/users/me/domains` | Get the current user's domains |
-| `PUT` | `/api/v1/users/me/activate` | Activate the current user |
-| `PUT` | `/api/v1/users/me/deactivate` | Deactivate the current user |
 | `DELETE` | `/api/v1/users/me` | Delete the current user |
 | `GET` | `/api/v1/domains/{id}` | Get a domain |
 | `POST` | `/api/v1/domains` | Add a domain |

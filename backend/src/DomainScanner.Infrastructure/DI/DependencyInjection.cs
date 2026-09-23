@@ -1,3 +1,4 @@
+using System.Text;
 using DomainScanner.Application.Abstractions.Auth;
 using DomainScanner.Application.Abstractions.Cache;
 using DomainScanner.Application.Abstractions.Persistence;
@@ -177,8 +178,8 @@ public static class DependencyInjection
             .Bind(configuration.GetRequiredSection(
                 nameof(JwtOptions)))
             .Validate(
-                options => !string.IsNullOrWhiteSpace(options.SecretKey),
-                "JWT secret key is required.")
+                options => Encoding.UTF8.GetByteCount(options.SecretKey ?? string.Empty) >= 32,
+                "JWT secret key must be at least 32 UTF-8 bytes.")
             .Validate(
                 options => !string.IsNullOrWhiteSpace(options.Issuer),
                 "JWT issuer is required.")
