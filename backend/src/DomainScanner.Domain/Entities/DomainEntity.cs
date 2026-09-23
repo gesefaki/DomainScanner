@@ -10,6 +10,10 @@ public class DomainEntity : BaseEntity
     /// The domain address as a string. Examples: "example.com", "subdomain.example.org".
     /// </summary>
     public string Address { get; set; } = string.Empty;
+
+    /// <summary>Whether scheduled monitoring is enabled. Defaults to true for new domains.</summary>
+    /// <remarks>Independent of <see cref="BaseEntity.IsActive"/>, which stores measured availability.</remarks>
+    public bool MonitoringEnabled { get; set; } = true;
     
     /// <summary>
     /// Unique identifier of the user who owns or manages this domain.

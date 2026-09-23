@@ -6,34 +6,41 @@ using MediatR;
 
 namespace DomainScanner.Application.Handlers.Domains.Commands.HttpSendAndSave;
 
-/// <summary>
-/// Handles <see cref="HttpSendAndSaveCommand"/> for background processing by loading a domain
-/// without applying HTTP user ownership checks and delegating the check to <see cref="IDomainCheckExecutor"/>.
-/// </summary>
+/// <summary>Executes an internal scheduled check after revalidating monitoring and owner eligibility.</summary>
+/// <remarks>Does not use the current HTTP user; user-initiated scans use a separate owned-domain handler.</remarks>
 public sealed class HttpSendAndSaveCommandHandler
-    : IRequestHandler<HttpSendAndSaveCommand, DomainCheckResult>
+    : IRequestHandler<
+        HttpSendAndSaveCommand,
+        DomainCheckResult>
 {
-    private readonly IRepository<DomainEntity, Guid> _domainsRepository;
+    private readonly IDomainScanRepository _domains;
     private readonly IDomainCheckExecutor _executor;
 
     public HttpSendAndSaveCommandHandler(
-        IRepository<DomainEntity, Guid> domainsRepository,
+        IDomainScanRepository domains,
         IDomainCheckExecutor executor)
     {
-        _domainsRepository = domainsRepository;
+        _domains = domains;
         _executor = executor;
     }
 
-    /// <inheritdoc />
+    /// <summary>Loads an eligible domain and delegates scanning and persistence to the executor.</summary>
+    /// <param name="request">The domain to check.</param>
+    /// <param name="ct">The cancellation token.</param>
+    /// <returns>The saved check result.</returns>
+    /// <exception cref="DomainNotFoundException">The domain is missing or no longer eligible for monitoring.</exception>
     public async Task<DomainCheckResult> Handle(
         HttpSendAndSaveCommand request,
         CancellationToken ct)
     {
-        var domain = await _domainsRepository.FindAsync(request.Id, ct);
+        var domain = await _domains.GetForScanAsync(
+            request.Id,
+            ct);
 
         if (domain is null)
         {
-            throw new DomainNotFoundException(request.Id);
+            throw new DomainNotFoundException(
+                request.Id);
         }
 
         return await _executor.ExecuteAndSaveAsync(

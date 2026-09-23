@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace DomainScanner.Api.IntegrationTests.RateLimiting;
 
 /// <summary>
-/// Integration tests for Rate Limiting politics. Tests behavior within a single user account.
+/// Verifies per-user rate limits and the process-wide scan concurrency limit.
 /// </summary>
 public class RateLimitingBehaviorTests
 {
@@ -176,7 +176,7 @@ public class RateLimitingBehaviorTests
     }
 
     [Fact]
-    public async Task ConcurrencyScan_RejectsSixthConcurrentRequest()
+    public async Task ConcurrencyScan_RejectsFourthConcurrentRequest()
     {
         // Arrange
         const string endpoint =
@@ -195,7 +195,7 @@ public class RateLimitingBehaviorTests
             new CancellationTokenSource(TimeSpan.FromSeconds(5));
 
         var inFlightRequests = Enumerable
-            .Range(1, 5)
+            .Range(1, 3)
             .Select(_ => client.GetAsync(endpoint, timeout.Token))
             .ToArray();
 
@@ -203,9 +203,9 @@ public class RateLimitingBehaviorTests
 
         try
         {
-            // All five requests passed through both limiters and were processed.
+            // All three requests passed through both concurrency limiters.
             await probe.WaitUntilEnteredAsync(
-                expectedCount: 5,
+                expectedCount: 3,
                 timeout.Token);
 
             // Act
@@ -264,15 +264,18 @@ public class RateLimitingBehaviorTests
             new CancellationTokenSource(TimeSpan.FromSeconds(5));
 
         var inFlightRequests = Enumerable
-            .Range(1, 5)
+            .Range(1, 3)
             .Select(_ => client.GetAsync(endpoint, timeout.Token))
             .ToArray();
 
-        await probe.WaitUntilEnteredAsync(
-            expectedCount: 5,
-            timeout.Token);
-        
-        probe.Release();
+        try
+        {
+            await probe.WaitUntilEnteredAsync(expectedCount: 3, timeout.Token);
+        }
+        finally
+        {
+            probe.Release();
+        }
 
         var completedResponse =
             await Task.WhenAll(inFlightRequests);
@@ -301,5 +304,61 @@ public class RateLimitingBehaviorTests
                 response.Dispose();
             }
         }
+    }
+
+    [Fact]
+    public async Task GlobalConcurrencyScan_IsSharedAcrossUsers_AndReleasesSlots()
+    {
+        // Arrange
+        const string endpoint = "/__tests/rate-limiting/scan-concurrency";
+        await using var factory = new DomainScannerApiFactory();
+        var probe = factory.Services.GetRequiredService<ScanConcurrencyProbe>();
+        // Twenty users avoid exhausting the per-user limit of three.
+        var clients = Enumerable.Range(0, 21)
+            .Select(_ => factory.CreateAuthenticatedClient(factory, Guid.NewGuid()))
+            .ToArray();
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+        var requests = clients.Take(20)
+            .Select(client => client.GetAsync(endpoint, timeout.Token)).ToArray();
+        HttpStatusCode rejectedStatus;
+        HttpStatusCode[] allowedStatuses;
+        HttpStatusCode nextStatus;
+
+        // Act
+        try
+        {
+            try
+            {
+                await probe.WaitUntilEnteredAsync(20, timeout.Token);
+                using var rejected = await clients[20].GetAsync(endpoint, timeout.Token);
+                rejectedStatus = rejected.StatusCode;
+            }
+            finally
+            {
+                probe.Release();
+            }
+
+            var responses = await Task.WhenAll(requests);
+            try
+            {
+                allowedStatuses = responses.Select(response => response.StatusCode).ToArray();
+            }
+            finally
+            {
+                foreach (var response in responses) response.Dispose();
+            }
+
+            using var next = await clients[20].GetAsync(endpoint, timeout.Token);
+            nextStatus = next.StatusCode;
+        }
+        finally
+        {
+            foreach (var client in clients) client.Dispose();
+        }
+
+        // Assert
+        Assert.Equal(HttpStatusCode.TooManyRequests, rejectedStatus);
+        Assert.All(allowedStatuses, status => Assert.Equal(HttpStatusCode.NoContent, status));
+        Assert.Equal(HttpStatusCode.NoContent, nextStatus);
     }
 }

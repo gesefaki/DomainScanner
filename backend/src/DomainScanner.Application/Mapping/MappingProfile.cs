@@ -12,6 +12,7 @@ namespace DomainScanner.Application.Mapping;
 /// AutoMapper profile that defines all mapping configurations between domain entities and DTOs.
 /// Provides centralized mapping rules for the entire application.
 /// </summary>
+/// <remarks>Domain responses expose the monitoring preference, independently of check availability.</remarks>
 public class MappingProfile : Profile
 {
     /// <summary>
@@ -43,7 +44,7 @@ public class MappingProfile : Profile
             .ConstructUsing((src, context) => new DomainResponse(
                 src.Id,
                 src.Address,
-                src.IsActive,
+                src.MonitoringEnabled,
                 src.UserId,
                 context.Mapper.Map<HttpResponse[]>(src.CheckResults ?? new List<DomainCheckResult>())));
         

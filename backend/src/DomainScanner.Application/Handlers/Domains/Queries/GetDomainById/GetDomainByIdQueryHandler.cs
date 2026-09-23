@@ -42,7 +42,7 @@ public class GetDomainByIdQueryHandler : IRequestHandler<GetDomainByIdQuery, Dom
         return new DomainResponse(
             domain.Id,
             domain.Address,
-            domain.IsActive,
+            domain.MonitoringEnabled,
             domain.UserId,
             checks
                 .OrderByDescending(check => check.CreatedAt)

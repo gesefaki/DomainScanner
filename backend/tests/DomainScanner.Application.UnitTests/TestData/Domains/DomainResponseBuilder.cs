@@ -12,7 +12,7 @@ public sealed class DomainResponseBuilder
 {
     private Guid _domainId = Guid.NewGuid();
     private string _address = "https://example.com/";
-    private bool? _isActive = true;
+    private bool? _monitoringEnabled = true;
     private Guid _userId = Guid.NewGuid();
     private IEnumerable<HttpResponse> _checks = [];
 
@@ -39,22 +39,22 @@ public sealed class DomainResponseBuilder
     }
 
     /// <summary>
-    /// Sets the domain as active/available.
+    /// Enables automatic monitoring in the response.
     /// </summary>
     /// <returns>The current builder instance.</returns>
-    public DomainResponseBuilder Active()
+    public DomainResponseBuilder EnableMonitoring()
     {
-        _isActive = true;
+        _monitoringEnabled = true;
         return this;
     }
     
     /// <summary>
-    /// Sets the domain as inactive/unavailable.
+    /// Disables automatic monitoring in the response.
     /// </summary>
     /// <returns>The current builder instance.</returns>
-    public DomainResponseBuilder Inactive()
+    public DomainResponseBuilder DisableMonitoring()
     {
-        _isActive = false;
+        _monitoringEnabled = false;
         return this;
     }
     
@@ -83,14 +83,14 @@ public sealed class DomainResponseBuilder
     /// <summary>
     /// Build and returns a <see cref="DomainResponse"/> based on the provided <see cref="DomainEntity"/>.
     /// </summary>
-    /// <param name="baseEntity"></param>
+    /// <param name="baseEntity">The source domain, including its monitoring preference.</param>
     /// <returns>A new <see cref="DomainResponse"/> instance.</returns>
     public DomainResponse Build(DomainEntity baseEntity)
     {
         return new DomainResponse(
             Id: baseEntity.Id,
             Address: baseEntity.Address,
-            IsAvailable: baseEntity.IsActive,
+            MonitoringEnabled: baseEntity.MonitoringEnabled,
             UserId: baseEntity.UserId,
             Checks: []
             );
@@ -105,7 +105,7 @@ public sealed class DomainResponseBuilder
         return new DomainResponse(
             Id: _domainId,
             Address: _address,
-            IsAvailable: _isActive,
+            MonitoringEnabled: _monitoringEnabled,
             UserId: _userId,
             Checks: _checks
             );

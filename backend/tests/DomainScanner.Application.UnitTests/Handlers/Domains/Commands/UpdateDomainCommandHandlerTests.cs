@@ -33,10 +33,12 @@ public class UpdateDomainCommandHandlerTests
     }
 
     /// <summary>
-    /// Tests that an existing domain is successfully updated and returns the expected response.
+    /// Changing monitoring updates the owned domain without overwriting measured availability.
     /// </summary>
-    [Fact]
-    public async Task Handle_WhenDomainExists_UpdatesItAndReturnsResponse()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Handle_WhenDomainExists_UpdatesMonitoringWithoutChangingAvailability(bool enabled)
     {
         // Arrange
         var domain = new DomainBuilder()
@@ -44,12 +46,15 @@ public class UpdateDomainCommandHandlerTests
             .WithAddress(FakeDomainAddress)
             .Inactive()
             .Build();
+        domain.MonitoringEnabled = !enabled;
+        domain.IsActive = !enabled;
         
         var command = new DomainCommandBuilder()
             .WithId(_fakeDomainId)
             .WithAddress(FakeDomainAddress)
-            .Active()
+            .EnableMonitoring()
             .BuildUpdateCommand();
+        command = command with { Request = command.Request with { MonitoringEnabled = enabled } };
 
         var expected = new DomainResponseBuilder().Build(domain);
 
@@ -73,7 +78,8 @@ public class UpdateDomainCommandHandlerTests
         // Assert
         result.Should().Be(expected);
         domain.Address.Should().Be(FakeDomainAddress);
-        domain.IsActive.Should().BeTrue();
+        domain.MonitoringEnabled.Should().Be(enabled);
+        domain.IsActive.Should().Be(!enabled);
 
         _repository.Verify(x => x.Update(domain), Times.Once);
         _mapper.Verify(x => x.Map<DomainResponse>(domain), Times.Once);
@@ -89,7 +95,7 @@ public class UpdateDomainCommandHandlerTests
         var command = new DomainCommandBuilder()
             .WithId(_fakeDomainId)
             .WithAddress(FakeDomainAddress)
-            .Active()
+            .EnableMonitoring()
             .BuildUpdateCommand();
         
         // Act

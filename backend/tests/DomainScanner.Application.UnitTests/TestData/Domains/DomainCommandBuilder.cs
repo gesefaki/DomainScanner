@@ -13,7 +13,7 @@ public sealed class DomainCommandBuilder
 {
     private Guid _domainId = Guid.NewGuid();
     private string _address = "https://example.com/";
-    private bool _isActive = true;
+    private bool _monitoringEnabled = true;
 
     /// <summary>
     /// Sets the domain ID.
@@ -38,22 +38,22 @@ public sealed class DomainCommandBuilder
     }
     
     /// <summary>
-    /// Sets the domain as active.
+    /// Enables automatic monitoring without changing the measured availability.
     /// </summary>
     /// <returns>The current builder instance.</returns>
-    public DomainCommandBuilder Active()
+    public DomainCommandBuilder EnableMonitoring()
     {
-        _isActive = true;
+        _monitoringEnabled = true;
         return this;
     }
 
     /// <summary>
-    /// Sets the domain as inactive.
+    /// Disables automatic monitoring without changing the measured availability.
     /// </summary>
     /// <returns>The current builder instance.</returns>
-    public DomainCommandBuilder Inactive()
+    public DomainCommandBuilder DisableMonitoring()
     {
-        _isActive = false;
+        _monitoringEnabled = false;
         return this;
     }
     
@@ -79,7 +79,7 @@ public sealed class DomainCommandBuilder
             _domainId,
             new UpdateDomainRequest(
                 Address: _address,
-                IsActive: _isActive)
+                MonitoringEnabled: _monitoringEnabled)
         );
     }
     

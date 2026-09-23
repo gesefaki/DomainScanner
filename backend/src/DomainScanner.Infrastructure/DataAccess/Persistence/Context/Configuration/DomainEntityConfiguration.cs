@@ -18,6 +18,11 @@ internal sealed class DomainEntityConfiguration : BaseEntityConfiguration<Domain
         // Address
         builder.Property(d => d.Address).HasMaxLength(150).IsRequired();
         
+        // Monitoring
+        builder.Property(d => d.MonitoringEnabled)
+            .HasDefaultValue(true)
+            .IsRequired();
+        
         // Navigation
         // User
         builder.HasOne(d => d.User)
@@ -28,7 +33,12 @@ internal sealed class DomainEntityConfiguration : BaseEntityConfiguration<Domain
         // CheckResults
         builder.HasMany(d => d.CheckResults)
             .WithOne(c => c.DomainEntity);
-        
-        
+
+        builder.HasIndex(d => new
+        {
+            d.MonitoringEnabled,
+            d.UpdatedAt,
+        });
+
     }
 }

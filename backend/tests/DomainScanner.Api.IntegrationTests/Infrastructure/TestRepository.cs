@@ -14,6 +14,18 @@ internal sealed class TestRepository<TEntity> : IRepository<TEntity, Guid>
     private readonly object _sync = new();
     private readonly List<TEntity> _entities;
 
+    /// <inheritdoc />
+    public Task<int> CountAsync(
+        Expression<Func<TEntity, bool>> predicate,
+        CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        lock (_sync)
+        {
+            return Task.FromResult(_entities.Count(predicate.Compile()));
+        }
+    }
+
     /// <summary>
     /// Initializes a repository with optional seed data.
     /// </summary>

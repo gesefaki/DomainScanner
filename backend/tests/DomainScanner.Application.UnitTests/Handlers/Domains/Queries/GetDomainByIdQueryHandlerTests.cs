@@ -38,11 +38,15 @@ public class GetDomainByIdQueryHandlerTests
     /// The owner receives domain fields and checks loaded by DomainId, newest first with descending
     /// identifiers breaking ties. Navigation collections and checks for other domains are excluded.
     /// </summary>
-    [Fact]
-    public async Task Handle_WhenDomainBelongsToCurrentUser_ReturnsOrderedHistoryFromCheckRepository()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Handle_WhenDomainBelongsToCurrentUser_ReturnsOrderedHistoryFromCheckRepository(bool monitoringEnabled)
     {
         // Arrange
         var domain = new DomainBuilder().WithId(_domainId).WithUserId(_userId).Inactive().Build();
+        domain.MonitoringEnabled = monitoringEnabled;
+        domain.IsActive = !monitoringEnabled;
         domain.CheckResults.Add(new DomainCheckResult { Address = "navigation-only.example" });
         var createdAt = new DateTime(2026, 9, 15, 12, 0, 0, DateTimeKind.Utc);
         var older = CreateCheck("00000000-0000-0000-0000-000000000003", _domainId, createdAt.AddMinutes(-1), 200, true);
@@ -66,7 +70,8 @@ public class GetDomainByIdQueryHandlerTests
         Assert.Equal(domain.Id, response.Id);
         Assert.Equal(domain.UserId, response.UserId);
         Assert.Equal(domain.Address, response.Address);
-        Assert.False(response.IsAvailable);
+        // The monitoring preference must not be replaced by measured availability.
+        Assert.Equal(monitoringEnabled, response.MonitoringEnabled);
         var history = response.Checks.ToArray();
         Assert.Equal(new[] { largerId.Address, smallerId.Address, older.Address }, history.Select(check => check.Address));
         Assert.Equal(new[] { 201, 503, 200 }, history.Select(check => check.StatusCode));

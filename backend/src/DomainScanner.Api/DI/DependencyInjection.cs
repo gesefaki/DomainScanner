@@ -4,6 +4,8 @@ using DomainScanner.Api.Extensions;
 using DomainScanner.Api.Middleware;
 using DomainScanner.Application.Abstractions.Auth;
 using DomainScanner.Contracts.Options.Auth;
+using DomainScanner.Contracts.Options.Domains;
+using DomainScanner.Contracts.Options.RateLimiting;
 using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.OpenApi;
@@ -47,6 +49,15 @@ public static class DependencyInjection
         services.AddProxy(configuration);
 
         services.AddAndConfigureRateLimiter(configuration);
+
+        services
+            .AddOptions<DomainQuotaOptions>()
+            .Bind(configuration.GetRequiredSection(
+                DomainQuotaOptions.SectionName))
+            .Validate(
+                options => options.MaxDomainsPerUser > 0,
+                "Maximum domain count must be greater than zero.")
+            .ValidateOnStart();
         
         services.AddCsrfProtection(configuration);
 

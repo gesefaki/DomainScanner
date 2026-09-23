@@ -11,6 +11,7 @@ namespace DomainScanner.Application.Handlers.Domains.Commands.UpdateDomain;
 /// Handles <see cref="UpdateDomainCommand"/> by updating a domain owned by the current authenticated user.
 /// Has a <see cref="UpdateDomainCommandValidator"/> that must be passed.
 /// </summary>
+/// <remarks>Updates scheduled monitoring without overwriting the availability recorded by checks.</remarks>
 public class UpdateDomainCommandHandler : IRequestHandler<UpdateDomainCommand, DomainResponse>
 {
     private readonly IOwnedDomainProvider _ownedDomains;
@@ -37,7 +38,8 @@ public class UpdateDomainCommandHandler : IRequestHandler<UpdateDomainCommand, D
         
         // Updating entity in-memory
         domain.Address = request.Request.Address;
-        domain.IsActive = request.Request.IsActive;
+        domain.MonitoringEnabled = request.Request.MonitoringEnabled;
+        domain.UpdatedAt = DateTime.UtcNow;
         
         // Update in repository
         var updatedDomain = _repository.Update(domain);
