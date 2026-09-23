@@ -1,6 +1,4 @@
-﻿using DomainScanner.Application.Handlers.Users.Commands.ActivateUser;
-using DomainScanner.Application.Handlers.Users.Commands.DeactivateUser;
-using DomainScanner.Application.Handlers.Users.Commands.DeleteUser;
+﻿using DomainScanner.Application.Handlers.Users.Commands.DeleteUser;
 using DomainScanner.Application.Handlers.Users.Commands.RegisterUser;
 using DomainScanner.Application.Handlers.Users.Queries.GetAllUsers;
 using DomainScanner.Application.Handlers.Users.Queries.GetMyDomainsQuery;
@@ -65,32 +63,6 @@ public class UsersController : Controller
     {
         var user = await _sender.Send(new RegisterUserCommand(request), ct);
         return CreatedAtAction(nameof(Get), value: user);
-    }
-
-    /// <summary>
-    /// Activates a user account.
-    /// </summary>
-    /// <param name="ct">Cancellation token.</param>
-    /// <returns>Single <see cref="UserResponse"/>.</returns>
-    [EnableRateLimiting(RateLimitingSettings.Policies.Write)]
-    [HttpPut("me/activate")]
-    public async Task<ActionResult<UserResponse>> Activate(CancellationToken ct)
-    {
-        var result = await _sender.Send(new ActivateUserCommand(), ct);
-        return Ok(result);
-    }
-
-    /// <summary>
-    /// Deactivates a user account.
-    /// </summary>
-    /// <param name="ct">Cancellation token.</param>
-    /// <returns>Single <see cref="UserResponse"/>.</returns>
-    [EnableRateLimiting(RateLimitingSettings.Policies.Write)]
-    [HttpPut("me/deactivate")]
-    public async Task<ActionResult> Deactivate(CancellationToken ct)
-    {
-        var user = await _sender.Send(new DeactivateUserCommand(), ct);
-        return Ok(user);
     }
 
     /// <summary>

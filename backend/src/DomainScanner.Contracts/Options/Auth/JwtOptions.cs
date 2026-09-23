@@ -16,7 +16,7 @@ public class JwtOptions
     public string Audience { get; set; } = string.Empty;
 
     /// <summary>
-    /// Symmetric key user for signing and validating JWT tokens.
+    /// Symmetric key used for signing and validating JWT tokens.
     /// </summary>
     public string SecretKey { get; set; } = string.Empty;
 

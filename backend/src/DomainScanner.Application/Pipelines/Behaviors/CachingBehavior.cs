@@ -33,26 +33,21 @@ public sealed class CachingBehavior<TRequest, TResponse>
         CancellationToken ct
     )
     {
-        _logger.LogInformation("Cache requested");
-
-        string key = _cacheKeyGenerator.GenerateKey(request);
+        var key = _cacheKeyGenerator.GenerateKey(request);
 
         var cached = await _cache.GetAsync<TResponse>(key);
 
         if (cached != null)
         {
-            _logger.LogInformation("Cache is not null, returning");
+            _logger.LogDebug("Cache hit for {RequestName}", typeof(TRequest).Name);
             return cached;
         }
 
         var response = await next(ct);
 
-        await _cache.SetAsync(
-            key,
-            response
-        );
+        await _cache.SetAsync(key, response);
 
-        _logger.LogInformation("Cache setted: {Key}, {Response}", key, response);
+        _logger.LogDebug("Cache miss for {RequestName}", typeof(TRequest).Name);
 
         return response;
     }

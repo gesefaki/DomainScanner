@@ -37,31 +37,30 @@ public class LoginUserCommandHandler : IRequestHandler<LoginUserCommand, string>
     /// <inheritdoc />
     public async Task<string> Handle(LoginUserCommand request, CancellationToken ct)
     {
-        // Reduce attempt to the general form
+        // Normalize the email before deriving the login-protection key.
         var normalizedEmail = _emailNormalizer.Normalize(request.Request.Email);
         var accountKey = _accountKeyProvider.Create(normalizedEmail);
 
-        // Retrieve the status of login attempts based on the unique accountKey
+        // Check whether this account is temporarily blocked.
         var state = await _loginAttemptProtector.GetStateAsync(accountKey, ct);
 
-        // Subsequent torture attempts may be blocked once the entry limit has been reached; we're checking this
         if (state.IsBlocked)
         {
             throw new LoginTemporarilyBlockedException(state.RetryAfter);
         }
         
-        // If the attempt isn't blocked, we try to retrieve the user based on the entered credentials
+        // Look up the account by its normalized email.
         var user = await _readRepository.GetAsync(
             candidate => candidate.NormalizedEmail == normalizedEmail,
             ct);
         
-        // Verifying a password using its hash
+        // Verify the supplied password against the stored hash.
         var passwordIsValid = user is not null &&
                               _hasher.Verify(
                                   request.Request.Password,
                                   user.PasswordHash);
 
-        // If the password is incorrect, secure the attempt
+        // Record failed attempts before returning the same error for unknown accounts.
         if (!passwordIsValid)
         {
             var failure = await _loginAttemptProtector.RegisterFailureAsync(
@@ -81,11 +80,15 @@ public class LoginUserCommandHandler : IRequestHandler<LoginUserCommand, string>
             throw new UserInvalidCredentialsException();
         }
         
-        // If the attempt is successful, reset the attempt count
+        // Inactive accounts cannot obtain a new session.
+        if (!user!.IsActive)
+        {
+            throw new UserInvalidCredentialsException();
+        }
+
         await _loginAttemptProtector.ResetAsync(
             accountKey, ct);
 
-        // Generate a JWT and return it to the user
         var token = _jwtProvider.GenerateToken(user!);
         return token;
     }

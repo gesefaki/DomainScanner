@@ -306,6 +306,29 @@ public class LoginUserCommandHandlerTests
         _jwtProvider.Verify(x => x.GenerateToken(user), Times.Once);
     }
 
+    [Fact]
+    public async Task Handle_InactiveUser_DoesNotIssueToken()
+    {
+        var command = CreateCommand();
+        var user = new UserBuilder()
+            .WithEmail(RawEmail)
+            .WithNormalizedEmail(NormalizedEmail)
+            .Inactive()
+            .Build();
+
+        SetupUserLookup(user, CancellationToken.None);
+        _hasher.Setup(x => x.Verify(command.Request.Password, user.PasswordHash))
+            .Returns(true);
+
+        var action = () => _handler.Handle(command, CancellationToken.None);
+
+        await action.Should().ThrowAsync<UserInvalidCredentialsException>();
+        _loginAttemptProtector.Verify(
+            x => x.ResetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+        _jwtProvider.Verify(x => x.GenerateToken(It.IsAny<User>()), Times.Never);
+    }
+
     private static LoginUserCommand CreateCommand()
     {
         return new UserCommandBuilder()

@@ -15,6 +15,17 @@ namespace DomainScanner.Api.IntegrationTests.RateLimiting;
 public sealed class RateLimitingEndpointMetadataTests
 {
     [Fact]
+    public async Task AccountActivationRoutes_AreNotExposed()
+    {
+        await using var factory = new DomainScannerApiFactory();
+        var endpointDataSource = factory.Services.GetRequiredService<EndpointDataSource>();
+
+        Assert.DoesNotContain(endpointDataSource.Endpoints.OfType<RouteEndpoint>(),
+            endpoint => endpoint.RoutePattern.RawText is
+                "api/v1/users/me/activate" or "api/v1/users/me/deactivate");
+    }
+
+    [Fact]
     public async Task HealthEndpoint_HasRateLimitingDisabled()
     {
         // Arrange
@@ -49,8 +60,6 @@ public sealed class RateLimitingEndpointMetadataTests
     [InlineData("Users", "Get", RateLimitingSettings.Policies.Read)]
     [InlineData("Users", "GetMyDomains", RateLimitingSettings.Policies.Read)]
     [InlineData("Users", "Register", RateLimitingSettings.Policies.Auth)]
-    [InlineData("Users", "Activate", RateLimitingSettings.Policies.Write)]
-    [InlineData("Users", "Deactivate", RateLimitingSettings.Policies.Write)]
     [InlineData("Users", "Delete", RateLimitingSettings.Policies.Write)]
 
     // DomainsController
