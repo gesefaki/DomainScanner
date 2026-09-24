@@ -64,14 +64,11 @@ public sealed class RateLimitingEndpointMetadataTests
 
     // DomainsController
     [InlineData("Domains", "Get", RateLimitingSettings.Policies.Read)]
-    [InlineData("Domains", "GetHttpCheck", RateLimitingSettings.Policies.Scan)]
-    [InlineData(
-        "Domains",
-        "GetHttpCheckWithDetails",
-        RateLimitingSettings.Policies.Scan)]
+    [InlineData("Domains", "GetChecks", RateLimitingSettings.Policies.Read)]
+    [InlineData("Domains", "GetCheck", RateLimitingSettings.Policies.Read)]
     [InlineData("Domains", "Update", RateLimitingSettings.Policies.Write)]
     [InlineData("Domains", "Create", RateLimitingSettings.Policies.Write)]
-    [InlineData("Domains", "SendAndSave", RateLimitingSettings.Policies.Scan)]
+    [InlineData("Domains", "RunHttpCheck", RateLimitingSettings.Policies.Scan)]
     [InlineData("Domains", "Delete", RateLimitingSettings.Policies.Write)]
     public async Task Endpoint_UsesExpectedRateLimitingPolicy(
         string controllerName,

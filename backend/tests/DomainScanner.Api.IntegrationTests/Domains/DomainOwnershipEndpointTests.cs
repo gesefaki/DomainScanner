@@ -42,7 +42,7 @@ public sealed class DomainOwnershipEndpointTests(
 
         using var createResponse = await userAClient.PostAsJsonAsync(
             "/api/v1/domains",
-            new CreateDomainRequest("ownership.example.com"));
+            new CreateDomainRequest("https://ownership.example.com"));
 
         createResponse.EnsureSuccessStatusCode();
 
@@ -62,17 +62,17 @@ public sealed class DomainOwnershipEndpointTests(
         var responses = new (string Operation, HttpResponseMessage Response)[]
         {
             ("GET", await userBClient.GetAsync(endpoint)),
-            ("basic-check", await userBClient.GetAsync(
-                $"{endpoint}/http/check")),
-            ("detailed-check", await userBClient.GetAsync(
-                $"{endpoint}/http/check-details")),
-            ("send-save", await userBClient.PostAsync(
-                $"{endpoint}/send-save",
+            ("checks", await userBClient.GetAsync(
+                $"{endpoint}/checks")),
+            ("check", await userBClient.GetAsync(
+                $"{endpoint}/checks/{Guid.NewGuid()}")),
+            ("run-http-check", await userBClient.PostAsync(
+                $"{endpoint}/http/checks",
                 content: null)),
             ("PUT", await userBClient.PutAsJsonAsync(
                 endpoint,
                 new UpdateDomainRequest(
-                    "changed-by-foreign-user.example.com",
+                    "https://changed-by-foreign-user.example.com",
                     true))),
             ("DELETE", await userBClient.DeleteAsync(endpoint))
         };

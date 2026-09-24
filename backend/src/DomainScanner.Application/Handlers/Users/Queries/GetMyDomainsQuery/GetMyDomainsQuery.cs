@@ -5,6 +5,6 @@ using MediatR;
 namespace DomainScanner.Application.Handlers.Users.Queries.GetMyDomainsQuery;
 
 /// <summary>
-/// Query to retrieve all DomainEntities by associated user id
+/// Retrieves domain summaries for the current user without embedding check history.
 /// </summary>
 public record GetMyDomainsQuery() : IRequest<IEnumerable<DomainResponse>>, INeedAuthentication;

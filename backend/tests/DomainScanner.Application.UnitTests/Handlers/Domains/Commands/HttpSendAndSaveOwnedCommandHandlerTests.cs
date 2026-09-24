@@ -39,7 +39,10 @@ public class HttpSendAndSaveOwnedCommandHandlerTests
         {
             Id = Guid.NewGuid(),
             DomainId = domainId,
-            Address = domain.Address
+            RequestedAddress = domain.Address,
+            FinalAddress = domain.Address,
+            Kind = "http",
+            Outcome = "up"
         };
 
         _ownedDomains
@@ -59,7 +62,9 @@ public class HttpSendAndSaveOwnedCommandHandlerTests
             CancellationToken.None);
 
         // Assert
-        result.Should().BeSameAs(expected);
+        result.Id.Should().Be(expected.Id);
+        result.DomainId.Should().Be(domainId);
+        result.Http!.RequestedAddress.Should().Be(domain.Address);
         _executor.Verify(x => x.ExecuteAndSaveAsync(
             domain,
             It.IsAny<CancellationToken>()), Times.Once);

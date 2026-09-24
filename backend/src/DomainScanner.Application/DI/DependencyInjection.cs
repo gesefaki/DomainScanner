@@ -1,11 +1,15 @@
-﻿using DomainScanner.Application.Abstractions.Auth;
+using DomainScanner.Application.Abstractions.Auth;
 using DomainScanner.Application.Abstractions.Scanners;
 using DomainScanner.Application.Handlers.Domains.Commands.CreateDomain;
 using DomainScanner.Application.Handlers.Domains.Commands.HttpSendAndSave;
+using DomainScanner.Application.Handlers.Domains.Commands.UpdateDomain;
+using DomainScanner.Application.Handlers.Users.Commands.LoginUser;
+using DomainScanner.Application.Handlers.Users.Commands.RegisterUser;
 using DomainScanner.Application.Mapping;
 using DomainScanner.Application.Pipelines.Behaviors;
 using DomainScanner.Application.Services.Auth;
 using DomainScanner.Application.Services.Domains;
+using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DomainScanner.Application.DI;
@@ -22,10 +26,17 @@ public static class DependencyInjection
     /// <returns>The <see cref="IServiceCollection"/> for chaining.</returns>
     public static IServiceCollection AddApplicationLayer(this IServiceCollection services)
     {
+        // Validation
+        services.AddScoped<IValidator<CreateDomainCommand>, CreateDomainCommandValidator>();
+        services.AddScoped<IValidator<UpdateDomainCommand>, UpdateDomainCommandValidator>();
+        services.AddScoped<IValidator<RegisterUserCommand>, RegisterUserCommandValidator>();
+        services.AddScoped<IValidator<LoginUserCommand>, LoginUserCommandValidator>();
+
+        // MediatR
         services.AddMediatR(cfg =>
         {
             cfg.RegisterServicesFromAssemblyContaining<CreateDomainCommandHandler>();
-            
+
             cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
             cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
             cfg.AddOpenBehavior(typeof(AuthenticationBehavior<,>));
@@ -33,6 +44,7 @@ public static class DependencyInjection
             cfg.AddOpenBehavior(typeof(UnitOfWorkBehavior<,>));
         });
 
+        // Mapping
         services.AddAutoMapper(cfg =>
         {
             cfg.AddProfile<MappingProfile>();

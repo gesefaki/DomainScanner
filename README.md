@@ -254,10 +254,19 @@ Most endpoints require authentication.
 | `POST` | `/api/v1/domains` | Add a domain |
 | `PUT` | `/api/v1/domains/{id}` | Update a domain |
 | `DELETE` | `/api/v1/domains/{id}` | Delete a domain |
-| `GET` | `/api/v1/domains/{id}/http/check` | Run a basic HTTP check |
-| `GET` | `/api/v1/domains/{id}/http/check-details` | Run a detailed HTTP check |
-| `POST` | `/api/v1/domains/{id}/send-save` | Run and save a check |
+| `GET` | `/api/v1/domains/{id}/checks` | Get retained checks, newest first |
+| `GET` | `/api/v1/domains/{id}/checks/{checkId}` | Get one retained check |
+| `POST` | `/api/v1/domains/{id}/http/checks` | Run and save an HTTP check |
 | `GET` | `/health` | Check API health |
+
+`DomainResponse` contains domain settings and an optional protocol-neutral
+`lastCheck` summary. Check history and the response to a manual HTTP check use
+the same `DomainCheckResponse` contract. Its `kind` is `http` for this MVP,
+and its `http` payload contains the HTTP-specific result. `outcome` is
+`up` for a successful final HTTP response, `down` for an unsuccessful final
+HTTP response, and `error` when no HTTP response was received. In the latter
+case `http.statusCode` is null and `http.errorCode` explains the transport
+failure. A domain with no checks has `lastCheck: null`.
 
 ## Tests
 

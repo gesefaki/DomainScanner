@@ -93,15 +93,15 @@ public sealed class DomainScannerApiFactory : WebApplicationFactory<ApiProgram>
                 [
                     CreateDomain(
                         "aaaaaaaa-0000-0000-0000-000000000001",
-                        "a-one.example",
+                        "https://a-one.example/",
                         UserAId),
                     CreateDomain(
                         "aaaaaaaa-0000-0000-0000-000000000002",
-                        "a-two.example",
+                        "https://a-two.example/",
                         UserAId),
                     CreateDomain(
                         "bbbbbbbb-0000-0000-0000-000000000001",
-                        "b-one.example",
+                        "https://b-one.example/",
                         UserBId)
                 ]));
 

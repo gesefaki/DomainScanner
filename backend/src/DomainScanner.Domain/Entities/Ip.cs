@@ -8,7 +8,7 @@ namespace DomainScanner.Domain.Entities;
 public class Ip : BaseEntity
 {
     /// <summary>
-    /// IP addres in standard notation format.
+    /// IP address in standard notation format.
     /// </summary>
     /// <value>
     /// The IPv4 address as a string. Examples: "192.168.1.1".

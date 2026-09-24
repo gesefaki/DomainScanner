@@ -8,7 +8,7 @@ using DomainScanner.Domain.Entities;
 namespace DomainScanner.Application.Services.Domains;
 
 /// <summary>
-/// Executes HTTP checks, persists their results, and updates the availability status of domains.
+/// Executes HTTP checks, persists transport-aware results, and updates measured domain availability.
 /// </summary>
 public sealed class DomainCheckExecutor : IDomainCheckExecutor
 {
@@ -39,8 +39,11 @@ public sealed class DomainCheckExecutor : IDomainCheckExecutor
                   ?? throw new DomainInvalidAddressFormatException(
                       domain.Address);
 
-        var response = await _http.GetHttpResponseAsync(uri, ct);
+        var response = await _http.CheckAsync(uri, ct);
         var now = DateTime.UtcNow;
+        var outcome = response.ErrorCode is not null
+            ? "error"
+            : response.IsSuccess ? "up" : "down";
 
         domain.IsActive = response.IsSuccess;
         domain.UpdatedAt = now;
@@ -48,9 +51,17 @@ public sealed class DomainCheckExecutor : IDomainCheckExecutor
         var check = new DomainCheckResult
         {
             Id = Guid.NewGuid(),
-            Address = response.Address,
+            Kind = "http",
+            Outcome = outcome,
+            RequestedAddress = response.RequestedAddress,
+            FinalAddress = response.FinalAddress,
             StatusCode = response.StatusCode,
-            IsActive = response.IsSuccess,
+            ResponseTimeMs = response.ResponseTimeMs,
+            ErrorCode = response.ErrorCode,
+            Redirects = response.Redirects.ToArray(),
+            TlsHasValidationErrors = response.Tls?.SslPolicyErrors,
+            TlsCertificateExpiresAt = response.Tls?.CertificateExpiresAt,
+            IsActive = outcome == "up",
             CreatedAt = now,
             DomainId = domain.Id
         };

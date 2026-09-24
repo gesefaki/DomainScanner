@@ -1,52 +1,61 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
+using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
+using System.Security.Cryptography.X509Certificates;
 using DomainScanner.Application.Abstractions.Scanners;
 using DomainScanner.Contracts.Exceptions.HTTP;
 using DomainScanner.Domain.Models;
 
 namespace DomainScanner.Infrastructure.Protocols.HTTP;
 
-/// <summary>
-/// Provides HTTP/HTTPS scanning services for domain monitoring.
-/// Implements <see cref="IHttpScanner"/>. 
-/// </summary>
-public class HttpService : IHttpScanner
+/// <summary>Runs HTTP checks with public-network validation and a whole-check deadline.</summary>
+public sealed class HttpService : IHttpScanner
 {
-    private readonly IHttpClientFactory _httpFactory;
-    
     private const int MaxRedirections = 5;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="HttpService"/> class.
-    /// </summary>
-    /// <param name="httpFactory">The HTTP client factory for creating HttpClient instances.</param>
-    public HttpService(IHttpClientFactory httpFactory)
-    {
-        _httpFactory = httpFactory;           
-    }
+    private static readonly TimeSpan CheckTimeout = TimeSpan.FromSeconds(30);
 
     /// <inheritdoc />
-    public async Task<HttpResponseObject> GetHttpResponseAsync(Uri address, CancellationToken ct)
+    public async Task<HttpScanResult> CheckAsync(Uri address, CancellationToken ct)
     {
+        var tls = new TlsFetch();
+        var stopwatch = Stopwatch.StartNew();
+        var redirects = new List<string>();
+
+        using var handler = PublicNetworkHttpHandler.Create(
+            (_, certificate, _, errors) =>
+            {
+                tls.SslPolicyErrors = errors != SslPolicyErrors.None;
+                if (certificate is not null)
+                {
+                    using var leaf = new X509Certificate2(certificate);
+                    tls.CertificateExpiresAt = leaf.NotAfter.ToUniversalTime();
+                }
+                return errors == SslPolicyErrors.None;
+            });
+        using var http = new HttpClient(handler)
+        {
+            Timeout = Timeout.InfiniteTimeSpan
+        };
+        http.DefaultRequestHeaders.UserAgent.ParseAdd("DomainScanner/1.0");
+
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        deadline.CancelAfter(CheckTimeout);
+
         try
         {
-            // TODO: add from configuration
-            var http = _httpFactory.CreateClient("DomainScanner.Basic");
-
-            var result = await SendSafeAsync(
-                http,
-                address,
-                ct);
-
+            var result = await SendSafeAsync(http, address, redirects, deadline.Token);
             using var response = result.Response;
 
-            return new HttpResponseObject
-            {
-                Address = result.FinalAddress.ToString(),
-                StatusCode = (ushort)response.StatusCode,
-                IsSuccess = response.IsSuccessStatusCode,
-            };
+            return new HttpScanResult(
+                address.ToString(),
+                result.FinalAddress.ToString(),
+                (int)response.StatusCode,
+                stopwatch.ElapsedMilliseconds,
+                null,
+                redirects.ToArray(),
+                result.FinalAddress.Scheme == Uri.UriSchemeHttps &&
+                tls.SslPolicyErrors is not null ? tls : null);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
@@ -54,182 +63,86 @@ public class HttpService : IHttpScanner
         }
         catch (OperationCanceledException)
         {
-            return Failure(address, 504);
+            return Failure("timeout");
         }
         catch (UnsafeOutboundDestinationException)
         {
-            return Failure(address, 502);
+            return Failure("unsafe_destination");
         }
-        catch (HttpRequestException)
+        catch (HttpRequestException ex)
         {
-            return Failure(address, 502);
+            var code = ContainsUnsafeDestination(ex)
+                ? "unsafe_destination"
+                : ex.HttpRequestError switch
+            {
+                HttpRequestError.NameResolutionError => "dns_error",
+                HttpRequestError.SecureConnectionError => "tls_error",
+                _ => "network_error"
+            };
+            return Failure(code);
         }
         catch (SocketException)
         {
-            return Failure(address, 502);
+            return Failure("network_error");
         }
+
+        HttpScanResult Failure(string code) => new(
+            address.ToString(),
+            null,
+            null,
+            stopwatch.ElapsedMilliseconds,
+            code,
+            redirects.ToArray(),
+            tls.SslPolicyErrors is not null ? tls : null);
     }
 
-    /// <inheritdoc />
-    public async Task<HttpResponseDetails> GetHttpWithDetailsAsync(Uri address, CancellationToken ct)
+    private static bool ContainsUnsafeDestination(Exception exception)
     {
-        var tls = new TlsFetch();
-
-        var handler = PublicNetworkHttpHandler.Create(
-            (_, certificate, chain, errors) =>
-            {
-                tls.Certificate = certificate?.ToString();
-
-                if (chain is not null)
-                {
-                    tls.Chain = string.Join(
-                        '\n',
-                        chain.ChainElements
-                            .Select(element =>
-                                $"Subject: {element.Certificate.Subject}, " +
-                                $"Issuer: {element.Certificate.Issuer}, " +
-                                $"Thumbprint: {element.Certificate.Thumbprint}, " +
-                                $"Valid: {element.Certificate.NotBefore} - " +
-                                $"{element.Certificate.NotAfter}"));
-                }
-
-                tls.SslPolicyErrors = errors != SslPolicyErrors.None;
-                
-                return errors == SslPolicyErrors.None;
-            });
-
-        using var http = new HttpClient(handler);
-        http.Timeout = Timeout.InfiniteTimeSpan;
-        
-        http.DefaultRequestHeaders.UserAgent.ParseAdd(
-            "DomainScanner/1.0");
-        
-        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        
-        deadline.CancelAfter(TimeSpan.FromSeconds(30));
-
-        var stopwatch = Stopwatch.StartNew();
-        
-        var result = await SendSafeAsync(
-            http,
-            address,
-            deadline.Token);
-        
-        stopwatch.Stop();
-
-        using var response = result.Response;
-
-        return new HttpResponseDetails
+        for (Exception? current = exception; current is not null;
+             current = current.InnerException)
         {
-            Address = result.FinalAddress.ToString(),
-            StatusCode = (ushort)response.StatusCode,
-            IsSuccess = response.IsSuccessStatusCode,
-            ResponseTime = stopwatch.ElapsedMilliseconds,
-            Redirections = result.Redirections,
-            RedirectionsCount =
-                checked((ushort)result.Redirections.Count),
-            ReasonPhrase = response.ReasonPhrase ?? string.Empty,
-            ContentType =
-                response.Content.Headers.ContentType?.ToString()
-                ?? string.Empty,
-            ContentLength =
-                response.Content.Headers.ContentLength,
-            ErrorMessage = response.IsSuccessStatusCode
-                ? null
-                : $"Remote server returned HTTP {(int)response.StatusCode}.",
-            Version = response.Version.ToString(),
-            Tls = tls
-        };
+            if (current is UnsafeOutboundDestinationException)
+                return true;
+        }
+        return false;
     }
 
     private static async Task<SafeHttpResult> SendSafeAsync(
-        HttpClient http,
-        Uri initAddress,
+        HttpClient http, Uri initialAddress, List<string> redirects,
         CancellationToken ct)
     {
-        var currentAddress = initAddress;
-        var redirections = new List<string>();
+        var currentAddress = initialAddress;
 
         for (var attempt = 0;; attempt++)
         {
             PublicNetworkHttpHandler.ValidateUri(currentAddress);
-            
-            using var request = new HttpRequestMessage(
-                HttpMethod.Get,
-                currentAddress);
-
+            using var request = new HttpRequestMessage(HttpMethod.Get, currentAddress);
             var response = await http.SendAsync(
-                request,
-                HttpCompletionOption.ResponseHeadersRead,
-                ct);
+                request, HttpCompletionOption.ResponseHeadersRead, ct);
 
-            if (!IsRedirect((int)response.StatusCode))
+            if ((int)response.StatusCode is < 300 or > 399 ||
+                attempt >= MaxRedirections || response.Headers.Location is null)
             {
-                return new SafeHttpResult(
-                    response,
-                    currentAddress,
-                    redirections);
-            }
-
-            if (attempt >= MaxRedirections)
-            {
-                response.Dispose();
-                
-                throw new HttpRequestException(
-                    "Redirect limit exceeded.");
-            }
-            
-            var location = response.Headers.Location;
-
-            if (location is null)
-            {
-                response.Dispose();
-
-                throw new HttpRequestException(
-                    "Redirection response has no location header."
-                );
+                return new SafeHttpResult(response, currentAddress);
             }
 
             Uri nextAddress;
-
             try
             {
-                nextAddress = new Uri(currentAddress, location);
+                nextAddress = new Uri(currentAddress, response.Headers.Location);
                 PublicNetworkHttpHandler.ValidateUri(nextAddress);
             }
-            catch
+            finally
             {
                 response.Dispose();
-                throw;
             }
-            
-            response.Dispose();
-            
+
             currentAddress = nextAddress;
-            redirections.Add(currentAddress.ToString());
+            redirects.Add(currentAddress.ToString());
         }
     }
 
-    private static bool IsRedirect(int statusCode)
-    {
-        return statusCode is >= 300 and <= 399;
-    }
-    
     private sealed record SafeHttpResult(
         HttpResponseMessage Response,
-        Uri FinalAddress,
-        List<string> Redirections
-    );
-
-    private static HttpResponseObject Failure(
-        Uri address,
-        ushort statusCode)
-    {
-        return new HttpResponseObject
-        {
-            Address = address.ToString(),
-            StatusCode = statusCode,
-            IsSuccess = false
-        };
-    }
+        Uri FinalAddress);
 }

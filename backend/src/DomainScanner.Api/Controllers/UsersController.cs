@@ -43,9 +43,12 @@ public class UsersController : Controller
         return Ok(user);
     }
 
+    /// <summary>Gets domain summaries owned by the current user.</summary>
+    /// <param name="ct">Request cancellation token.</param>
+    /// <returns>Domain settings and their latest check summaries.</returns>
     [EnableRateLimiting(RateLimitingSettings.Policies.Read)]
     [HttpGet("me/domains")]
-    public async Task<ActionResult<DomainResponse>> GetMyDomains(CancellationToken ct)
+    public async Task<ActionResult<List<DomainResponse>>> GetMyDomains(CancellationToken ct)
     {
         var domains = await _sender.Send(new GetMyDomainsQuery(), ct);
         return Ok(domains);

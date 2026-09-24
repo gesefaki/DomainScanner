@@ -42,7 +42,10 @@ public class HttpSendAndSaveCommandHandlerTests
         {
             Id = Guid.NewGuid(),
             DomainId = _domainId,
-            Address = domain.Address,
+            RequestedAddress = domain.Address,
+            FinalAddress = domain.Address,
+            Kind = "http",
+            Outcome = "up",
             StatusCode = 200,
             IsActive = true
         };

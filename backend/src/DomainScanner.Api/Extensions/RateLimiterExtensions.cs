@@ -2,7 +2,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Threading.RateLimiting;
-using DomainScanner.Contracts.Models;
+using DomainScanner.Api.Middleware;
 using DomainScanner.Contracts.Options.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
 
@@ -80,15 +80,12 @@ public static class RateLimiterExtensions
                     context.Request.Path,
                     context.TraceIdentifier);
 
-                await context.Response.WriteAsJsonAsync(
-                    new ErrorResponse
-                    {
-                        StatusCode =
-                            StatusCodes.Status429TooManyRequests,
-                        Message =
-                            "Too many requests. Please try again later."
-                    },
-                    cancellationToken);
+                await ApiErrorWriter.WriteAsync(
+                    context,
+                    StatusCodes.Status429TooManyRequests,
+                    "rate_limit_exceeded",
+                    "Too many requests. Please try again later.",
+                    cancellationToken: cancellationToken);
             };
 
             options.AddPolicy(

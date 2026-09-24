@@ -2,7 +2,7 @@
 
 namespace DomainScanner.Domain.Entities;
 /// <summary>
-///    Represents a domain entity that is monitored for scanning and tracking purposes. Inherits from <see cref="BaseEntity"/>
+/// Represents a saved target whose checks may use different protocols.
 /// </summary>
 public class DomainEntity : BaseEntity
 {
@@ -26,7 +26,8 @@ public class DomainEntity : BaseEntity
     public User? User { get; set; } // Navigation Property
     
     /// <summary>
-    /// The collection of domain check results associated with this domain.
+    /// Retained results of protocol-specific checks. API domain responses expose
+    /// only the most recent result summary; history has separate endpoints.
     /// </summary>
     public virtual ICollection<DomainCheckResult> CheckResults { get; set; } =  new List<DomainCheckResult>();
     

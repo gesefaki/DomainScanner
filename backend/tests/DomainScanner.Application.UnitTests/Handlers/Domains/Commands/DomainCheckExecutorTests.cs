@@ -6,111 +6,87 @@ using DomainScanner.Application.UnitTests.TestData.Domains;
 using DomainScanner.Contracts.Exceptions.Domains;
 using DomainScanner.Domain.Entities;
 using DomainScanner.Domain.Models;
-using FluentAssertions;
 using Moq;
 
 namespace DomainScanner.Application.UnitTests.Handlers.Domains.Commands;
 
-/// <summary>
-/// Unit tests for <see cref="DomainCheckExecutor"/>.
-/// </summary>
-public class DomainCheckExecutorTests
+/// <summary>Checks how scanner outcomes are persisted and reflected on a domain.</summary>
+public sealed class DomainCheckExecutorTests
 {
     private readonly Mock<IRepository<DomainEntity, Guid>> _domains = new();
     private readonly Mock<IWriteRepository<DomainCheckResult, Guid>> _checks = new();
     private readonly Mock<IHttpScanner> _http = new();
-    private readonly DomainCheckExecutor _executor;
 
-    public DomainCheckExecutorTests()
+    [Fact]
+    public async Task HttpResponse_PersistsRemoteStatusAndOutcome()
     {
-        _executor = new DomainCheckExecutor(
-            _domains.Object,
-            _checks.Object,
-            _http.Object);
+        var domain = new DomainBuilder().WithAddress("https://example.com/").Build();
+        _http.Setup(scanner => scanner.CheckAsync(
+                It.IsAny<Uri>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new HttpScanResult(
+                domain.Address, "https://www.example.com/", 503, 42,
+                null, ["https://www.example.com/"],
+                new TlsFetch
+                {
+                    SslPolicyErrors = false,
+                    CertificateExpiresAt = new DateTime(
+                        2027, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+                }));
+        _checks.Setup(repository => repository.CreateAsync(
+                It.IsAny<DomainCheckResult>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((DomainCheckResult result, CancellationToken _) => result);
+        _domains.Setup(repository => repository.Update(domain)).Returns(domain);
+
+        var result = await new DomainCheckExecutor(
+            _domains.Object, _checks.Object, _http.Object)
+            .ExecuteAndSaveAsync(domain, CancellationToken.None);
+
+        Assert.Equal("http", result.Kind);
+        Assert.Equal("down", result.Outcome);
+        Assert.Equal(503, result.StatusCode);
+        Assert.Null(result.ErrorCode);
+        Assert.Equal(domain.Address, result.RequestedAddress);
+        Assert.Equal("https://www.example.com/", result.FinalAddress);
+        Assert.Equal(42, result.ResponseTimeMs);
+        Assert.Single(result.Redirects);
+        Assert.False(result.TlsHasValidationErrors);
+        Assert.False(domain.IsActive);
+        Assert.Contains(result, domain.CheckResults);
     }
 
-    /// <summary>
-    /// A successful HTTP check is persisted, added to the domain history, and updates domain availability.
-    /// </summary>
     [Fact]
-    public async Task ExecuteAndSaveAsync_WhenCheckSucceeds_PersistsResultAndUpdatesDomain()
+    public async Task TransportFailure_HasNoHttpStatus()
     {
-        // Arrange
-        var domain = new DomainBuilder()
-            .WithId(Guid.NewGuid())
-            .WithAddress("https://example.com/")
-            .Inactive()
-            .Build();
-        var response = new HttpResponseObject
-        {
-            Address = domain.Address,
-            StatusCode = 200,
-            IsSuccess = true
-        };
-        DomainCheckResult? persistedCheck = null;
+        var domain = new DomainBuilder().WithAddress("https://example.com/").Build();
+        _http.Setup(scanner => scanner.CheckAsync(
+                It.IsAny<Uri>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new HttpScanResult(
+                domain.Address, null, null, 10000,
+                "dns_error", [], null));
+        _checks.Setup(repository => repository.CreateAsync(
+                It.IsAny<DomainCheckResult>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((DomainCheckResult result, CancellationToken _) => result);
+        _domains.Setup(repository => repository.Update(domain)).Returns(domain);
 
-        _http
-            .Setup(x => x.GetHttpResponseAsync(
-                It.Is<Uri>(uri => uri.AbsoluteUri == domain.Address),
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync(response);
-        _checks
-            .Setup(x => x.CreateAsync(
-                It.IsAny<DomainCheckResult>(),
-                It.IsAny<CancellationToken>()))
-            .Callback<DomainCheckResult, CancellationToken>(
-                (check, _) => persistedCheck = check)
-            .ReturnsAsync((DomainCheckResult check, CancellationToken _) => check);
-        _domains
-            .Setup(x => x.Update(domain))
-            .Returns(domain);
+        var result = await new DomainCheckExecutor(
+            _domains.Object, _checks.Object, _http.Object)
+            .ExecuteAndSaveAsync(domain, CancellationToken.None);
 
-        // Act
-        var result = await _executor.ExecuteAndSaveAsync(
-            domain,
-            CancellationToken.None);
-
-        // Assert
-        result.Should().BeSameAs(persistedCheck);
-        result.DomainId.Should().Be(domain.Id);
-        result.Address.Should().Be(domain.Address);
-        result.StatusCode.Should().Be(200);
-        result.IsActive.Should().BeTrue();
-        domain.IsActive.Should().BeTrue();
-        domain.UpdatedAt.Should().NotBeNull();
-        domain.CheckResults.Should().ContainSingle().Which.Should().BeSameAs(result);
-
-        _checks.Verify(x => x.CreateAsync(
-            result,
-            It.IsAny<CancellationToken>()), Times.Once);
-        _domains.Verify(x => x.Update(domain), Times.Once);
+        Assert.Equal("error", result.Outcome);
+        Assert.Null(result.StatusCode);
+        Assert.Null(result.FinalAddress);
+        Assert.Equal("dns_error", result.ErrorCode);
+        Assert.False(domain.IsActive);
     }
 
-    /// <summary>
-    /// An invalid stored address is rejected before an HTTP request or persistence operation occurs.
-    /// </summary>
     [Fact]
-    public async Task ExecuteAndSaveAsync_WhenStoredAddressIsInvalid_ThrowsAndDoesNotPersist()
+    public async Task InvalidStoredAddress_DoesNotCallScannerOrPersistence()
     {
-        // Arrange
-        var domain = new DomainBuilder()
-            .WithAddress("not-a-valid-uri")
-            .Build();
-
-        // Act
-        var action = () => _executor.ExecuteAndSaveAsync(
-            domain,
-            CancellationToken.None);
-
-        // Assert
-        await action.Should().ThrowAsync<DomainInvalidAddressFormatException>();
-        _http.Verify(x => x.GetHttpResponseAsync(
-            It.IsAny<Uri>(),
-            It.IsAny<CancellationToken>()), Times.Never);
-        _checks.Verify(x => x.CreateAsync(
-            It.IsAny<DomainCheckResult>(),
-            It.IsAny<CancellationToken>()), Times.Never);
-        _domains.Verify(x => x.Update(
-            It.IsAny<DomainEntity>()), Times.Never);
+        var domain = new DomainBuilder().WithAddress("not-a-valid-uri").Build();
+        await Assert.ThrowsAsync<DomainInvalidAddressFormatException>(() =>
+            new DomainCheckExecutor(_domains.Object, _checks.Object, _http.Object)
+                .ExecuteAndSaveAsync(domain, CancellationToken.None));
+        _http.VerifyNoOtherCalls();
+        _checks.VerifyNoOtherCalls();
     }
 }

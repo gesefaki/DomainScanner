@@ -21,7 +21,9 @@ public abstract class BaseEntity
     public DateTime? UpdatedAt { get; set; }
 
     /// <summary>
-    /// Indicates whether the object is accessible.
+    /// Entity-specific active flag. For a domain or check it reflects the latest
+    /// measured result; for a user it indicates whether the account is enabled.
+    /// Scheduled monitoring is configured separately on the domain.
     /// </summary>
     public bool IsActive { get; set; }
 }

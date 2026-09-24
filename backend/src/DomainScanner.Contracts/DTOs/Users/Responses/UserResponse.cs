@@ -3,7 +3,7 @@
 namespace DomainScanner.Contracts.DTOs.Users.Responses;
 
 /// <summary>
-/// Basic <c>User</c> response model.
+/// Public account data with protocol-neutral domain summaries.
 /// </summary>
 public record UserResponse(
     Guid Id,

@@ -41,8 +41,6 @@ public static class DependencyInjection
     )
     {
         // Add HTTP client and related services.
-        services.AddHttpExtensions();
-
         // Register generic repository
         services.AddScoped(typeof(IRepository<,>), typeof(Repository<,>));
         services.AddScoped(typeof(IReadRepository<,>), typeof(Repository<,>));

@@ -8,7 +8,7 @@ using MediatR;
 namespace DomainScanner.Application.Handlers.Users.Queries.GetMyDomainsQuery;
 
 /// <summary>
-/// Handles <see cref="GetMyDomainsQuery"/>. 
+/// Maps the current user's domains to protocol-neutral responses.
 /// </summary>
 public class GetMyDomainsQueryHandler : IRequestHandler<GetMyDomainsQuery, IEnumerable<DomainResponse>>
 {
